@@ -9,6 +9,7 @@ namespace MPBoom.Services.PricesLoader.Services
     {
         private const string _getAdvertCampaignsUrl = "https://advert-api.wb.ru/adv/v0/adverts?";
         private const string _getAdvertCampaignInfoUrl = "https://advert-api.wb.ru/adv/v0/advert?id=";
+        private const string _getAdvertCampaignKeywordsUrl = "https://advert-api.wb.ru/adv/v1/stat/words?id=";
         private readonly HttpClient _httpClient;
 
         public WildberriesService(IHttpClientFactory httpClientFactory)
@@ -26,7 +27,8 @@ namespace MPBoom.Services.PricesLoader.Services
         {
             var advertCampaignsListQuery = GetQueryForAdvertCampaignsList(status, type);
             var campaigns = await GetCampaignsFromJson(advertCampaignsListQuery);
-            await FillUpAdvertCampaignsCPM(campaigns);
+            await FillUpAdvertCampaignsInfo(campaigns);
+            await FillUpAdvertCampaignsKeywords(campaigns);
 
             return campaigns;
         }
@@ -67,21 +69,11 @@ namespace MPBoom.Services.PricesLoader.Services
             return advertCampaigns;
         }
         
-        private async Task FillUpAdvertCampaignsCPM(IEnumerable<AdvertCampaign> campaigns)
+        private async Task FillUpAdvertCampaignsInfo(IEnumerable<AdvertCampaign> campaigns)
         {
-            var httpTasks = new List<Task<HttpResponseMessage>>();
-            foreach (var advertCampaign in campaigns)
+            var jObjects = await GetJObjectsByHttpQueries(campaigns, _getAdvertCampaignInfoUrl);
+            foreach (var jObject in jObjects)
             {
-                var query = _getAdvertCampaignInfoUrl + advertCampaign.AdvertId;
-                httpTasks.Add(_httpClient.GetAsync(query));
-            }
-            Task.WaitAll(httpTasks.ToArray());
-
-            foreach (var task in httpTasks)
-            {
-                var stringResult = await task.Result.Content.ReadAsStringAsync();
-                var jObject = JsonConvert.DeserializeObject<JObject>(stringResult);
-
                 if (jObject.ContainsKey("params"))
                 {
                     var findedCampaign = campaigns.First(campaign => campaign.AdvertId == jObject["advertId"].Value<string>());
@@ -98,6 +90,42 @@ namespace MPBoom.Services.PricesLoader.Services
                     }
                 }
             }
+        }
+        
+        private async Task FillUpAdvertCampaignsKeywords(IEnumerable<AdvertCampaign> campaigns)
+        {
+            var jObjects = await GetJObjectsByHttpQueries(campaigns, _getAdvertCampaignKeywordsUrl);
+            foreach (var jObject in jObjects)
+            {
+                if (jObject is not null && jObject["words"].Value<JObject>().ContainsKey("pluse"))
+                {
+                    if (jObject["words"]["pluse"].HasValues)
+                    {
+                        var findedCampaign = campaigns.First(campaign => campaign.AdvertId == jObject["stat"][0]["advertId"].Value<string>());
+                        findedCampaign.KeyPhrase = jObject["words"]["pluse"][0].Value<string>();
+                    }
+                }
+            }
+        }
+
+        private async Task<List<JObject>> GetJObjectsByHttpQueries(IEnumerable<AdvertCampaign> campaigns, string url)
+        {
+            var httpTasks = new List<Task<HttpResponseMessage>>();
+            foreach (var advertCampaign in campaigns)
+            {
+                var query = url + advertCampaign.AdvertId;
+                httpTasks.Add(_httpClient.GetAsync(query));
+            }
+            Task.WaitAll(httpTasks.ToArray());
+
+            var jObjects = new List<JObject>();
+            foreach (var task in httpTasks)
+            {
+                var stringResult = await task.Result.Content.ReadAsStringAsync();
+                jObjects.Add(JsonConvert.DeserializeObject<JObject>(stringResult));
+            }
+
+            return jObjects;
         }
     }
 }

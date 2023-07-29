@@ -6,6 +6,7 @@ namespace MPBoom.Services.PricesLoader.Models
     {
         public string AdvertId { get; set; }
         public string Name { get; set; }
+        public string KeyPhrase { get; set; }
         public List<Product> Products { get; set; }
         public int BudgetSize { get; set; }
         public int CPM { get; set; }
