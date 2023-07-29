@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MPBoom.Services.PricesLoader.Models;
 using MPBoom.Services.PricesLoader.Services;
 using System.ComponentModel.DataAnnotations;
 

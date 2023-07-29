@@ -61,7 +61,9 @@ namespace MPBoom.Services.PricesLoader.Services
 
                     foreach (var apiKey in _advertCampaigns.Keys.ToList())
                     {
-                        var advertCampaigns = await _wbService.GetAdvertCampaignsAsync(apiKey);
+                        _wbService.SetApiKey(apiKey);
+                        
+                        var advertCampaigns = await _wbService.GetAdvertCampaignsAsync();
                         _advertCampaigns[apiKey] = new List<AdvertCampaign>(advertCampaigns);
                     }
 

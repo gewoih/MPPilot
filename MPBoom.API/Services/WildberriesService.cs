@@ -9,38 +9,44 @@ namespace MPBoom.Services.PricesLoader.Services
     {
         private const string _getAdvertCampaignsUrl = "https://advert-api.wb.ru/adv/v0/adverts?";
         private const string _getAdvertCampaignInfoUrl = "https://advert-api.wb.ru/adv/v0/advert?id=";
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly HttpClient _httpClient;
 
         public WildberriesService(IHttpClientFactory httpClientFactory)
         {
-            _httpClientFactory = httpClientFactory;
+            _httpClient = httpClientFactory.CreateClient();
         }
 
-        public async Task<IEnumerable<AdvertCampaign>> GetAdvertCampaignsAsync(
-            string apiKey,
-            AdvertCampaignStatus? status = null,
-            AdvertCampaignType? type = null)
+        public void SetApiKey(string apiKey)
         {
-            var httpClient = _httpClientFactory.CreateClient();
-            httpClient.DefaultRequestHeaders.Add("Authorization", apiKey);
+            _httpClient.DefaultRequestHeaders.Clear();
+            _httpClient.DefaultRequestHeaders.Add("Authorization", apiKey);
+        }
 
-            var advertCampaignsListQuery = _getAdvertCampaignsUrl;
-            if (status is not null)
-                advertCampaignsListQuery += $"status={status.Value}&";
-            if (type is not null)
-                advertCampaignsListQuery += $"type={type.Value}&";
-
-            var result = await httpClient.GetAsync(advertCampaignsListQuery);
-            var stringResult = await result.Content.ReadAsStringAsync();
-
-            var campaigns = await GetCampaignsFromJson(stringResult, apiKey);
+        public async Task<IEnumerable<AdvertCampaign>> GetAdvertCampaignsAsync(AdvertCampaignStatus? status = null, AdvertCampaignType? type = null)
+        {
+            var advertCampaignsListQuery = GetQueryForAdvertCampaignsList(status, type);
+            var campaigns = await GetCampaignsFromJson(advertCampaignsListQuery);
+            await FillUpAdvertCampaignsCPM(campaigns);
 
             return campaigns;
         }
 
-        private async Task<IEnumerable<AdvertCampaign>> GetCampaignsFromJson(string jsonAdvertsList, string apiKey)
+        private static string GetQueryForAdvertCampaignsList(AdvertCampaignStatus? status, AdvertCampaignType? type)
         {
-            var jArray = JsonConvert.DeserializeObject<JArray>(jsonAdvertsList);
+            var query = _getAdvertCampaignsUrl;
+            if (status is not null)
+                query += $"status={status.Value}&";
+            if (type is not null)
+                query += $"type={type.Value}&";
+
+            return query;
+        }
+
+        private async Task<IEnumerable<AdvertCampaign>> GetCampaignsFromJson(string query)
+        {
+            var result = await _httpClient.GetAsync(query);
+            var stringResult = await result.Content.ReadAsStringAsync();
+            var jArray = JsonConvert.DeserializeObject<JArray>(stringResult);
 
             var advertCampaigns = new List<AdvertCampaign>();
             foreach (var element in jArray)
@@ -58,14 +64,16 @@ namespace MPBoom.Services.PricesLoader.Services
                 });
             }
 
-            var httpClient = _httpClientFactory.CreateClient();
-            httpClient.DefaultRequestHeaders.Add("Authorization", apiKey);
-
+            return advertCampaigns;
+        }
+        
+        private async Task FillUpAdvertCampaignsCPM(IEnumerable<AdvertCampaign> campaigns)
+        {
             var httpTasks = new List<Task<HttpResponseMessage>>();
-            foreach (var advertCampaign in advertCampaigns)
+            foreach (var advertCampaign in campaigns)
             {
                 var query = _getAdvertCampaignInfoUrl + advertCampaign.AdvertId;
-                httpTasks.Add(httpClient.GetAsync(query));
+                httpTasks.Add(_httpClient.GetAsync(query));
             }
             Task.WaitAll(httpTasks.ToArray());
 
@@ -73,11 +81,13 @@ namespace MPBoom.Services.PricesLoader.Services
             {
                 var stringResult = await task.Result.Content.ReadAsStringAsync();
                 var jObject = JsonConvert.DeserializeObject<JObject>(stringResult);
-                var findedCampaign = advertCampaigns.First(campaign => campaign.AdvertId == jObject["advertId"].Value<string>());
-                findedCampaign.CPM = jObject["params"][0]["price"].Value<int>();
-            }
 
-            return advertCampaigns;
+                if (jObject.ContainsKey("params"))
+                {
+                    var findedCampaign = campaigns.First(campaign => campaign.AdvertId == jObject["advertId"].Value<string>());
+                    findedCampaign.CPM = jObject["params"][0]["price"].Value<int>();
+                }
+            }
         }
     }
 }
