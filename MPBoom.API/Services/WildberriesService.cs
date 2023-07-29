@@ -102,7 +102,7 @@ namespace MPBoom.Services.PricesLoader.Services
                     if (jObject["words"]["pluse"].HasValues)
                     {
                         var findedCampaign = campaigns.First(campaign => campaign.AdvertId == jObject["stat"][0]["advertId"].Value<string>());
-                        findedCampaign.KeyPhrase = jObject["words"]["pluse"][0].Value<string>();
+                        findedCampaign.Keyword = jObject["words"]["pluse"][0].Value<string>();
                     }
                 }
             }

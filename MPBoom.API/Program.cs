@@ -18,6 +18,7 @@ namespace MPBoom.Services.PricesLoader
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddHttpClient();
+            builder.Services.AddScoped<AdvertCampaignsBidService>();
             builder.Services.AddSingleton<WildberriesService>();
             builder.Services.AddSingleton<AdvertCampaignsLoaderService>();
 
