@@ -85,7 +85,17 @@ namespace MPBoom.Services.PricesLoader.Services
                 if (jObject.ContainsKey("params"))
                 {
                     var findedCampaign = campaigns.First(campaign => campaign.AdvertId == jObject["advertId"].Value<string>());
+                    var jsonProducts = jObject["params"][0]["nms"];
+
                     findedCampaign.CPM = jObject["params"][0]["price"].Value<int>();
+                    findedCampaign.Products = new List<Product>();
+                    foreach (var jsonProduct in jsonProducts)
+                    {
+                        findedCampaign.Products.Add(new Product
+                        {
+                            Article = jsonProduct["nm"].Value<string>()
+                        });
+                    }
                 }
             }
         }
