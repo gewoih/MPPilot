@@ -1,6 +1,7 @@
 using BlazorBootstrap;
 using MPBoom.App.Domain.Interfaces;
 using MPBoom.App.Domain.Services;
+using MPBoom.Core.Services;
 
 namespace MPBoom.App
 {
@@ -15,7 +16,9 @@ namespace MPBoom.App
             builder.Services.AddServerSideBlazor();
 
 			builder.Services.AddBlazorBootstrap();
+            builder.Services.AddHttpClient();
 			builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
+            builder.Services.AddSingleton<WildberriesService>();
 
             var app = builder.Build();
 

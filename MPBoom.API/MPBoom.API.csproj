@@ -17,7 +17,7 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MPBoom.CoreLibrary\MPBoom.CoreLibrary.csproj" />
+    <ProjectReference Include="..\MPBoom.CoreLibrary\MPBoom.Core.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,96 @@
+﻿@page "/advertCampaigns";
+
+@using MPBoom.App.Domain.Interfaces;
+@using MPBoom.App.Domain.Models;
+@using MPBoom.App.Domain.Utils;
+@using MPBoom.Core.Models;
+@using MPBoom.Core.Services;
+
+@inject WildberriesService _wildberriesService;
+@inject ILocalStorageService _localStorageService;
+@inject IConfiguration _configuration;
+@inject ToastService _notificationsService;
+
+@if (!string.IsNullOrEmpty(_userSettings?.WildberriesApiKey))
+{
+    <Grid 
+        TItem="AdvertCampaign" 
+        AllowSorting="true"
+        AllowPaging="true"
+        PageSize="5"
+        Class="table table-hover table-bordered table-striped" 
+        DataProvider="AdvertCampaignsDataProvider" 
+        Responsive="true"
+        ItemsPerPageText="Тест"
+        PageSizeSelectorItems=@(new int[] {5, 10, 50})
+        PaginationItemsTextFormat="{0}-{1} из {2} кампаний">
+        
+        <GridColumn TItem="AdvertCampaign" HeaderText="Тип" SortKeySelector="item => item.Type">@context.Type.GetDescription()</GridColumn>
+
+        <GridColumn TItem="AdvertCampaign" HeaderText="Название" SortKeySelector="item => item.Name">@context.Name</GridColumn>
+
+        <GridColumn TItem="AdvertCampaign" HeaderText="Артикул товара" SortKeySelector="item => item.Products.FirstOrDefault().Article">@context.Products.FirstOrDefault()?.Article</GridColumn>
+        
+        <GridColumn TItem="AdvertCampaign" HeaderText="CPM" SortKeySelector="item => item.CPM">@(context.CPM)р.</GridColumn>
+        
+        <GridColumn TItem="AdvertCampaign" HeaderText="Рек. позиция"></GridColumn>
+
+        <GridColumn TItem="AdvertCampaign" HeaderText="Реал. позиция"></GridColumn>
+
+        <GridColumn TItem="AdvertCampaign" HeaderText="Дневной бюджет"></GridColumn>
+
+        <GridColumn TItem="AdvertCampaign" HeaderText="Остаток дневного бюджета "></GridColumn>
+
+        <GridColumn TItem="AdvertCampaign" HeaderText="Общий остаток бюджета"></GridColumn>
+
+        <GridColumn TItem="AdvertCampaign" HeaderText="Статус" SortKeySelector="item => item.Status">@context.Status.GetDescription()</GridColumn>
+
+        <GridColumn TItem="AdvertCampaign" HeaderText="Просмотры"></GridColumn>
+
+        <GridColumn TItem="AdvertCampaign" HeaderText="CTR"></GridColumn>
+
+        <GridColumn TItem="AdvertCampaign" HeaderText="CPC"></GridColumn>
+
+        <GridColumn TItem="AdvertCampaign" HeaderText="Кликов"></GridColumn>
+
+        <GridColumn TItem="AdvertCampaign" HeaderText="Заказов"></GridColumn>
+
+        <GridColumn TItem="AdvertCampaign" HeaderText="Всего"></GridColumn>
+
+        <GridColumn TItem="AdvertCampaign" HeaderText="Состояние">
+            <Switch @bind-Value="@(context.IsEnabled)" Disabled="@(!context.IsAvailableToEnable)" />
+        </GridColumn>
+    </Grid>
+}
+
+@code {
+    private UserSettings? _userSettings;
+    private IEnumerable<AdvertCampaign> _advertCampaigns;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        _userSettings = await _localStorageService.GetUserSettings(_configuration);
+        if (string.IsNullOrEmpty(_userSettings?.WildberriesApiKey))
+        {
+            _notificationsService.Notify(new ToastMessage
+            {
+                Message = "Для работы с этой страницей установите API-ключ для Wildberries в настройках",
+                Title = "Не установлен API-ключ",
+                Type = ToastType.Warning
+            });
+        }
+        else
+        {
+            _wildberriesService.SetApiKey(_userSettings.WildberriesApiKey);
+            StateHasChanged();
+        }
+    }
+
+    private async Task<GridDataProviderResult<AdvertCampaign>> AdvertCampaignsDataProvider(GridDataProviderRequest<AdvertCampaign> request)
+    {
+        if (_advertCampaigns is null)
+            _advertCampaigns = await _wildberriesService.GetAdvertCampaignsAsync();
+
+        return await Task.FromResult(request.ApplyTo(_advertCampaigns));
+    }
+}

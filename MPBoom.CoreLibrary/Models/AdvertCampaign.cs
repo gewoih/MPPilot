@@ -16,5 +16,7 @@ namespace MPBoom.Core.Models
 		public DateTimeOffset LastUpdateDate { get; set; }
 		public DateTimeOffset StartDate { get; set; }
 		public DateTimeOffset EndDate { get; set; }
+		public bool IsEnabled;
+		public bool IsAvailableToEnable;
 	}
 }

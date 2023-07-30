@@ -15,4 +15,8 @@
     <Folder Include="wwwroot\css\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\MPBoom.CoreLibrary\MPBoom.Core.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -1,4 +1,6 @@
-﻿using MPBoom.Core.Models;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using MPBoom.Core.Models;
 using System.Diagnostics;
 
 namespace MPBoom.Core.Services

@@ -8,10 +8,6 @@
              DataProvider="SidebarDataProvider" />
 
     <main>
-        <div class="bb-top-row px-4 d-flex justify-content-end">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-        </div>
-
         <article class="content px-4">
             <div class="py-2">
                 @Body
@@ -20,6 +16,8 @@
     </main>
 
 </div>
+
+<Toasts class="p-3" AutoHide="true" Delay="5000" Placement="ToastsPlacement.TopRight" />
 
 @code {
     private Sidebar sidebar = default!;
@@ -38,7 +36,8 @@
         navItems = new List<NavItem>
         {
             new NavItem { Id = "1", Href = "/", IconName = IconName.HouseDoorFill, Text = "Главная страница", Match=NavLinkMatch.All},
-            new NavItem { Id = "2", Href = "/settings", IconName = IconName.GearFill, Text = "Настройки"},
+            new NavItem { Id = "2", Href = "/advertCampaigns", IconName = IconName.GraphUp, Text = "Мои кампании"},
+            new NavItem { Id = "3", Href = "/settings", IconName = IconName.GearFill, Text = "Настройки"},
         };
 
         return navItems;

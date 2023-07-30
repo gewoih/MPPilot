@@ -53,7 +53,7 @@ namespace MPBoom.Core.Services
 			var advertCampaigns = new List<AdvertCampaign>();
 			foreach (var element in jArray)
 			{
-				advertCampaigns.Add(new AdvertCampaign
+				var newCampaign = new AdvertCampaign
 				{
 					CreatedDate = DateTimeOffset.Parse(element.Value<string>("createTime")),
 					LastUpdateDate = DateTimeOffset.Parse(element.Value<string>("changeTime")),
@@ -62,8 +62,12 @@ namespace MPBoom.Core.Services
 					Name = element.Value<string>("name"),
 					AdvertId = element.Value<string>("advertId"),
 					Status = (AdvertCampaignStatus)element.Value<int>("status"),
-					Type = (AdvertCampaignType)element.Value<int>("type")
-				});
+					Type = (AdvertCampaignType)element.Value<int>("type"),
+				};
+				newCampaign.IsEnabled = newCampaign.Status == AdvertCampaignStatus.InProgress;
+				newCampaign.IsAvailableToEnable = newCampaign.Status != AdvertCampaignStatus.Finished;
+
+				advertCampaigns.Add(newCampaign);
 			}
 
 			return advertCampaigns;
