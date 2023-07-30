@@ -2,6 +2,7 @@
 using MPBoom.Core.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Globalization;
 
 namespace MPBoom.Core.Services
 {
@@ -57,10 +58,10 @@ namespace MPBoom.Core.Services
 			{
 				var newCampaign = new AdvertCampaign
 				{
-					CreatedDate = DateTimeOffset.Parse(element.Value<string>("createTime")),
-					LastUpdateDate = DateTimeOffset.Parse(element.Value<string>("changeTime")),
-					StartDate = DateTimeOffset.Parse(element.Value<string>("startTime")),
-					EndDate = DateTimeOffset.Parse(element.Value<string>("endTime")),
+					CreatedDate = DateTimeOffset.Parse(element.Value<string>("createTime"), CultureInfo.InvariantCulture, DateTimeStyles.None),
+					LastUpdateDate = DateTimeOffset.Parse(element.Value<string>("changeTime"), CultureInfo.InvariantCulture, DateTimeStyles.None),
+					StartDate = DateTimeOffset.Parse(element.Value<string>("startTime"), CultureInfo.InvariantCulture, DateTimeStyles.None),
+					EndDate = DateTimeOffset.Parse(element.Value<string>("endTime"), CultureInfo.InvariantCulture, DateTimeStyles.None),
 					Name = element.Value<string>("name"),
 					AdvertId = element.Value<string>("advertId"),
 					Status = (AdvertCampaignStatus)element.Value<int>("status"),

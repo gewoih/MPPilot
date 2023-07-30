@@ -49,7 +49,7 @@
 
         <GridColumn TItem="AdvertCampaign" HeaderText="CTR" SortKeySelector="item => item.CTR">@context.CTR</GridColumn>
 
-        <GridColumn TItem="AdvertCampaign" HeaderText="CPC" SortKeySelector="item => item.CPC">@context.CPC.ToString("#.##")</GridColumn>
+        <GridColumn TItem="AdvertCampaign" HeaderText="CPC" SortKeySelector="item => item.CPC">@context.CPC.ToString("0.00")</GridColumn>
 
         <GridColumn TItem="AdvertCampaign" HeaderText="Кликов" SortKeySelector="item => item.Clicks">@context.Clicks</GridColumn>
 

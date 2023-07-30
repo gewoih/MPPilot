@@ -14,19 +14,11 @@ namespace MPBoom.App
             // Add services to the container.
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
-
-            builder.Services.Configure<CookiePolicyOptions>(options =>
-            {
-                options.MinimumSameSitePolicy = SameSiteMode.Strict;
-                options.HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.Always;
-                options.Secure = CookieSecurePolicy.Always;
-            });
 			
             builder.Services.AddBlazorBootstrap();
             builder.Services.AddHttpClient();
 			builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
             builder.Services.AddSingleton<WildberriesService>();
-
 
             var app = builder.Build();
 
