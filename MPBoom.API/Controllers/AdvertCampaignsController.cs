@@ -21,6 +21,13 @@ namespace MPBoom.Services.PricesLoader.Controllers
             _advertBidService = advertCampaignsBidService;
         }
 
+        [HttpGet]
+        [Route("getAverageCpm")]
+        public async Task<IActionResult> GetAverageCPM([Required] string keyword)
+        {
+            return Ok(await _advertBidService.GetAverageCPM(keyword));
+        }
+
         [HttpPost]
         [Route("addSeller")]
         public async Task<IActionResult> AddSeller([Required] string apiKey)
