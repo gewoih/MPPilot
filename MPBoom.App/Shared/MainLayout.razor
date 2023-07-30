@@ -1,19 +1,46 @@
 ﻿@inherits LayoutComponentBase
 
-<PageTitle>MPBoom.App</PageTitle>
+<div class="bb-page">
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+    <Sidebar @ref="sidebar"
+             IconName="IconName.Gem"
+             Title="MPBoom"
+             DataProvider="SidebarDataProvider" />
 
     <main>
-        <div class="top-row px-4">
+        <div class="bb-top-row px-4 d-flex justify-content-end">
             <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
         </div>
 
         <article class="content px-4">
-            @Body
+            <div class="py-2">
+                @Body
+            </div>
         </article>
     </main>
+
 </div>
+
+@code {
+    private Sidebar sidebar = default!;
+    private IEnumerable<NavItem> navItems = default!;
+
+    private async Task<SidebarDataProviderResult> SidebarDataProvider(SidebarDataProviderRequest request)
+    {
+        if (navItems is null)
+            navItems = GetNavItems();
+
+        return await Task.FromResult(request.ApplyTo(navItems));
+    }
+
+    private IEnumerable<NavItem> GetNavItems()
+    {
+        navItems = new List<NavItem>
+        {
+            new NavItem { Id = "1", Href = "/", IconName = IconName.HouseDoorFill, Text = "Главная страница", Match=NavLinkMatch.All},
+            new NavItem { Id = "2", Href = "/settings", IconName = IconName.GearFill, Text = "Настройки"},
+        };
+
+        return navItems;
+    }
+}
