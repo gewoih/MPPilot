@@ -10,7 +10,8 @@ namespace MPBoom.Core.Services
 		private const string _getAdvertCampaignsUrl = "https://advert-api.wb.ru/adv/v0/adverts?";
 		private const string _getAdvertCampaignInfoUrl = "https://advert-api.wb.ru/adv/v0/advert?id=";
 		private const string _getAdvertCampaignKeywordsUrl = "https://advert-api.wb.ru/adv/v1/stat/words?id=";
-		private readonly HttpClient _httpClient;
+		private const string _getAdvertCampaignFullStatUrl = "https://advert-api.wb.ru/adv/v1/fullstat?id=";
+        private readonly HttpClient _httpClient;
 
 		public WildberriesService(IHttpClientFactory httpClientFactory)
 		{
@@ -29,8 +30,9 @@ namespace MPBoom.Core.Services
 			var campaigns = await GetCampaignsFromJson(advertCampaignsListQuery);
 			await FillUpAdvertCampaignsInfo(campaigns);
 			await FillUpAdvertCampaignsKeywords(campaigns);
+			await FillUpAdvertCampaignsStatistics(campaigns);
 
-			return campaigns;
+            return campaigns;
 		}
 
 		private static string GetQueryForAdvertCampaignsList(AdvertCampaignStatus? status, AdvertCampaignType? type)
@@ -112,6 +114,25 @@ namespace MPBoom.Core.Services
 			}
 		}
 
+		private async Task FillUpAdvertCampaignsStatistics(IEnumerable<AdvertCampaign> campaigns)
+		{
+            var jObjects = await GetJObjectsByHttpQueries(campaigns, _getAdvertCampaignFullStatUrl);
+            foreach (var jObject in jObjects)
+            {
+                if (jObject is not null)
+                {
+                    var findedCampaign = campaigns.First(campaign => campaign.AdvertId == jObject["advertId"].Value<string>());
+					findedCampaign.TotalViews = jObject.Value<int>("views");
+                    findedCampaign.Clicks = jObject.Value<int>("clicks");
+                    findedCampaign.UniqueViews = jObject.Value<int>("unique_users");
+                    findedCampaign.TotalSpent = jObject.Value<double>("sum");
+                    findedCampaign.AddedToCart = jObject.Value<int>("atbs");
+                    findedCampaign.Orders = jObject.Value<int>("orders");
+                    findedCampaign.OrdersSum = jObject.Value<double>("sum_price");
+                }
+            }
+        }
+
 		private async Task<List<JObject>> GetJObjectsByHttpQueries(IEnumerable<AdvertCampaign> campaigns, string url)
 		{
 			var httpTasks = new List<Task<HttpResponseMessage>>();
@@ -126,7 +147,8 @@ namespace MPBoom.Core.Services
 			foreach (var task in httpTasks)
 			{
 				var stringResult = await task.Result.Content.ReadAsStringAsync();
-				jObjects.Add(JsonConvert.DeserializeObject<JObject>(stringResult));
+				if (!string.IsNullOrEmpty(stringResult) && task.Result.IsSuccessStatusCode)
+					jObjects.Add(JsonConvert.DeserializeObject<JObject>(stringResult));
 			}
 
 			return jObjects;

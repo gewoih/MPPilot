@@ -17,7 +17,7 @@
         TItem="AdvertCampaign" 
         AllowSorting="true"
         AllowPaging="true"
-        PageSize="5"
+        PageSize="10"
         Class="table table-hover table-bordered table-striped" 
         DataProvider="AdvertCampaignsDataProvider" 
         Responsive="true"
@@ -45,17 +45,19 @@
 
         <GridColumn TItem="AdvertCampaign" HeaderText="Статус" SortKeySelector="item => item.Status">@context.Status.GetDescription()</GridColumn>
 
-        <GridColumn TItem="AdvertCampaign" HeaderText="Просмотры"></GridColumn>
+        <GridColumn TItem="AdvertCampaign" HeaderText="Просмотры" SortKeySelector="item => item.TotalViews">@context.TotalViews</GridColumn>
 
-        <GridColumn TItem="AdvertCampaign" HeaderText="CTR"></GridColumn>
+        <GridColumn TItem="AdvertCampaign" HeaderText="CTR" SortKeySelector="item => item.CTR">@context.CTR</GridColumn>
 
-        <GridColumn TItem="AdvertCampaign" HeaderText="CPC"></GridColumn>
+        <GridColumn TItem="AdvertCampaign" HeaderText="CPC" SortKeySelector="item => item.CPC">@context.CPC.ToString("#.##")</GridColumn>
 
-        <GridColumn TItem="AdvertCampaign" HeaderText="Кликов"></GridColumn>
+        <GridColumn TItem="AdvertCampaign" HeaderText="Кликов" SortKeySelector="item => item.Clicks">@context.Clicks</GridColumn>
 
-        <GridColumn TItem="AdvertCampaign" HeaderText="Заказов"></GridColumn>
+        <GridColumn TItem="AdvertCampaign" HeaderText="Заказов" SortKeySelector="item => item.Orders">@context.Orders</GridColumn>
 
-        <GridColumn TItem="AdvertCampaign" HeaderText="Всего"></GridColumn>
+        <GridColumn TItem="AdvertCampaign" HeaderText="Стоимость заказа" SortKeySelector="item => item.OrderCost">@context.OrderCost</GridColumn>
+
+        <GridColumn TItem="AdvertCampaign" HeaderText="Потрачено" SortKeySelector="item => item.TotalSpent">@context.TotalSpent</GridColumn>
 
         <GridColumn TItem="AdvertCampaign" HeaderText="Состояние">
             <Switch @bind-Value="@(context.IsEnabled)" Disabled="@(!context.IsAvailableToEnable)" />

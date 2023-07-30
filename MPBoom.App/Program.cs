@@ -1,4 +1,4 @@
-using BlazorBootstrap;
+﻿using BlazorBootstrap;
 using MPBoom.App.Domain.Interfaces;
 using MPBoom.App.Domain.Services;
 using MPBoom.Core.Services;
@@ -15,10 +15,18 @@ namespace MPBoom.App
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
 
-			builder.Services.AddBlazorBootstrap();
+            builder.Services.Configure<CookiePolicyOptions>(options =>
+            {
+                options.MinimumSameSitePolicy = SameSiteMode.Strict;
+                options.HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.Always;
+                options.Secure = CookieSecurePolicy.Always;
+            });
+			
+            builder.Services.AddBlazorBootstrap();
             builder.Services.AddHttpClient();
 			builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
             builder.Services.AddSingleton<WildberriesService>();
+
 
             var app = builder.Build();
 
