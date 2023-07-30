@@ -1,4 +1,4 @@
-﻿namespace MPBoom.Services.PricesLoader.Models.Enums
+﻿namespace MPBoom.CoreLibrary.Enums
 {
     public enum AdvertCampaignType
     {

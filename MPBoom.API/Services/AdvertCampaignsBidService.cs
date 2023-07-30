@@ -1,4 +1,4 @@
-﻿using MPBoom.Services.PricesLoader.Models;
+﻿using MPBoom.CoreLibrary.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

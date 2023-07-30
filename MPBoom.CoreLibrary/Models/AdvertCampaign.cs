@@ -1,6 +1,6 @@
-﻿using MPBoom.Services.PricesLoader.Models.Enums;
+﻿using MPBoom.CoreLibrary.Enums;
 
-namespace MPBoom.Services.PricesLoader.Models
+namespace MPBoom.CoreLibrary.Models
 {
     public class AdvertCampaign
     {

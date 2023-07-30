@@ -1,5 +1,5 @@
-﻿using MPBoom.Services.PricesLoader.Models;
-using MPBoom.Services.PricesLoader.Models.Enums;
+﻿using MPBoom.CoreLibrary.Enums;
+using MPBoom.CoreLibrary.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

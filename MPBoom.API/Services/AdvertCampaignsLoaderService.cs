@@ -1,4 +1,4 @@
-﻿using MPBoom.Services.PricesLoader.Models;
+﻿using MPBoom.CoreLibrary.Models;
 using System.Diagnostics;
 
 namespace MPBoom.Services.PricesLoader.Services

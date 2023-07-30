@@ -1,4 +1,4 @@
-﻿namespace MPBoom.Services.PricesLoader.Models
+﻿namespace MPBoom.CoreLibrary.Models
 {
     public class Product
     {
