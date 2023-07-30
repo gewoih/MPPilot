@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 namespace MPBoom.Services.PricesLoader.Services
 {
-    public class WildberriesService
+	public class WildberriesService : IDisposable
     {
         private const string _getAdvertCampaignsUrl = "https://advert-api.wb.ru/adv/v0/adverts?";
         private const string _getAdvertCampaignInfoUrl = "https://advert-api.wb.ru/adv/v0/advert?id=";
@@ -127,5 +127,11 @@ namespace MPBoom.Services.PricesLoader.Services
 
             return jObjects;
         }
-    }
+
+		public void Dispose()
+		{
+            _httpClient.Dispose();
+            GC.SuppressFinalize(this);
+		}
+	}
 }
