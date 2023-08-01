@@ -14,13 +14,13 @@
                 <ValidationSummary />
 
                 <div class="form-group">
-                    <label>Название кампании:</label>
+                    <label style="padding-top: 5px">Название кампании:</label>
                     <InputText onblur="@OnAdvertCampaignChanged" class="form-control" @bind-Value="_changedAdvertCampaign.Name" />
 
-                    <label>Ключевая фраза:</label>
+                    <label style="padding-top: 5px">Ключевая фраза:</label>
                     <InputText onblur="@OnAdvertCampaignChanged" class="form-control" @bind-Value="_changedAdvertCampaign.Keyword" />
 
-                    <label>Состояние:</label>
+                    <label style ="padding-top: 5px">Состояние:</label>
                     <InputSelect onblur="@OnAdvertCampaignChanged" class="form-control" @bind-Value="_changedAdvertCampaign.Status">
                         @foreach (var status in Enum.GetValues<AdvertCampaignStatus>())
                         {
@@ -29,7 +29,7 @@
                     </InputSelect>
                 </div>
 
-                <div style="padding-top: 5px">
+                <div style="padding-top: 10px">
                     <button type="submit" class="btn btn-primary" disabled="@(!_updatedProperties.Any())">Сохранить</button>
                 </div>
             </EditForm>
@@ -58,7 +58,8 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await _tabs.ShowTabByIndexAsync(0);
+        if (firstRender)
+            await _tabs.ShowTabByIndexAsync(0);
     }
 
     private async Task SaveChanges()
@@ -71,7 +72,7 @@
         var confirmation = await _updateDialog.ShowAsync<UpdateAdvertCampaign>("Подтвердите обновление РК", parameters);
     }
 
-    private async Task OnAdvertCampaignChanged()
+    private void OnAdvertCampaignChanged()
     {
         _updatedProperties = AdvertCampaign.GetPropertiesDifference(_changedAdvertCampaign);
     }

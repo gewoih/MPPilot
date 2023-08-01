@@ -6,8 +6,8 @@
 @foreach (var property in UpdatedProperties)
 {
     <div class="row">
-        <div class="col-5 col-md-3 text-end">@property.Name:</div>
-        <div class="col-7 col-md-9">'@property.GetValue(OldCampaign)' изменено на '@property.GetValue(NewCampaign)'</div>
+        <div class="col-5 col-md-2">@property.Name:</div>
+        <div class="col-5 col-md-10">'@property.GetValue(OldCampaign)' -> '@property.GetValue(NewCampaign)'</div>
     </div>
 }
 
