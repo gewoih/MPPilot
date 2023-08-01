@@ -68,16 +68,16 @@
 @code {
     [Inject] 
     private WildberriesService _wildberriesService { get; set; }
-    
+
     [Inject] 
     private ILocalStorageService _localStorageService { get; set; }
-    
+
     [Inject] 
     IConfiguration _configuration { get; set; }
-    
+
     [Inject] 
     ToastService _notificationsService { get; set; }
-    
+
     private UserSettings? _userSettings;
     private IEnumerable<AdvertCampaign> _advertCampaigns;
     private Offcanvas _offcanvas = default!;
@@ -108,11 +108,11 @@
 
         return await Task.FromResult(request.ApplyTo(_advertCampaigns));
     }
-    
+
     private async Task ShowAdvertCampaignSettings(GridRowEventArgs<AdvertCampaign> argument)
     {
         var parameters = new Dictionary<string, object>();
         parameters.Add("AdvertCampaign", argument.Item);
-        await _offcanvas.ShowAsync<AdvertCampaignSettings>(title: "Настройки РК", parameters: parameters);
+        await _offcanvas.ShowAsync<AdvertCampaignSettingsPage>(title: "Настройки РК", parameters: parameters);
     }
 }

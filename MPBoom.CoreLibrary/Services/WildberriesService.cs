@@ -52,14 +52,14 @@ namespace MPBoom.Core.Services
 				param = advertCampaign.CategoryId
 			};
 
-            string jsonData = JsonConvert.SerializeObject(data);
+            var jsonData = JsonConvert.SerializeObject(data);
             var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
             
 			var response = await _httpClient.PostAsync(_changeCPMUrl, content);
 			if (response.StatusCode == HttpStatusCode.BadRequest)
 				throw new ArgumentException("Некорректно переданы параметры для изменения CPM");
 
-			return true;
+			return response.IsSuccessStatusCode;
         }
 
 		private static string GetQueryForAdvertCampaignsList(AdvertCampaignStatus? status, AdvertCampaignType? type, int? count)
