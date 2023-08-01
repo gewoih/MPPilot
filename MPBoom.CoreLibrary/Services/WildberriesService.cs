@@ -14,10 +14,12 @@ namespace MPBoom.Core.Services
 		private const string _getInfoUrl = "https://advert-api.wb.ru/adv/v0/advert?id=";
 		private const string _getKeywordsUrl = "https://advert-api.wb.ru/adv/v1/stat/words?id=";
 		private const string _getFullStatUrl = "https://advert-api.wb.ru/adv/v1/fullstat?id=";
-		private const string _changeCPMUrl = "https://advert-api.wb.ru/adv/v0/cpm";
-		private const string _startCampaignUrl = "https://advert-api.wb.ru/adv/v0/start";
-		private const string _pauseCampaignUrl = "https://advert-api.wb.ru/adv/v0/pause";
-		private const string _stopCampaignUrl = "https://advert-api.wb.ru/adv/v0/stop";
+		private const string _changeAdvertCPMUrl = "https://advert-api.wb.ru/adv/v0/cpm";
+		private const string _startAdvertUrl = "https://advert-api.wb.ru/adv/v0/start";
+		private const string _pauseAdvertUrl = "https://advert-api.wb.ru/adv/v0/pause";
+		private const string _stopAdvertUrl = "https://advert-api.wb.ru/adv/v0/stop";
+		private const string _depositToAdvertUrl = "https://advert-api.wb.ru/adv/v1/budget/deposit";
+		private const string _renameAdvertUrl = "https://advert-api.wb.ru/adv/v0/rename";
 		private readonly HttpClient _httpClient;
 
 		public WildberriesService(IHttpClientFactory httpClientFactory)
@@ -31,15 +33,36 @@ namespace MPBoom.Core.Services
 			_httpClient.DefaultRequestHeaders.Add("Authorization", apiKey);
 		}
 
+		public async Task<bool> RenameAdvert(int advertId, string name)
+		{
+			if (string.IsNullOrEmpty(name))
+				throw new ArgumentNullException(nameof(name));
+
+			var data = new
+			{
+				advertId,
+				name
+			};
+
+			var serializedData = JsonConvert.SerializeObject(data);
+			var content = new StringContent(serializedData, Encoding.UTF8, "application/json");
+
+			var result = await _httpClient.PostAsync(_renameAdvertUrl, content);
+			if (result.StatusCode == HttpStatusCode.BadRequest)
+				throw new ArgumentException($"Неверный формат запроса для изменения названия РК. {nameof(advertId)}={advertId}; {nameof(name)}={name}");
+
+			return result.IsSuccessStatusCode;
+		}
+
 		public async Task<bool> ChangeAdvertStatus(int advertId, AdvertStatus newStatus)
 		{
 			string? query;
 			if (newStatus == AdvertStatus.InProgress)
-				query = $"{_startCampaignUrl}?id={advertId}";
+				query = $"{_startAdvertUrl}?id={advertId}";
 			else if (newStatus == AdvertStatus.Stopped)
-				query = $"{_pauseCampaignUrl}?id={advertId}";
+				query = $"{_pauseAdvertUrl}?id={advertId}";
 			else if (newStatus == AdvertStatus.Finished)
-				query = $"{_stopCampaignUrl}?id={advertId}";
+				query = $"{_stopAdvertUrl}?id={advertId}";
 			else
 				throw new ArgumentException($"Передан некорректный статус для рекламной кампании: '{newStatus}'");
 
@@ -78,7 +101,7 @@ namespace MPBoom.Core.Services
             var jsonData = JsonConvert.SerializeObject(data);
             var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
             
-			var response = await _httpClient.PostAsync(_changeCPMUrl, content);
+			var response = await _httpClient.PostAsync(_changeAdvertCPMUrl, content);
 			if (response.StatusCode == HttpStatusCode.BadRequest)
 				throw new ArgumentException("Некорректно переданы параметры для изменения CPM");
 

@@ -77,5 +77,13 @@ namespace MPBoom.API.Controllers
 			var result = await _wildberriesService.ChangeAdvertStatus(advertId, status);
 			return Ok(result);
 		}
+
+		[HttpPost]
+		[Route("renameAdvert")]
+		public async Task<IActionResult> RenameAdvert([Required] int advertId, [Required] string name)
+		{
+			var result = await _wildberriesService.RenameAdvert(advertId, name);
+			return Ok(result);
+		}
 	}
 }
