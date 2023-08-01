@@ -4,10 +4,10 @@ namespace MPBoom.Core.Models
 {
 	public class AdvertCampaign
 	{
-		public string AdvertId { get; set; }
+        public string AdvertId { get; set; }
 		public string Name { get; set; }
 		public string Keyword { get; set; }
-		public List<Product> Products { get; set; }
+		public string ProductArticle { get; set; }
 		public int BudgetSize { get; set; }
 		public int CPM { get; set; }
 		public bool IsEnabled { get; set; }

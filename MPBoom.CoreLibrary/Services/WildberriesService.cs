@@ -3,6 +3,7 @@ using MPBoom.Core.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Globalization;
+using System.Reflection.Metadata;
 
 namespace MPBoom.Core.Services
 {
@@ -25,9 +26,9 @@ namespace MPBoom.Core.Services
 			_httpClient.DefaultRequestHeaders.Add("Authorization", apiKey);
 		}
 
-		public async Task<IEnumerable<AdvertCampaign>> GetAdvertCampaignsAsync(AdvertCampaignStatus? status = null, AdvertCampaignType? type = null)
+		public async Task<IEnumerable<AdvertCampaign>> GetAdvertCampaignsAsync(AdvertCampaignStatus? status = null, AdvertCampaignType? type = null, int? count = null)
 		{
-			var advertCampaignsListQuery = GetQueryForAdvertCampaignsList(status, type);
+			var advertCampaignsListQuery = GetQueryForAdvertCampaignsList(status, type, count);
 			var campaigns = await GetCampaignsFromJson(advertCampaignsListQuery);
 			await FillUpAdvertCampaignsInfo(campaigns);
 			await FillUpAdvertCampaignsKeywords(campaigns);
@@ -36,13 +37,15 @@ namespace MPBoom.Core.Services
             return campaigns;
 		}
 
-		private static string GetQueryForAdvertCampaignsList(AdvertCampaignStatus? status, AdvertCampaignType? type)
+		private static string GetQueryForAdvertCampaignsList(AdvertCampaignStatus? status, AdvertCampaignType? type, int? count)
 		{
 			var query = _getAdvertCampaignsUrl;
 			if (status is not null)
 				query += $"status={status.Value}&";
 			if (type is not null)
 				query += $"type={type.Value}&";
+			if (count is not null)
+				query += $"limit={count.Value}&";
 
 			return query;
 		}
@@ -87,14 +90,9 @@ namespace MPBoom.Core.Services
 					var jsonProducts = jObject["params"][0]["nms"];
 
 					findedCampaign.CPM = jObject["params"][0]["price"].Value<int>();
-					findedCampaign.Products = new List<Product>();
-					foreach (var jsonProduct in jsonProducts)
-					{
-						findedCampaign.Products.Add(new Product
-						{
-							Article = jsonProduct["nm"].Value<string>()
-						});
-					}
+
+					if (jsonProducts.HasValues)
+						findedCampaign.ProductArticle = jsonProducts[0]["nm"].Value<string>();
 				}
 			}
 		}
