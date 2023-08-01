@@ -22,7 +22,7 @@
 
                     <label style ="padding-top: 5px">Состояние:</label>
                     <InputSelect onblur="@OnAdvertCampaignChanged" class="form-control" @bind-Value="_changedAdvertCampaign.Status">
-                        @foreach (var status in Enum.GetValues<AdvertCampaignStatus>())
+                        @foreach (var status in Enum.GetValues<AdvertStatus>())
                         {
                             <option value="@status">@(status.GetDescription())</option>
                         }
@@ -69,7 +69,7 @@
         parameters.Add("NewCampaign", _changedAdvertCampaign);
         parameters.Add("UpdatedProperties", _updatedProperties);
 
-        var confirmation = await _updateDialog.ShowAsync<UpdateAdvertCampaign>("Подтвердите обновление РК", parameters);
+        var confirmation = await _updateDialog.ShowAsync<UpdateAdvertPage>("Подтвердите обновление РК", parameters);
     }
 
     private void OnAdvertCampaignChanged()

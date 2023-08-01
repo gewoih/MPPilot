@@ -5,14 +5,14 @@ using System.Diagnostics;
 
 namespace MPBoom.Core.Services
 {
-	public class AdvertCampaignsLoaderService
+	public class AdvertsLoaderService
 	{
 		private readonly Dictionary<string, List<AdvertCampaign>> _advertCampaigns;
 		private readonly WildberriesService _wbService;
-		private readonly ILogger<AdvertCampaignsLoaderService> _logger;
+		private readonly ILogger<AdvertsLoaderService> _logger;
 		private readonly TimeSpan _updateInterval;
 
-		public AdvertCampaignsLoaderService(ILogger<AdvertCampaignsLoaderService> logger, IConfiguration configuration, WildberriesService wbService)
+		public AdvertsLoaderService(ILogger<AdvertsLoaderService> logger, IConfiguration configuration, WildberriesService wbService)
 		{
 			_wbService = wbService;
 			_logger = logger;
@@ -65,7 +65,7 @@ namespace MPBoom.Core.Services
 					{
 						_wbService.SetApiKey(apiKey);
 
-						var advertCampaigns = await _wbService.GetAdvertCampaignsAsync();
+						var advertCampaigns = await _wbService.GetAdvertsAsync();
 						_advertCampaigns[apiKey] = new List<AdvertCampaign>(advertCampaigns);
 					}
 

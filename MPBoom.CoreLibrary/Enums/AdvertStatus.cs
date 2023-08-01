@@ -2,7 +2,7 @@
 
 namespace MPBoom.Core.Enums
 {
-	public enum AdvertCampaignStatus
+	public enum AdvertStatus
 	{
 		[Description("Готова к запуску")]
 		Ready = 4,

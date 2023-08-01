@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MPBoom.Core.Enums;
 using MPBoom.Core.Models;
 using MPBoom.Core.Services;
 using System.ComponentModel.DataAnnotations;
@@ -7,24 +8,23 @@ namespace MPBoom.API.Controllers
 {
 	[Route("api/[controller]")]
 	[ApiController]
-	public class AdvertCampaignsController : ControllerBase
+	public class AdvertsController : ControllerBase
 	{
-		private readonly ILogger<AdvertCampaignsController> _logger;
-		private readonly AdvertCampaignsLoaderService _advertPricesLoaderService;
-		private readonly AdvertCampaignsBidService _advertBidService;
+		private readonly AdvertsLoaderService _advertPricesLoaderService;
+		private readonly AdvertsBidService _advertBidService;
 		private readonly WildberriesService _wildberriesService;
+		private const string _apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NJRCI6IjExYTEzYjJhLTBjY2ItNDhhYS04NjE1LTYyNDg3NmY4MzdjZSJ9.0Lhiz7X_SjLE-kOqXEJ7BEIVdH673sbpVMfuV9VyX5M";
 
-		public AdvertCampaignsController(ILogger<AdvertCampaignsController> logger,
-			AdvertCampaignsLoaderService advertPricesLoaderService,
-			AdvertCampaignsBidService advertCampaignsBidService,
+		public AdvertsController(
+			AdvertsLoaderService advertPricesLoaderService,
+			AdvertsBidService advertCampaignsBidService,
 			WildberriesService wildberriesService)
 		{
-			_logger = logger;
 			_advertPricesLoaderService = advertPricesLoaderService;
 			_advertBidService = advertCampaignsBidService;
 			_wildberriesService = wildberriesService;
 
-			_wildberriesService.SetApiKey("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NJRCI6IjExYTEzYjJhLTBjY2ItNDhhYS04NjE1LTYyNDg3NmY4MzdjZSJ9.0Lhiz7X_SjLE-kOqXEJ7BEIVdH673sbpVMfuV9VyX5M");
+			_wildberriesService.SetApiKey(_apiKey);
 		}
 
 		[HttpGet]
@@ -36,9 +36,9 @@ namespace MPBoom.API.Controllers
 
 		[HttpPost]
 		[Route("addSeller")]
-		public async Task<IActionResult> AddSeller([Required] string apiKey)
+		public async Task<IActionResult> AddSeller()
 		{
-			if (_advertPricesLoaderService.AddSellerKey(apiKey))
+			if (_advertPricesLoaderService.AddSellerKey(_apiKey))
 				return Ok("Новый поставщик успешно добавлен.");
 			else
 				return Ok("Такой поставщик уже существует.");
@@ -46,9 +46,9 @@ namespace MPBoom.API.Controllers
 
 		[HttpGet]
 		[Route("getAdvertCampaigns")]
-		public async Task<IActionResult> GetAdvertCampaigns([Required] string apiKey)
+		public async Task<IActionResult> GetAdvertCampaigns()
 		{
-			return Ok(_advertPricesLoaderService.GetAdvertCampaigns(apiKey));
+			return Ok(_advertPricesLoaderService.GetAdvertCampaigns(_apiKey));
 		}
 
 		[HttpGet]
@@ -67,6 +67,14 @@ namespace MPBoom.API.Controllers
 		public async Task<IActionResult> ChangeCPM([Required] AdvertCampaign advertCampaign, [Required] int newCPM)
 		{
 			var result = await _wildberriesService.ChangeCPM(advertCampaign, newCPM);
+			return Ok(result);
+		}
+
+		[HttpPost]
+		[Route("changeStatus")]
+		public async Task<IActionResult> ChangeStatus([Required] int advertId, AdvertStatus status)
+		{
+			var result = await _wildberriesService.ChangeAdvertStatus(advertId, status);
 			return Ok(result);
 		}
 	}

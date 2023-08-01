@@ -1,6 +1,6 @@
 ﻿namespace MPBoom.Core.Models
 {
-	public class AdvertCampaignSearchPosition
+	public class AdvertSearchPosition
 	{
 		public int RealPlace { get; set; }
 		public int AdPlace { get; set; }

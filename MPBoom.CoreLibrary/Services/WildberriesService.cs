@@ -15,7 +15,10 @@ namespace MPBoom.Core.Services
 		private const string _getKeywordsUrl = "https://advert-api.wb.ru/adv/v1/stat/words?id=";
 		private const string _getFullStatUrl = "https://advert-api.wb.ru/adv/v1/fullstat?id=";
 		private const string _changeCPMUrl = "https://advert-api.wb.ru/adv/v0/cpm";
-        private readonly HttpClient _httpClient;
+		private const string _startCampaignUrl = "https://advert-api.wb.ru/adv/v0/start";
+		private const string _pauseCampaignUrl = "https://advert-api.wb.ru/adv/v0/pause";
+		private const string _stopCampaignUrl = "https://advert-api.wb.ru/adv/v0/stop";
+		private readonly HttpClient _httpClient;
 
 		public WildberriesService(IHttpClientFactory httpClientFactory)
 		{
@@ -28,13 +31,33 @@ namespace MPBoom.Core.Services
 			_httpClient.DefaultRequestHeaders.Add("Authorization", apiKey);
 		}
 
-		public async Task<IEnumerable<AdvertCampaign>> GetAdvertCampaignsAsync(AdvertCampaignStatus? status = null, AdvertCampaignType? type = null, int? count = null)
+		public async Task<bool> ChangeAdvertStatus(int advertId, AdvertStatus newStatus)
 		{
-			var advertCampaignsListQuery = GetQueryForAdvertCampaignsList(status, type, count);
-			var campaigns = await GetCampaignsFromJson(advertCampaignsListQuery);
-			await FillUpAdvertCampaignsInfo(campaigns);
-			await FillUpAdvertCampaignsKeywords(campaigns);
-			await FillUpAdvertCampaignsStatistics(campaigns);
+			string? query;
+			if (newStatus == AdvertStatus.InProgress)
+				query = $"{_startCampaignUrl}?id={advertId}";
+			else if (newStatus == AdvertStatus.Stopped)
+				query = $"{_pauseCampaignUrl}?id={advertId}";
+			else if (newStatus == AdvertStatus.Finished)
+				query = $"{_stopCampaignUrl}?id={advertId}";
+			else
+				throw new ArgumentException($"Передан некорректный статус для рекламной кампании: '{newStatus}'");
+
+			var result = await _httpClient.GetAsync(query);
+
+			if (result.StatusCode == HttpStatusCode.BadRequest)
+				throw new ArgumentException($"Передан некорректный ID рекламной кампании: '{advertId}'");
+
+			return result.IsSuccessStatusCode;
+		}
+
+		public async Task<IEnumerable<AdvertCampaign>> GetAdvertsAsync(AdvertStatus? status = null, AdvertType? type = null, int? count = null)
+		{
+			var advertCampaignsListQuery = GetAllAdvertsQuery(status, type, count);
+			var campaigns = await GetAdvertsFromJson(advertCampaignsListQuery);
+			await FillUpAdvertsInfo(campaigns);
+			await FillUpAdvertsKeywords(campaigns);
+			await FillUpAdvertsStatistics(campaigns);
 
             return campaigns;
 		}
@@ -62,7 +85,7 @@ namespace MPBoom.Core.Services
 			return response.IsSuccessStatusCode;
         }
 
-		private static string GetQueryForAdvertCampaignsList(AdvertCampaignStatus? status, AdvertCampaignType? type, int? count)
+		private static string GetAllAdvertsQuery(AdvertStatus? status, AdvertType? type, int? count)
 		{
 			var query = _getAllUrl;
 			if (status is not null)
@@ -75,7 +98,7 @@ namespace MPBoom.Core.Services
 			return query;
 		}
 
-		private async Task<IEnumerable<AdvertCampaign>> GetCampaignsFromJson(string query)
+		private async Task<IEnumerable<AdvertCampaign>> GetAdvertsFromJson(string query)
 		{
 			var result = await _httpClient.GetAsync(query);
 			var stringResult = await result.Content.ReadAsStringAsync();
@@ -92,11 +115,11 @@ namespace MPBoom.Core.Services
 					EndDate = DateTimeOffset.Parse(element.Value<string>("endTime"), CultureInfo.InvariantCulture, DateTimeStyles.None),
 					Name = element.Value<string>("name"),
 					AdvertId = element.Value<int>("advertId"),
-					Status = (AdvertCampaignStatus)element.Value<int>("status"),
-					Type = (AdvertCampaignType)element.Value<int>("type"),
+					Status = (AdvertStatus)element.Value<int>("status"),
+					Type = (AdvertType)element.Value<int>("type"),
 				};
-				newCampaign.IsEnabled = newCampaign.Status == AdvertCampaignStatus.InProgress;
-				newCampaign.IsAvailableToEnable = newCampaign.Status != AdvertCampaignStatus.Finished;
+				newCampaign.IsEnabled = newCampaign.Status == AdvertStatus.InProgress;
+				newCampaign.IsAvailableToEnable = newCampaign.Status != AdvertStatus.Finished;
 
 				advertCampaigns.Add(newCampaign);
 			}
@@ -104,7 +127,7 @@ namespace MPBoom.Core.Services
 			return advertCampaigns;
 		}
 
-		private async Task FillUpAdvertCampaignsInfo(IEnumerable<AdvertCampaign> campaigns)
+		private async Task FillUpAdvertsInfo(IEnumerable<AdvertCampaign> campaigns)
 		{
 			var jObjects = await GetJObjectsByHttpQueries(campaigns, _getInfoUrl);
 			foreach (var jObject in jObjects)
@@ -133,7 +156,7 @@ namespace MPBoom.Core.Services
 			}
 		}
 
-		private async Task FillUpAdvertCampaignsKeywords(IEnumerable<AdvertCampaign> campaigns)
+		private async Task FillUpAdvertsKeywords(IEnumerable<AdvertCampaign> campaigns)
 		{
 			var jObjects = await GetJObjectsByHttpQueries(campaigns, _getKeywordsUrl);
 			foreach (var jObject in jObjects)
@@ -149,7 +172,7 @@ namespace MPBoom.Core.Services
 			}
 		}
 
-		private async Task FillUpAdvertCampaignsStatistics(IEnumerable<AdvertCampaign> campaigns)
+		private async Task FillUpAdvertsStatistics(IEnumerable<AdvertCampaign> campaigns)
 		{
             var jObjects = await GetJObjectsByHttpQueries(campaigns, _getFullStatUrl);
             foreach (var jObject in jObjects)

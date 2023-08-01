@@ -4,12 +4,12 @@ using Newtonsoft.Json.Linq;
 
 namespace MPBoom.Core.Services
 {
-	public class AdvertCampaignsBidService : IDisposable
+	public class AdvertsBidService : IDisposable
 	{
 		private const string _url = "https://catalog-ads.wildberries.ru/api/v5/search?keyword=";
 		private readonly HttpClient _httpClient;
 
-		public AdvertCampaignsBidService(IHttpClientFactory httpClientFactory)
+		public AdvertsBidService(IHttpClientFactory httpClientFactory)
 		{
 			_httpClient = httpClientFactory.CreateClient();
 		}
@@ -28,7 +28,7 @@ namespace MPBoom.Core.Services
 			return totalCPM / advertsCount;
 		}
 
-		public async Task<AdvertCampaignSearchPosition> GetAdvertCampaignsStatistics(string advertId, string keyword)
+		public async Task<AdvertSearchPosition> GetAdvertCampaignsStatistics(string advertId, string keyword)
 		{
 			var jObject = await GetMarketAdverts(keyword);
 			var advertsCount = jObject["adverts"].Count();
@@ -38,7 +38,7 @@ namespace MPBoom.Core.Services
 				var advertJson = jObject["adverts"][i];
 				if (advertJson["advertId"].Value<string>() == advertId)
 				{
-					var searchPositionResult = new AdvertCampaignSearchPosition
+					var searchPositionResult = new AdvertSearchPosition
 					{
 						AdPlace = i + 1
 					};

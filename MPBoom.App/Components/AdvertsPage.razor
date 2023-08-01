@@ -104,7 +104,7 @@
     private async Task<GridDataProviderResult<AdvertCampaign>> AdvertCampaignsDataProvider(GridDataProviderRequest<AdvertCampaign> request)
     {
         if (_advertCampaigns is null)
-            _advertCampaigns = await _wildberriesService.GetAdvertCampaignsAsync(count: 5);
+            _advertCampaigns = await _wildberriesService.GetAdvertsAsync(count: 5);
 
         return await Task.FromResult(request.ApplyTo(_advertCampaigns));
     }
@@ -113,6 +113,6 @@
     {
         var parameters = new Dictionary<string, object>();
         parameters.Add("AdvertCampaign", argument.Item);
-        await _offcanvas.ShowAsync<AdvertCampaignSettingsPage>(title: "Настройки РК", parameters: parameters);
+        await _offcanvas.ShowAsync<AdvertSettingsPage>(title: "Настройки РК", parameters: parameters);
     }
 }

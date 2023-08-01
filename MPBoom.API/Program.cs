@@ -18,9 +18,9 @@ namespace MPBoom.API
 			builder.Services.AddSwaggerGen();
 
 			builder.Services.AddHttpClient();
-			builder.Services.AddScoped<AdvertCampaignsBidService>();
+			builder.Services.AddScoped<AdvertsBidService>();
 			builder.Services.AddSingleton<WildberriesService>();
-			builder.Services.AddSingleton<AdvertCampaignsLoaderService>();
+			builder.Services.AddSingleton<AdvertsLoaderService>();
 
 			var app = builder.Build();
 

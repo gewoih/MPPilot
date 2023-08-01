@@ -2,7 +2,7 @@
 
 namespace MPBoom.Core.Enums
 {
-	public enum AdvertCampaignType
+	public enum AdvertType
 	{
 		[Description("Карточка товара")]
 		ProductPage = 5,

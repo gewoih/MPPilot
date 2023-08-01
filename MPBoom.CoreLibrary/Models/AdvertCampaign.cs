@@ -25,8 +25,8 @@ namespace MPBoom.Core.Models
 		public double Frequency => UniqueViews > 0 ? TotalViews / UniqueViews : 0;
 		public double OrderCost => Orders > 0 ? TotalSpent / Orders : 0;
 		public double ConversionRate => Clicks > 0 ? Orders / Clicks * 100 : 0;
-		public AdvertCampaignType Type { get; set; }
-		public AdvertCampaignStatus Status { get; set; }
+		public AdvertType Type { get; set; }
+		public AdvertStatus Status { get; set; }
 		public DateTimeOffset CreatedDate { get; set; }
 		public DateTimeOffset LastUpdateDate { get; set; }
 		public DateTimeOffset StartDate { get; set; }
