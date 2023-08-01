@@ -50,7 +50,7 @@
     private List<PropertyInfo> _updatedProperties { get; set; }
     private Tabs _tabs = default!;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         _changedAdvertCampaign = AdvertCampaign.GetDeepCopy();
         _updatedProperties = new();
@@ -58,8 +58,12 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (_changedAdvertCampaign.AdvertId != AdvertCampaign.AdvertId)
+        {
+            _changedAdvertCampaign = AdvertCampaign.GetDeepCopy();
             await _tabs.ShowTabByIndexAsync(0);
+            StateHasChanged();
+        }
     }
 
     private async Task SaveChanges()
