@@ -31,7 +31,7 @@ namespace MPBoom.API
 				app.UseSwaggerUI();
 			}
 
-			app.UseHttpsRedirection();
+			//app.UseHttpsRedirection();
 			app.UseAuthorization();
 			app.MapControllers();
 
