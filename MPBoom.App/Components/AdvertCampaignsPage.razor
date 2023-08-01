@@ -1,18 +1,16 @@
 ﻿@page "/advertCampaigns";
 
+@using MPBoom.App.Components.Offcanvases;
 @using MPBoom.App.Domain.Interfaces;
 @using MPBoom.App.Domain.Models;
 @using MPBoom.App.Domain.Utils;
 @using MPBoom.Core.Models;
 @using MPBoom.Core.Services;
 
-@inject WildberriesService _wildberriesService;
-@inject ILocalStorageService _localStorageService;
-@inject IConfiguration _configuration;
-@inject ToastService _notificationsService;
-
 @if (!string.IsNullOrEmpty(_userSettings?.WildberriesApiKey))
 {
+    <Offcanvas @ref="_offcanvas" />
+
     <Grid 
         TItem="AdvertCampaign" 
         AllowSorting="true"
@@ -23,13 +21,15 @@
         Responsive="true"
         ItemsPerPageText="Тест"
         PageSizeSelectorItems=@(new int[] {5, 10, 50})
-        PaginationItemsTextFormat="{0}-{1} из {2} кампаний">
+        PaginationItemsTextFormat="{0}-{1} из {2} кампаний"
+        AllowRowClick="true"
+        OnRowClick="ShowAdvertCampaignSettings">
         
         <GridColumn TItem="AdvertCampaign" HeaderText="Тип" SortKeySelector="item => item.Type">@context.Type.GetDescription()</GridColumn>
 
         <GridColumn TItem="AdvertCampaign" HeaderText="Название" SortKeySelector="item => item.Name">@context.Name</GridColumn>
 
-        <GridColumn TItem="AdvertCampaign" HeaderText="Артикул товара" SortKeySelector="item => item.Products.FirstOrDefault().Article">@context.Products.FirstOrDefault()?.Article</GridColumn>
+        <GridColumn TItem="AdvertCampaign" HeaderText="Артикул товара" SortKeySelector="item => item.ProductArticle">@context.ProductArticle</GridColumn>
         
         <GridColumn TItem="AdvertCampaign" HeaderText="CPM" SortKeySelector="item => item.CPM">@(context.CPM)р.</GridColumn>
         
@@ -66,8 +66,21 @@
 }
 
 @code {
+    [Inject] 
+    private WildberriesService _wildberriesService { get; set; }
+    
+    [Inject] 
+    private ILocalStorageService _localStorageService { get; set; }
+    
+    [Inject] 
+    IConfiguration _configuration { get; set; }
+    
+    [Inject] 
+    ToastService _notificationsService { get; set; }
+    
     private UserSettings? _userSettings;
     private IEnumerable<AdvertCampaign> _advertCampaigns;
+    private Offcanvas _offcanvas = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -91,8 +104,15 @@
     private async Task<GridDataProviderResult<AdvertCampaign>> AdvertCampaignsDataProvider(GridDataProviderRequest<AdvertCampaign> request)
     {
         if (_advertCampaigns is null)
-            _advertCampaigns = await _wildberriesService.GetAdvertCampaignsAsync();
+            _advertCampaigns = await _wildberriesService.GetAdvertCampaignsAsync(count: 5);
 
         return await Task.FromResult(request.ApplyTo(_advertCampaigns));
+    }
+    
+    private async Task ShowAdvertCampaignSettings(GridRowEventArgs<AdvertCampaign> argument)
+    {
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("AdvertCampaign", argument.Item);
+        await _offcanvas.ShowAsync<AdvertCampaignSettings>(title: "Настройки РК", parameters: parameters);
     }
 }

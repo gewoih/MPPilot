@@ -1,0 +1,23 @@
+﻿@using MPBoom.App.Domain.Utils;
+@using MPBoom.Core.Models;
+@using System.Reflection;
+
+
+@foreach (var property in UpdatedProperties)
+{
+    <div class="row">
+        <div class="col-5 col-md-3 text-end">@property.Name:</div>
+        <div class="col-7 col-md-9">'@property.GetValue(OldCampaign)' изменено на '@property.GetValue(NewCampaign)'</div>
+    </div>
+}
+
+@code {
+    [Parameter] 
+    public AdvertCampaign OldCampaign { get; set; }
+
+    [Parameter]
+    public AdvertCampaign NewCampaign { get; set; }
+
+    [Parameter]
+    public List<PropertyInfo> UpdatedProperties { get; set; }
+}
