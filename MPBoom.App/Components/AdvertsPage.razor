@@ -37,10 +37,6 @@
 
         <GridColumn TItem="AdvertCampaign" HeaderText="Реал. позиция"></GridColumn>
 
-        <GridColumn TItem="AdvertCampaign" HeaderText="Дневной бюджет"></GridColumn>
-
-        <GridColumn TItem="AdvertCampaign" HeaderText="Остаток дневного бюджета "></GridColumn>
-
         <GridColumn TItem="AdvertCampaign" HeaderText="Общий остаток бюджета"></GridColumn>
 
         <GridColumn TItem="AdvertCampaign" HeaderText="Статус" SortKeySelector="item => item.Status">@context.Status.GetDescription()</GridColumn>
@@ -58,10 +54,6 @@
         <GridColumn TItem="AdvertCampaign" HeaderText="Стоимость заказа" SortKeySelector="item => item.OrderCost">@context.OrderCost</GridColumn>
 
         <GridColumn TItem="AdvertCampaign" HeaderText="Потрачено" SortKeySelector="item => item.TotalSpent">@context.TotalSpent</GridColumn>
-
-        <GridColumn TItem="AdvertCampaign" HeaderText="Состояние">
-            <Switch @bind-Value="@(context.IsEnabled)" Disabled="@(!context.IsAvailableToEnable)" />
-        </GridColumn>
     </Grid>
 }
 
