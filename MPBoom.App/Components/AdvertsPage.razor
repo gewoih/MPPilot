@@ -20,6 +20,7 @@
 
         <option value="@AdvertStatusFilters.All">Все</option>
         <option value="@AdvertStatusFilters.Active">Активные</option>
+        <option value="@AdvertStatusFilters.Paused">Приостановленные</option>
         <option value="@AdvertStatusFilters.Finished">Завершенные</option>
     </select>
 
@@ -28,6 +29,8 @@
         TItem="Advert" 
         AllowSorting="true"
         AllowPaging="true"
+        AllowFiltering="true"
+        EmptyText="Рекламные кампании не найдены:("
         PageSize="10"
         Class="table table-hover table-bordered table-striped" 
         DataProvider="@AdvertCampaignsDataProvider"
@@ -37,36 +40,36 @@
         PaginationItemsTextFormat="{0}-{1} из {2} кампаний"
         AllowRowClick="true"
         OnRowClick="ShowAdvertCampaignSettings">
-        
-        <GridColumn TItem="Advert" HeaderText="Тип" SortKeySelector="item => item.Type">@context.Type.GetDescription()</GridColumn>
 
-        <GridColumn TItem="Advert" HeaderText="Название" SortKeySelector="item => item.Name">@context.Name</GridColumn>
+        <GridColumn TItem="Advert" HeaderText="Тип" FilterOperator="FilterOperator.Contains" FilterTextboxWidth="80" PropertyName="TypeString" SortKeySelector="item => item.Type">@context.TypeString</GridColumn>
 
-        <GridColumn TItem="Advert" HeaderText="Артикул товара" SortKeySelector="item => item.ProductArticle">@context.ProductArticle</GridColumn>
-        
-        <GridColumn TItem="Advert" HeaderText="CPM" SortKeySelector="item => item.CPM">@(context.CPM)р.</GridColumn>
-        
-        <GridColumn TItem="Advert" HeaderText="Рек. позиция"></GridColumn>
+        <GridColumn TItem="Advert" HeaderText="Название" FilterOperator="FilterOperator.Contains" FilterTextboxWidth="80" PropertyName="Name" SortKeySelector="item => item.Name">@context.Name</GridColumn>
 
-        <GridColumn TItem="Advert" HeaderText="Реал. позиция"></GridColumn>
+        <GridColumn TItem="Advert" HeaderText="Артикул товара" FilterOperator="FilterOperator.Contains" FilterTextboxWidth="80" PropertyName="ProductArticle" SortKeySelector="item => item.ProductArticle">@context.ProductArticle</GridColumn>
 
-        <GridColumn TItem="Advert" HeaderText="Общий остаток бюджета"></GridColumn>
+        <GridColumn TItem="Advert" HeaderText="CPM" Filterable="false" SortKeySelector="item => item.CPM">@(context.CPM)р.</GridColumn>
 
-        <GridColumn TItem="Advert" HeaderText="Статус" SortKeySelector="item => item.Status">@context.Status.GetDescription()</GridColumn>
+        <GridColumn TItem="Advert" HeaderText="Рек. позиция" Filterable="false"></GridColumn>
 
-        <GridColumn TItem="Advert" HeaderText="Просмотры" SortKeySelector="item => item.TotalViews">@context.TotalViews</GridColumn>
+        <GridColumn TItem="Advert" HeaderText="Реал. позиция" Filterable="false"></GridColumn>
 
-        <GridColumn TItem="Advert" HeaderText="CTR" SortKeySelector="item => item.CTR">@context.CTR</GridColumn>
+        <GridColumn TItem="Advert" HeaderText="Общий остаток бюджета" Filterable="false"></GridColumn>
 
-        <GridColumn TItem="Advert" HeaderText="CPC" SortKeySelector="item => item.CPC">@context.CPC.ToString("0.00")</GridColumn>
+        <GridColumn TItem="Advert" HeaderText="Статус" Filterable="false" SortKeySelector="item => item.Status">@context.StatusString</GridColumn>
 
-        <GridColumn TItem="Advert" HeaderText="Кликов" SortKeySelector="item => item.Clicks">@context.Clicks</GridColumn>
+        <GridColumn TItem="Advert" HeaderText="Просмотры" Filterable="false" SortKeySelector="item => item.TotalViews">@context.TotalViews</GridColumn>
 
-        <GridColumn TItem="Advert" HeaderText="Заказов" SortKeySelector="item => item.Orders">@context.Orders</GridColumn>
+        <GridColumn TItem="Advert" HeaderText="CTR" Filterable="false" SortKeySelector="item => item.CTR">@context.CTR</GridColumn>
 
-        <GridColumn TItem="Advert" HeaderText="Стоимость заказа" SortKeySelector="item => item.OrderCost">@context.OrderCost</GridColumn>
+        <GridColumn TItem="Advert" HeaderText="CPC" Filterable="false" SortKeySelector="item => item.CPC">@context.CPC.ToString("0.00")</GridColumn>
 
-        <GridColumn TItem="Advert" HeaderText="Потрачено" SortKeySelector="item => item.TotalSpent">@context.TotalSpent</GridColumn>
+        <GridColumn TItem="Advert" HeaderText="Кликов" Filterable="false" SortKeySelector="item => item.Clicks">@context.Clicks</GridColumn>
+
+        <GridColumn TItem="Advert" HeaderText="Заказов" Filterable="false" SortKeySelector="item => item.Orders">@context.Orders</GridColumn>
+
+        <GridColumn TItem="Advert" HeaderText="Стоимость заказа" Filterable="false" SortKeySelector="item => item.OrderCost">@context.OrderCost</GridColumn>
+
+        <GridColumn TItem="Advert" HeaderText="Потрачено" Filterable="false" SortKeySelector="item => item.TotalSpent">@context.TotalSpent</GridColumn>
     </Grid>
 }
 

@@ -1,4 +1,5 @@
-﻿using MPBoom.Core.Enums;
+﻿using MPBoom.App.Domain.Utils;
+using MPBoom.Core.Enums;
 
 namespace MPBoom.Core.Models
 {
@@ -26,8 +27,10 @@ namespace MPBoom.Core.Models
 		public double OrderCost => Orders > 0 ? TotalSpent / Orders : 0;
 		public double ConversionRate => Clicks > 0 ? Orders / Clicks * 100 : 0;
 		public AdvertType Type { get; set; }
+		public string TypeString => Type.GetDescription();
 		public AdvertStatus Status { get; set; }
-		public DateTimeOffset CreatedDate { get; set; }
+		public string StatusString => Status.GetDescription();
+        public DateTimeOffset CreatedDate { get; set; }
 		public DateTimeOffset LastUpdateDate { get; set; }
 		public DateTimeOffset StartDate { get; set; }
 		public DateTimeOffset EndDate { get; set; }
