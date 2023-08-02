@@ -20,6 +20,11 @@ namespace MPBoom.App
 			builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
             builder.Services.AddSingleton<WildberriesService>();
 
+            builder.Services.AddSignalR(hubOptions =>
+            {
+                hubOptions.MaximumReceiveMessageSize = 10 * 1024 * 1024; // 10MB
+            });
+
             var app = builder.Build();
 
 			// Configure the HTTP request pipeline.

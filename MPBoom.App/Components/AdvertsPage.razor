@@ -33,7 +33,7 @@
         EmptyText="Рекламные кампании не найдены:("
         PageSize="10"
         Class="table table-hover table-bordered table-striped" 
-        DataProvider="@AdvertCampaignsDataProvider"
+        DataProvider="AdvertCampaignsDataProvider"
         Responsive="true"
         ItemsPerPageText="Тест"
         PageSizeSelectorItems=@(new int[] {5, 10, 50})
@@ -92,6 +92,7 @@
     private Offcanvas _offcanvas = default!;
     private Grid<Advert> _advertsGrid;
     private AdvertStatusFilters _advertsFilter;
+    private bool _isGridDataLoaded = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -108,7 +109,9 @@
         else
         {
             _wildberriesService.SetApiKey(_userSettings.WildberriesApiKey);
-            StateHasChanged();
+
+            if (!_isGridDataLoaded)
+                StateHasChanged();
         }
     }
 
@@ -116,11 +119,14 @@
     {
         if (_adverts is null)
         {
-            _adverts = await _wildberriesService.GetAdvertsAsync(count: 5);
+            _adverts = await _wildberriesService.GetAdvertsAsync(count: 10);
             _filteredAdverts = _adverts;
         }
 
-        return await Task.FromResult(request.ApplyTo(_filteredAdverts));
+        var result = await Task.FromResult(request.ApplyTo(_filteredAdverts));
+        _isGridDataLoaded = true;
+
+        return result;
     }
 
     private async Task ShowAdvertCampaignSettings(GridRowEventArgs<Advert> argument)
