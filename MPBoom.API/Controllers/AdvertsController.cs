@@ -64,7 +64,7 @@ namespace MPBoom.API.Controllers
 
 		[HttpPost]
 		[Route("changeCPM")]
-		public async Task<IActionResult> ChangeCPM([Required] AdvertCampaign advertCampaign, [Required] int newCPM)
+		public async Task<IActionResult> ChangeCPM([Required] Advert advertCampaign, [Required] int newCPM)
 		{
 			var result = await _wildberriesService.ChangeCPM(advertCampaign, newCPM);
 			return Ok(result);

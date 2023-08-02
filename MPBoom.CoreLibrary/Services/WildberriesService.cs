@@ -74,7 +74,7 @@ namespace MPBoom.Core.Services
 			return result.IsSuccessStatusCode;
 		}
 
-		public async Task<IEnumerable<AdvertCampaign>> GetAdvertsAsync(AdvertStatus? status = null, AdvertType? type = null, int? count = null)
+		public async Task<IEnumerable<Advert>> GetAdvertsAsync(AdvertStatus? status = null, AdvertType? type = null, int? count = null)
 		{
 			var advertCampaignsListQuery = GetAllAdvertsQuery(status, type, count);
 			var campaigns = await GetAdvertsFromJson(advertCampaignsListQuery);
@@ -85,7 +85,7 @@ namespace MPBoom.Core.Services
             return campaigns;
 		}
 		
-		public async Task<bool> ChangeCPM(AdvertCampaign advertCampaign, int newCPM)
+		public async Task<bool> ChangeCPM(Advert advertCampaign, int newCPM)
 		{
 			if (newCPM < 50)
 				throw new ArgumentException("Новое значение CPM должно быть > 50");
@@ -121,16 +121,16 @@ namespace MPBoom.Core.Services
 			return query;
 		}
 
-		private async Task<IEnumerable<AdvertCampaign>> GetAdvertsFromJson(string query)
+		private async Task<IEnumerable<Advert>> GetAdvertsFromJson(string query)
 		{
 			var result = await _httpClient.GetAsync(query);
 			var stringResult = await result.Content.ReadAsStringAsync();
 			var jArray = JsonConvert.DeserializeObject<JArray>(stringResult);
 
-			var advertCampaigns = new List<AdvertCampaign>();
+			var advertCampaigns = new List<Advert>();
 			foreach (var element in jArray)
 			{
-				var newCampaign = new AdvertCampaign
+				var newCampaign = new Advert
 				{
 					CreatedDate = DateTimeOffset.Parse(element.Value<string>("createTime"), CultureInfo.InvariantCulture, DateTimeStyles.None),
 					LastUpdateDate = DateTimeOffset.Parse(element.Value<string>("changeTime"), CultureInfo.InvariantCulture, DateTimeStyles.None),
@@ -150,7 +150,7 @@ namespace MPBoom.Core.Services
 			return advertCampaigns;
 		}
 
-		private async Task FillUpAdvertsInfo(IEnumerable<AdvertCampaign> campaigns)
+		private async Task FillUpAdvertsInfo(IEnumerable<Advert> campaigns)
 		{
 			var jObjects = await GetJObjectsByHttpQueries(campaigns, _getInfoUrl);
 			foreach (var jObject in jObjects)
@@ -179,7 +179,7 @@ namespace MPBoom.Core.Services
 			}
 		}
 
-		private async Task FillUpAdvertsKeywords(IEnumerable<AdvertCampaign> campaigns)
+		private async Task FillUpAdvertsKeywords(IEnumerable<Advert> campaigns)
 		{
 			var jObjects = await GetJObjectsByHttpQueries(campaigns, _getKeywordsUrl);
 			foreach (var jObject in jObjects)
@@ -195,7 +195,7 @@ namespace MPBoom.Core.Services
 			}
 		}
 
-		private async Task FillUpAdvertsStatistics(IEnumerable<AdvertCampaign> campaigns)
+		private async Task FillUpAdvertsStatistics(IEnumerable<Advert> campaigns)
 		{
             var jObjects = await GetJObjectsByHttpQueries(campaigns, _getFullStatUrl);
             foreach (var jObject in jObjects)
@@ -214,7 +214,7 @@ namespace MPBoom.Core.Services
             }
         }
 
-		private async Task<List<JObject>> GetJObjectsByHttpQueries(IEnumerable<AdvertCampaign> campaigns, string url)
+		private async Task<List<JObject>> GetJObjectsByHttpQueries(IEnumerable<Advert> campaigns, string url)
 		{
 			var httpTasks = new List<Task<HttpResponseMessage>>();
 			foreach (var advertCampaign in campaigns)

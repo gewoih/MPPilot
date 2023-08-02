@@ -7,7 +7,7 @@ namespace MPBoom.Core.Services
 {
 	public class AdvertsLoaderService
 	{
-		private readonly Dictionary<string, List<AdvertCampaign>> _advertCampaigns;
+		private readonly Dictionary<string, List<Advert>> _advertCampaigns;
 		private readonly WildberriesService _wbService;
 		private readonly ILogger<AdvertsLoaderService> _logger;
 		private readonly TimeSpan _updateInterval;
@@ -26,7 +26,7 @@ namespace MPBoom.Core.Services
 		{
 			if (!_advertCampaigns.ContainsKey(apiKey))
 			{
-				_advertCampaigns[apiKey] = new List<AdvertCampaign>();
+				_advertCampaigns[apiKey] = new List<Advert>();
 				_logger.LogInformation("Был добавлен новый API-ключ для автоматического обновления рекламных кампаний.");
 
 				return true;
@@ -40,12 +40,12 @@ namespace MPBoom.Core.Services
 			return _advertCampaigns.ContainsKey(apiKey);
 		}
 
-		public List<AdvertCampaign> GetAdvertCampaigns(string apiKey)
+		public List<Advert> GetAdvertCampaigns(string apiKey)
 		{
 			if (_advertCampaigns.ContainsKey(apiKey))
 				return _advertCampaigns[apiKey];
 			else
-				return new List<AdvertCampaign>();
+				return new List<Advert>();
 		}
 
 		private async Task StartUpdateCampaigns()
@@ -66,7 +66,7 @@ namespace MPBoom.Core.Services
 						_wbService.SetApiKey(apiKey);
 
 						var advertCampaigns = await _wbService.GetAdvertsAsync();
-						_advertCampaigns[apiKey] = new List<AdvertCampaign>(advertCampaigns);
+						_advertCampaigns[apiKey] = new List<Advert>(advertCampaigns);
 					}
 
 					_logger.LogInformation($"Обновление рекламных кампаний завершено за {generalStopWatch.Elapsed}");
