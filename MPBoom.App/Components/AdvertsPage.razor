@@ -1,23 +1,36 @@
 ﻿@page "/advertCampaigns";
-
-@using MPBoom.App.Components.Offcanvases;
+@using MPBoom.App.Domain.Enums;
 @using MPBoom.App.Domain.Interfaces;
-@using MPBoom.App.Domain.Models;
-@using MPBoom.App.Domain.Utils;
+@using MPBoom.Core.Enums;
 @using MPBoom.Core.Models;
 @using MPBoom.Core.Services;
+@using MPBoom.App.Components.Offcanvases;
+@using MPBoom.App.Domain.Models;
+@using MPBoom.App.Domain.Utils;
+@using MPBoom.App.Domain;
 
 @if (!string.IsNullOrEmpty(_userSettings?.WildberriesApiKey))
 {
     <Offcanvas @ref="_offcanvas" Size="OffcanvasSize.Large" />
 
+    <label>Показать:</label>
+    <select
+            @onchange="FilterAdvertsByStatus"
+            style="width: 200px">
+
+        <option value="@AdvertStatusFilters.All">Все</option>
+        <option value="@AdvertStatusFilters.Active">Активные</option>
+        <option value="@AdvertStatusFilters.Finished">Завершенные</option>
+    </select>
+
     <Grid 
-        TItem="AdvertCampaign" 
+        @ref="_advertsGrid"
+        TItem="Advert" 
         AllowSorting="true"
         AllowPaging="true"
         PageSize="10"
         Class="table table-hover table-bordered table-striped" 
-        DataProvider="AdvertCampaignsDataProvider" 
+        DataProvider="@AdvertCampaignsDataProvider"
         Responsive="true"
         ItemsPerPageText="Тест"
         PageSizeSelectorItems=@(new int[] {5, 10, 50})
@@ -25,35 +38,35 @@
         AllowRowClick="true"
         OnRowClick="ShowAdvertCampaignSettings">
         
-        <GridColumn TItem="AdvertCampaign" HeaderText="Тип" SortKeySelector="item => item.Type">@context.Type.GetDescription()</GridColumn>
+        <GridColumn TItem="Advert" HeaderText="Тип" SortKeySelector="item => item.Type">@context.Type.GetDescription()</GridColumn>
 
-        <GridColumn TItem="AdvertCampaign" HeaderText="Название" SortKeySelector="item => item.Name">@context.Name</GridColumn>
+        <GridColumn TItem="Advert" HeaderText="Название" SortKeySelector="item => item.Name">@context.Name</GridColumn>
 
-        <GridColumn TItem="AdvertCampaign" HeaderText="Артикул товара" SortKeySelector="item => item.ProductArticle">@context.ProductArticle</GridColumn>
+        <GridColumn TItem="Advert" HeaderText="Артикул товара" SortKeySelector="item => item.ProductArticle">@context.ProductArticle</GridColumn>
         
-        <GridColumn TItem="AdvertCampaign" HeaderText="CPM" SortKeySelector="item => item.CPM">@(context.CPM)р.</GridColumn>
+        <GridColumn TItem="Advert" HeaderText="CPM" SortKeySelector="item => item.CPM">@(context.CPM)р.</GridColumn>
         
-        <GridColumn TItem="AdvertCampaign" HeaderText="Рек. позиция"></GridColumn>
+        <GridColumn TItem="Advert" HeaderText="Рек. позиция"></GridColumn>
 
-        <GridColumn TItem="AdvertCampaign" HeaderText="Реал. позиция"></GridColumn>
+        <GridColumn TItem="Advert" HeaderText="Реал. позиция"></GridColumn>
 
-        <GridColumn TItem="AdvertCampaign" HeaderText="Общий остаток бюджета"></GridColumn>
+        <GridColumn TItem="Advert" HeaderText="Общий остаток бюджета"></GridColumn>
 
-        <GridColumn TItem="AdvertCampaign" HeaderText="Статус" SortKeySelector="item => item.Status">@context.Status.GetDescription()</GridColumn>
+        <GridColumn TItem="Advert" HeaderText="Статус" SortKeySelector="item => item.Status">@context.Status.GetDescription()</GridColumn>
 
-        <GridColumn TItem="AdvertCampaign" HeaderText="Просмотры" SortKeySelector="item => item.TotalViews">@context.TotalViews</GridColumn>
+        <GridColumn TItem="Advert" HeaderText="Просмотры" SortKeySelector="item => item.TotalViews">@context.TotalViews</GridColumn>
 
-        <GridColumn TItem="AdvertCampaign" HeaderText="CTR" SortKeySelector="item => item.CTR">@context.CTR</GridColumn>
+        <GridColumn TItem="Advert" HeaderText="CTR" SortKeySelector="item => item.CTR">@context.CTR</GridColumn>
 
-        <GridColumn TItem="AdvertCampaign" HeaderText="CPC" SortKeySelector="item => item.CPC">@context.CPC.ToString("0.00")</GridColumn>
+        <GridColumn TItem="Advert" HeaderText="CPC" SortKeySelector="item => item.CPC">@context.CPC.ToString("0.00")</GridColumn>
 
-        <GridColumn TItem="AdvertCampaign" HeaderText="Кликов" SortKeySelector="item => item.Clicks">@context.Clicks</GridColumn>
+        <GridColumn TItem="Advert" HeaderText="Кликов" SortKeySelector="item => item.Clicks">@context.Clicks</GridColumn>
 
-        <GridColumn TItem="AdvertCampaign" HeaderText="Заказов" SortKeySelector="item => item.Orders">@context.Orders</GridColumn>
+        <GridColumn TItem="Advert" HeaderText="Заказов" SortKeySelector="item => item.Orders">@context.Orders</GridColumn>
 
-        <GridColumn TItem="AdvertCampaign" HeaderText="Стоимость заказа" SortKeySelector="item => item.OrderCost">@context.OrderCost</GridColumn>
+        <GridColumn TItem="Advert" HeaderText="Стоимость заказа" SortKeySelector="item => item.OrderCost">@context.OrderCost</GridColumn>
 
-        <GridColumn TItem="AdvertCampaign" HeaderText="Потрачено" SortKeySelector="item => item.TotalSpent">@context.TotalSpent</GridColumn>
+        <GridColumn TItem="Advert" HeaderText="Потрачено" SortKeySelector="item => item.TotalSpent">@context.TotalSpent</GridColumn>
     </Grid>
 }
 
@@ -71,8 +84,11 @@
     ToastService _notificationsService { get; set; }
 
     private UserSettings? _userSettings;
-    private IEnumerable<AdvertCampaign> _advertCampaigns;
+    private IEnumerable<Advert> _adverts;
+    private IEnumerable<Advert> _filteredAdverts;
     private Offcanvas _offcanvas = default!;
+    private Grid<Advert> _advertsGrid;
+    private AdvertStatusFilters _advertsFilter;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -80,11 +96,11 @@
         if (string.IsNullOrEmpty(_userSettings?.WildberriesApiKey))
         {
             _notificationsService.Notify(new ToastMessage
-            {
-                Message = "Для работы с этой страницей установите API-ключ для Wildberries в настройках",
-                Title = "Не установлен API-ключ",
-                Type = ToastType.Warning
-            });
+                {
+                    Message = "Для работы с этой страницей установите API-ключ для Wildberries в настройках",
+                    Title = "Не установлен API-ключ",
+                    Type = ToastType.Warning
+                });
         }
         else
         {
@@ -93,18 +109,35 @@
         }
     }
 
-    private async Task<GridDataProviderResult<AdvertCampaign>> AdvertCampaignsDataProvider(GridDataProviderRequest<AdvertCampaign> request)
+    private async Task<GridDataProviderResult<Advert>> AdvertCampaignsDataProvider(GridDataProviderRequest<Advert> request)
     {
-        if (_advertCampaigns is null)
-            _advertCampaigns = await _wildberriesService.GetAdvertsAsync(count: 5);
+        if (_adverts is null)
+        {
+            _adverts = await _wildberriesService.GetAdvertsAsync(count: 5);
+            _filteredAdverts = _adverts;
+        }
 
-        return await Task.FromResult(request.ApplyTo(_advertCampaigns));
+        return await Task.FromResult(request.ApplyTo(_filteredAdverts));
     }
 
-    private async Task ShowAdvertCampaignSettings(GridRowEventArgs<AdvertCampaign> argument)
+    private async Task ShowAdvertCampaignSettings(GridRowEventArgs<Advert> argument)
     {
         var parameters = new Dictionary<string, object>();
         parameters.Add("AdvertCampaign", argument.Item);
         await _offcanvas.ShowAsync<AdvertSettingsPage>(title: "Настройки РК", parameters: parameters);
+    }
+
+    private async Task FilterAdvertsByStatus(ChangeEventArgs e)
+    {
+        var filter = (AdvertStatusFilters)Enum.Parse(typeof(AdvertStatusFilters), e.Value.ToString());
+
+        if (filter == AdvertStatusFilters.All)
+            _filteredAdverts = _adverts;
+        else if (filter == AdvertStatusFilters.Active)
+            _filteredAdverts = _adverts.Where(advert => advert.Status == AdvertStatus.Ready || advert.Status == AdvertStatus.InProgress);
+        else if (filter == AdvertStatusFilters.Finished)
+            _filteredAdverts = _adverts.Where(advert => advert.Status == AdvertStatus.Finished);
+
+        await _advertsGrid.RefreshDataAsync();
     }
 }

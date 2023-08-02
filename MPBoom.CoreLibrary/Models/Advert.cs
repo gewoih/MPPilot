@@ -2,7 +2,7 @@
 
 namespace MPBoom.Core.Models
 {
-	public class AdvertCampaign
+	public class Advert
 	{
         public int AdvertId { get; set; }
 		public string Name { get; set; }
