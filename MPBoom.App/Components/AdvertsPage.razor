@@ -135,6 +135,8 @@
             _filteredAdverts = _adverts;
         else if (filter == AdvertStatusFilters.Active)
             _filteredAdverts = _adverts.Where(advert => advert.Status == AdvertStatus.Ready || advert.Status == AdvertStatus.InProgress);
+        else if (filter == AdvertStatusFilters.Paused)
+            _filteredAdverts = _adverts.Where(advert => advert.Status == AdvertStatus.Stopped);
         else if (filter == AdvertStatusFilters.Finished)
             _filteredAdverts = _adverts.Where(advert => advert.Status == AdvertStatus.Finished);
 

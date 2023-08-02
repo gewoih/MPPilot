@@ -4,6 +4,7 @@
     {
         All,
         Active,
+        Paused,
         Finished
     }
 }
