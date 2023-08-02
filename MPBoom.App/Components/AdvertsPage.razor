@@ -13,16 +13,24 @@
 {
     <Offcanvas @ref="_offcanvas" Size="OffcanvasSize.Large" />
 
-    <label>Показать:</label>
-    <select
-            @onchange="FilterAdvertsByStatus"
-            style="width: 200px">
+    <div>
+        <label>Показать:</label>
+        <select
+                @onchange="FilterAdvertsByStatus"
+                style="width: 200px">
 
-        <option value="@AdvertStatusFilters.All">Все</option>
-        <option value="@AdvertStatusFilters.Active">Активные</option>
-        <option value="@AdvertStatusFilters.Paused">Приостановленные</option>
-        <option value="@AdvertStatusFilters.Finished">Завершенные</option>
-    </select>
+            <option value="@AdvertStatusFilters.All">Все</option>
+            <option value="@AdvertStatusFilters.Active">Активные</option>
+            <option value="@AdvertStatusFilters.Paused">Приостановленные</option>
+            <option value="@AdvertStatusFilters.Finished">Завершенные</option>
+        </select>
+
+        <Tooltip Title="Обновить данные" @onclick="UpdateAdverts" role="button">
+            <i class="bi bi-arrow-repeat text-danger"></i>
+        </Tooltip>
+
+        <label>Данные актуальны на: @_advertsUpdatedDate.ToString("dd-MM-yyyy HH:mm:ss")</label>
+    </div>
 
     <Grid 
         @ref="_advertsGrid"
@@ -93,6 +101,7 @@
     private Grid<Advert> _advertsGrid;
     private AdvertStatusFilters _advertsFilter;
     private bool _isGridDataLoaded = false;
+    private DateTimeOffset _advertsUpdatedDate = DateTimeOffset.Now;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -117,10 +126,11 @@
 
     private async Task<GridDataProviderResult<Advert>> AdvertCampaignsDataProvider(GridDataProviderRequest<Advert> request)
     {
-        if (_adverts is null)
+        if (_adverts == null)
         {
             _adverts = await _wildberriesService.GetAdvertsAsync(count: 10);
             _filteredAdverts = _adverts;
+            _advertsUpdatedDate = DateTimeOffset.Now;
         }
 
         var result = await Task.FromResult(request.ApplyTo(_filteredAdverts));
@@ -149,6 +159,12 @@
         else if (filter == AdvertStatusFilters.Finished)
             _filteredAdverts = _adverts.Where(advert => advert.Status == AdvertStatus.Finished);
 
+        await _advertsGrid.RefreshDataAsync();
+    }
+
+    private async Task UpdateAdverts()
+    {
+        _adverts = null;
         await _advertsGrid.RefreshDataAsync();
     }
 }
