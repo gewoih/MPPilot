@@ -9,6 +9,7 @@ namespace MPBoom.Core.Models
 		public string Keyword { get; set; }
 		public string ProductArticle { get; set; }
 		public int CategoryId { get; set; }
+
 		public int BudgetSize { get; set; }
 		public int CPM { get; set; }
 		public bool IsEnabled { get; set; }
