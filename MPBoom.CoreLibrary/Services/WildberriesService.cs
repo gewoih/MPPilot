@@ -36,13 +36,10 @@ namespace MPBoom.Core.Services
 
 		public async Task<bool> ChangeAdvertKeyword(int advertId, string newKeyword)
 		{
-			var data = new
-			{
-				pluse = Array.Empty<string>()
-            };
+			var data = new { pluse = Array.Empty<string>() };
 
 			if (!string.IsNullOrEmpty(newKeyword))
-				data.pluse.SetValue(newKeyword, 0);
+				data = new { pluse = new string[] { newKeyword } };
 
 			var serializedData = JsonConvert.SerializeObject(data);
 			var content = new StringContent(serializedData, Encoding.UTF8, "application/json");
@@ -216,7 +213,7 @@ namespace MPBoom.Core.Services
 			{
 				if (jObject is not null && jObject["words"].Value<JObject>().ContainsKey("pluse"))
 				{
-					if (jObject["words"]["pluse"].HasValues)
+					if (jObject["words"]["pluse"].HasValues && jObject["stat"].HasValues)
 					{
 						var findedCampaign = campaigns.First(campaign => campaign.AdvertId == jObject["stat"][0]["advertId"].Value<int>());
 						findedCampaign.Keyword = jObject["words"]["pluse"][0].Value<string>();
