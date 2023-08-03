@@ -38,8 +38,11 @@ namespace MPBoom.Core.Services
 		{
 			var data = new
 			{
-				pluse = new string[] { newKeyword }
-			};
+				pluse = Array.Empty<string>()
+            };
+
+			if (!string.IsNullOrEmpty(newKeyword))
+				data.pluse.SetValue(newKeyword, 0);
 
 			var serializedData = JsonConvert.SerializeObject(data);
 			var content = new StringContent(serializedData, Encoding.UTF8, "application/json");
