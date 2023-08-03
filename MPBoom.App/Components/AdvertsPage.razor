@@ -1,6 +1,7 @@
 ﻿@page "/advertCampaigns";
 @using MPBoom.App.Components.Offcanvases;
 @using MPBoom.Domain.Enums;
+@using MPBoom.Domain.Exceptions;
 @using MPBoom.Domain.Interfaces;
 @using MPBoom.Domain.Models;
 @using MPBoom.Domain.Services;
@@ -109,17 +110,31 @@
 
     private async Task<GridDataProviderResult<Advert>> AdvertCampaignsDataProvider(GridDataProviderRequest<Advert> request)
     {
-        if (_adverts == null)
+        try
         {
-            _adverts = await _wildberriesService.GetAdvertsAsync(count: 10);
-            _filteredAdverts = _adverts;
-            _advertsUpdatedDate = DateTimeOffset.Now;
+            if (_adverts == null)
+            {
+                _adverts = await _wildberriesService.GetAdvertsAsync(count: 10);
+                _filteredAdverts = _adverts;
+                _advertsUpdatedDate = DateTimeOffset.Now;
+            }
+
+            var result = await Task.FromResult(request.ApplyTo(_filteredAdverts));
+            _isGridDataLoaded = true;
+
+            return result;
         }
+        catch (InvalidApiKeyException ex)
+        {
+            _notificationsService.Notify(new ToastMessage()
+                {
+                    Type = ToastType.Danger,
+                    Title = "Ошибка доступа к Wildberries",
+                    Message = "Задан некорректный API-ключ для Wildberries. Пожалуйста, проверьте корректность настроек."
+                });
 
-        var result = await Task.FromResult(request.ApplyTo(_filteredAdverts));
-        _isGridDataLoaded = true;
-
-        return result;
+            return null;
+        }
     }
 
     private async Task ShowAdvertCampaignSettings(GridRowEventArgs<Advert> argument)

@@ -1,4 +1,5 @@
 ﻿using MPBoom.Domain.Enums;
+using MPBoom.Domain.Exceptions;
 using MPBoom.Domain.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,6 +20,7 @@ namespace MPBoom.Domain.Services
 		private const string _pauseAdvertUrl = "https://advert-api.wb.ru/adv/v0/pause";
 		private const string _renameAdvertUrl = "https://advert-api.wb.ru/adv/v0/rename";
 		private const string _changeAdvertKeywordUrl = "https://advert-api.wb.ru/adv/v1/search/set-plus";
+		private const string _invalidApiKeyMessage = "Задан некорректный API-ключ";
 		private readonly HttpClient _httpClient;
 
 		public WildberriesService(IHttpClientFactory httpClientFactory)
@@ -46,8 +48,10 @@ namespace MPBoom.Domain.Services
 			var result = await _httpClient.PostAsync(query, content);
 			if (result.StatusCode == HttpStatusCode.BadRequest)
 				throw new ArgumentException($"Произошла ошибка при изменении ключевой фразы. {nameof(newKeyword)} = '{newKeyword}'");
+            else if (result.StatusCode == HttpStatusCode.Unauthorized)
+                throw new InvalidApiKeyException(_invalidApiKeyMessage);
 
-			return result.IsSuccessStatusCode;
+            return result.IsSuccessStatusCode;
 		}
 
 		public async Task<bool> ChangeKeywordModeStatus(int advertId, bool enabled)
@@ -56,8 +60,10 @@ namespace MPBoom.Domain.Services
 			var result = await _httpClient.GetAsync(query);
 			if (result.StatusCode == HttpStatusCode.BadRequest)
 				throw new ArgumentException($"Произошла ошибка при изменении статуса режима ключевых фраз.");
+            else if (result.StatusCode == HttpStatusCode.Unauthorized)
+                throw new InvalidApiKeyException(_invalidApiKeyMessage);
 
-			return result.IsSuccessStatusCode;
+            return result.IsSuccessStatusCode;
 		}
 
 		public async Task<bool> RenameAdvert(int advertId, string name)
@@ -77,8 +83,10 @@ namespace MPBoom.Domain.Services
 			var result = await _httpClient.PostAsync(_renameAdvertUrl, content);
 			if (result.StatusCode == HttpStatusCode.BadRequest)
 				throw new ArgumentException($"Неверный формат запроса для изменения названия РК. {nameof(advertId)}={advertId}; {nameof(name)}={name}");
+            else if (result.StatusCode == HttpStatusCode.Unauthorized)
+                throw new InvalidApiKeyException(_invalidApiKeyMessage);
 
-			return result.IsSuccessStatusCode;
+            return result.IsSuccessStatusCode;
 		}
 
 		public async Task<bool> ChangeAdvertStatus(int advertId, AdvertStatus newStatus)
@@ -95,19 +103,28 @@ namespace MPBoom.Domain.Services
 
 			if (result.StatusCode == HttpStatusCode.BadRequest)
 				throw new ArgumentException($"Передан некорректный ID рекламной кампании: '{advertId}'");
+			else if (result.StatusCode == HttpStatusCode.Unauthorized)
+				throw new InvalidApiKeyException(_invalidApiKeyMessage);
 
 			return result.IsSuccessStatusCode;
 		}
 
 		public async Task<IEnumerable<Advert>> GetAdvertsAsync(AdvertStatus? status = null, AdvertType? type = null, int? count = null)
 		{
-			var advertCampaignsListQuery = GetAllAdvertsQuery(status, type, count);
-			var campaigns = await GetAdvertsFromJson(advertCampaignsListQuery);
-			await FillUpAdvertsInfo(campaigns);
-			await FillUpAdvertsKeywords(campaigns);
-			await FillUpAdvertsStatistics(campaigns);
+			try
+			{
+				var advertCampaignsListQuery = GetAllAdvertsQuery(status, type, count);
+				var campaigns = await GetAdvertsFromJson(advertCampaignsListQuery);
+				await FillUpAdvertsInfo(campaigns);
+				await FillUpAdvertsKeywords(campaigns);
+				await FillUpAdvertsStatistics(campaigns);
 
-			return campaigns;
+				return campaigns;
+			}
+			catch (InvalidApiKeyException)
+			{
+				throw;
+			}
 		}
 
 		public async Task<bool> ChangeCPM(Advert advertCampaign, int newCPM)
@@ -127,8 +144,11 @@ namespace MPBoom.Domain.Services
 			var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
 
 			var response = await _httpClient.PostAsync(_changeAdvertCPMUrl, content);
+
 			if (response.StatusCode == HttpStatusCode.BadRequest)
 				throw new ArgumentException("Некорректно переданы параметры для изменения CPM");
+			else if (response.StatusCode == HttpStatusCode.Unauthorized)
+				throw new InvalidApiKeyException(_invalidApiKeyMessage);
 
 			return response.IsSuccessStatusCode;
 		}
@@ -149,6 +169,12 @@ namespace MPBoom.Domain.Services
 		private async Task<IEnumerable<Advert>> GetAdvertsFromJson(string query)
 		{
 			var result = await _httpClient.GetAsync(query);
+
+			if (result.StatusCode == HttpStatusCode.Unauthorized)
+				throw new InvalidApiKeyException(_invalidApiKeyMessage);
+
+			result.EnsureSuccessStatusCode();
+
 			var stringResult = await result.Content.ReadAsStringAsync();
 			var jArray = JsonConvert.DeserializeObject<JArray>(stringResult);
 
@@ -252,7 +278,14 @@ namespace MPBoom.Domain.Services
 			var jObjects = new List<JObject>();
 			foreach (var task in httpTasks)
 			{
-				var stringResult = await task.Result.Content.ReadAsStringAsync();
+				var result = await task;
+
+				if (result.StatusCode == HttpStatusCode.Unauthorized)
+					throw new InvalidApiKeyException(_invalidApiKeyMessage);
+
+				result.EnsureSuccessStatusCode();
+
+				var stringResult = await result.Content.ReadAsStringAsync();
 				if (!string.IsNullOrEmpty(stringResult) && task.Result.IsSuccessStatusCode)
 					jObjects.Add(JsonConvert.DeserializeObject<JObject>(stringResult));
 			}
