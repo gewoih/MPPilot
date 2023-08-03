@@ -1,11 +1,10 @@
 ﻿using BlazorBootstrap;
-using MPBoom.App.Domain.Interfaces;
-using MPBoom.App.Domain.Services;
-using MPBoom.Core.Services;
+using MPBoom.Domain.Interfaces;
+using MPBoom.Domain.Services;
 
 namespace MPBoom.App
 {
-    public class Program
+	public class Program
     {
         public static void Main(string[] args)
         {

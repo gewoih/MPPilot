@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace MPBoom.Core.Enums
+namespace MPBoom.Domain.Enums
 {
 	public enum AdvertStatus
 	{

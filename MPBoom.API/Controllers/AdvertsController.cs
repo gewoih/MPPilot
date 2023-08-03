@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MPBoom.Core.Enums;
-using MPBoom.Core.Models;
-using MPBoom.Core.Services;
+using MPBoom.Domain.Enums;
+using MPBoom.Domain.Models;
+using MPBoom.Domain.Services;
 using System.ComponentModel.DataAnnotations;
 
 namespace MPBoom.API.Controllers
@@ -10,17 +10,14 @@ namespace MPBoom.API.Controllers
 	[ApiController]
 	public class AdvertsController : ControllerBase
 	{
-		private readonly AdvertsLoaderService _advertPricesLoaderService;
 		private readonly AdvertsBidService _advertBidService;
 		private readonly WildberriesService _wildberriesService;
 		private const string _apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NJRCI6IjExYTEzYjJhLTBjY2ItNDhhYS04NjE1LTYyNDg3NmY4MzdjZSJ9.0Lhiz7X_SjLE-kOqXEJ7BEIVdH673sbpVMfuV9VyX5M";
 
 		public AdvertsController(
-			AdvertsLoaderService advertPricesLoaderService,
 			AdvertsBidService advertCampaignsBidService,
 			WildberriesService wildberriesService)
 		{
-			_advertPricesLoaderService = advertPricesLoaderService;
 			_advertBidService = advertCampaignsBidService;
 			_wildberriesService = wildberriesService;
 
@@ -32,23 +29,6 @@ namespace MPBoom.API.Controllers
 		public async Task<IActionResult> GetAverageCPM([Required] string keyword)
 		{
 			return Ok(await _advertBidService.GetAverageCPM(keyword));
-		}
-
-		[HttpPost]
-		[Route("addSeller")]
-		public async Task<IActionResult> AddSeller()
-		{
-			if (_advertPricesLoaderService.AddSellerKey(_apiKey))
-				return Ok("Новый поставщик успешно добавлен.");
-			else
-				return Ok("Такой поставщик уже существует.");
-		}
-
-		[HttpGet]
-		[Route("getAdvertCampaigns")]
-		public async Task<IActionResult> GetAdvertCampaigns()
-		{
-			return Ok(_advertPricesLoaderService.GetAdvertCampaigns(_apiKey));
 		}
 
 		[HttpGet]
@@ -85,20 +65,5 @@ namespace MPBoom.API.Controllers
 			var result = await _wildberriesService.RenameAdvert(advertId, name);
 			return Ok(result);
 		}
-
-        [HttpPost]
-        [Route("changeAdvertKeyword")]
-        public async Task<IActionResult> ChangeAdvertKeyword([Required] int advertId, string keyword = null)
-        {
-			var keywordsModeEnabled = true;
-            var result = await _wildberriesService.ChangeAdvertKeyword(advertId, keyword);
-
-			if (string.IsNullOrEmpty(keyword))
-				keywordsModeEnabled = false;
-
-            _ = await _wildberriesService.ChangeKeywordModeStatus(advertId, keywordsModeEnabled);
-
-            return Ok(result);
-        }
-    }
+	}
 }

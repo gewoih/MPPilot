@@ -1,4 +1,4 @@
-﻿namespace MPBoom.Core.Models
+﻿namespace MPBoom.Domain.Models
 {
 	public class AdvertSearchPosition
 	{

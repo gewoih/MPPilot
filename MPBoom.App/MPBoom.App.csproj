@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MPBoom.CoreLibrary\MPBoom.Core.csproj" />
+    <ProjectReference Include="..\MPBoom.Domain\MPBoom.Domain.csproj" />
   </ItemGroup>
 
 </Project>

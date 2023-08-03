@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MPBoom.API", "MPBoom.API\MP
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MPBoom.App", "MPBoom.App\MPBoom.App.csproj", "{FAADF72B-C162-415B-B5E2-FFF69D14B90C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MPBoom.Core", "MPBoom.CoreLibrary\MPBoom.Core.csproj", "{62E9F8C9-CEA9-4D86-A474-7F2BD46FAED0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MPBoom.Domain", "MPBoom.Domain\MPBoom.Domain.csproj", "{62E9F8C9-CEA9-4D86-A474-7F2BD46FAED0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

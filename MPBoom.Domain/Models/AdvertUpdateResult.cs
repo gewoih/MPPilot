@@ -1,4 +1,4 @@
-﻿namespace MPBoom.App.Domain.Models
+﻿namespace MPBoom.Domain.Models
 {
 	public class AdvertUpdateResult
 	{

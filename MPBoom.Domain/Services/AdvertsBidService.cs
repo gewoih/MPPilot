@@ -1,8 +1,8 @@
-﻿using MPBoom.Core.Models;
+﻿using MPBoom.Domain.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace MPBoom.Core.Services
+namespace MPBoom.Domain.Services
 {
 	public class AdvertsBidService : IDisposable
 	{

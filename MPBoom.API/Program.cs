@@ -1,4 +1,4 @@
-using MPBoom.Core.Services;
+using MPBoom.Domain.Services;
 using System.Text;
 
 namespace MPBoom.API
@@ -19,8 +19,7 @@ namespace MPBoom.API
 
 			builder.Services.AddHttpClient();
 			builder.Services.AddScoped<AdvertsBidService>();
-			builder.Services.AddSingleton<WildberriesService>();
-			builder.Services.AddSingleton<AdvertsLoaderService>();
+			builder.Services.AddScoped<WildberriesService>();
 
 			var app = builder.Build();
 

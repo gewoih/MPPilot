@@ -1,12 +1,12 @@
-﻿using MPBoom.Core.Enums;
-using MPBoom.Core.Models;
+﻿using MPBoom.Domain.Enums;
+using MPBoom.Domain.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Globalization;
 using System.Net;
 using System.Text;
 
-namespace MPBoom.Core.Services
+namespace MPBoom.Domain.Services
 {
 	public class WildberriesService : IDisposable
 	{
@@ -17,11 +17,9 @@ namespace MPBoom.Core.Services
 		private const string _changeAdvertCPMUrl = "https://advert-api.wb.ru/adv/v0/cpm";
 		private const string _startAdvertUrl = "https://advert-api.wb.ru/adv/v0/start";
 		private const string _pauseAdvertUrl = "https://advert-api.wb.ru/adv/v0/pause";
-		private const string _stopAdvertUrl = "https://advert-api.wb.ru/adv/v0/stop";
-		private const string _depositToAdvertUrl = "https://advert-api.wb.ru/adv/v1/budget/deposit";
 		private const string _renameAdvertUrl = "https://advert-api.wb.ru/adv/v0/rename";
 		private const string _changeAdvertKeywordUrl = "https://advert-api.wb.ru/adv/v1/search/set-plus";
-        private readonly HttpClient _httpClient;
+		private readonly HttpClient _httpClient;
 
 		public WildberriesService(IHttpClientFactory httpClientFactory)
 		{
@@ -54,13 +52,13 @@ namespace MPBoom.Core.Services
 
 		public async Task<bool> ChangeKeywordModeStatus(int advertId, bool enabled)
 		{
-            var query = $"{_changeAdvertKeywordUrl}?id={advertId}&fixed={enabled}";
-            var result = await _httpClient.GetAsync(query);
-            if (result.StatusCode == HttpStatusCode.BadRequest)
-                throw new ArgumentException($"Произошла ошибка при изменении статуса режима ключевых фраз.");
+			var query = $"{_changeAdvertKeywordUrl}?id={advertId}&fixed={enabled}";
+			var result = await _httpClient.GetAsync(query);
+			if (result.StatusCode == HttpStatusCode.BadRequest)
+				throw new ArgumentException($"Произошла ошибка при изменении статуса режима ключевых фраз.");
 
-            return result.IsSuccessStatusCode;
-        }
+			return result.IsSuccessStatusCode;
+		}
 
 		public async Task<bool> RenameAdvert(int advertId, string name)
 		{
@@ -109,15 +107,15 @@ namespace MPBoom.Core.Services
 			await FillUpAdvertsKeywords(campaigns);
 			await FillUpAdvertsStatistics(campaigns);
 
-            return campaigns;
+			return campaigns;
 		}
-		
+
 		public async Task<bool> ChangeCPM(Advert advertCampaign, int newCPM)
 		{
 			if (newCPM < 50)
 				throw new ArgumentException("Новое значение CPM должно быть > 50");
 
-            var data = new
+			var data = new
 			{
 				advertId = advertCampaign.AdvertId,
 				type = (int)advertCampaign.Type,
@@ -125,15 +123,15 @@ namespace MPBoom.Core.Services
 				param = advertCampaign.CategoryId
 			};
 
-            var jsonData = JsonConvert.SerializeObject(data);
-            var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
-            
+			var jsonData = JsonConvert.SerializeObject(data);
+			var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
+
 			var response = await _httpClient.PostAsync(_changeAdvertCPMUrl, content);
 			if (response.StatusCode == HttpStatusCode.BadRequest)
 				throw new ArgumentException("Некорректно переданы параметры для изменения CPM");
 
 			return response.IsSuccessStatusCode;
-        }
+		}
 
 		private static string GetAllAdvertsQuery(AdvertStatus? status, AdvertType? type, int? count)
 		{
@@ -190,8 +188,8 @@ namespace MPBoom.Core.Services
 					findedCampaign.CPM = jObject["params"][0]["price"].Value<int>();
 
 					var subjectId = jObject["params"][0].Value<int?>("subjectId");
-                    var setId = jObject["params"][0].Value<int?>("setId");
-                    var menuId = jObject["params"][0].Value<int?>("menuId");
+					var setId = jObject["params"][0].Value<int?>("setId");
+					var menuId = jObject["params"][0].Value<int?>("menuId");
 
 					if (subjectId is not null)
 						findedCampaign.CategoryId = subjectId.Value;
@@ -200,7 +198,7 @@ namespace MPBoom.Core.Services
 					else if (menuId is not null)
 						findedCampaign.CategoryId = menuId.Value;
 
-                    if (jsonProducts.HasValues)
+					if (jsonProducts.HasValues)
 						findedCampaign.ProductArticle = jsonProducts[0]["nm"].Value<string>();
 				}
 			}
@@ -224,22 +222,22 @@ namespace MPBoom.Core.Services
 
 		private async Task FillUpAdvertsStatistics(IEnumerable<Advert> campaigns)
 		{
-            var jObjects = await GetJObjectsByHttpQueries(campaigns, _getFullStatUrl);
-            foreach (var jObject in jObjects)
-            {
-                if (jObject is not null)
-                {
-                    var findedCampaign = campaigns.First(campaign => campaign.AdvertId == jObject["advertId"].Value<int>());
+			var jObjects = await GetJObjectsByHttpQueries(campaigns, _getFullStatUrl);
+			foreach (var jObject in jObjects)
+			{
+				if (jObject is not null)
+				{
+					var findedCampaign = campaigns.First(campaign => campaign.AdvertId == jObject["advertId"].Value<int>());
 					findedCampaign.TotalViews = jObject.Value<int>("views");
-                    findedCampaign.Clicks = jObject.Value<int>("clicks");
-                    findedCampaign.UniqueViews = jObject.Value<int>("unique_users");
-                    findedCampaign.TotalSpent = jObject.Value<double>("sum");
-                    findedCampaign.AddedToCart = jObject.Value<int>("atbs");
-                    findedCampaign.Orders = jObject.Value<int>("orders");
-                    findedCampaign.OrdersSum = jObject.Value<double>("sum_price");
-                }
-            }
-        }
+					findedCampaign.Clicks = jObject.Value<int>("clicks");
+					findedCampaign.UniqueViews = jObject.Value<int>("unique_users");
+					findedCampaign.TotalSpent = jObject.Value<double>("sum");
+					findedCampaign.AddedToCart = jObject.Value<int>("atbs");
+					findedCampaign.Orders = jObject.Value<int>("orders");
+					findedCampaign.OrdersSum = jObject.Value<double>("sum_price");
+				}
+			}
+		}
 
 		private async Task<List<JObject>> GetJObjectsByHttpQueries(IEnumerable<Advert> campaigns, string url)
 		{

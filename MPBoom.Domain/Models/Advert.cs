@@ -1,11 +1,11 @@
-﻿using MPBoom.App.Domain.Utils;
-using MPBoom.Core.Enums;
+﻿using MPBoom.Domain.Enums;
+using MPBoom.Domain.Utils;
 
-namespace MPBoom.Core.Models
+namespace MPBoom.Domain.Models
 {
 	public class Advert
 	{
-        public int AdvertId { get; set; }
+		public int AdvertId { get; set; }
 		public string Name { get; set; }
 		public string Keyword { get; set; }
 		public string ProductArticle { get; set; }
@@ -30,7 +30,7 @@ namespace MPBoom.Core.Models
 		public string TypeString => Type.GetDescription();
 		public AdvertStatus Status { get; set; }
 		public string StatusString => Status.GetDescription();
-        public DateTimeOffset CreatedDate { get; set; }
+		public DateTimeOffset CreatedDate { get; set; }
 		public DateTimeOffset LastUpdateDate { get; set; }
 		public DateTimeOffset StartDate { get; set; }
 		public DateTimeOffset EndDate { get; set; }
