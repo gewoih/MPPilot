@@ -1,83 +1,133 @@
 ﻿@using MPBoom.App.Components.ConfirmDialogs;
+@using MPBoom.App.Domain.Models;
 @using MPBoom.App.Domain.Utils;
 @using MPBoom.Core.Enums;
 @using MPBoom.Core.Models;
 @using System.Reflection;
+@using MPBoom.Core.Services;
 
 <ConfirmDialog @ref="_updateDialog" />
 
 <Tabs @ref="_tabs">
-    <Tab Title="Параметры РК">
-        <Content>
-            <EditForm Model="@_changedAdvertCampaign" class="form-check-inline" OnSubmit="@(async () => await SaveChanges())">
-                <DataAnnotationsValidator />
-                <ValidationSummary />
+	<Tab Title="Параметры РК">
+		<Content>
+			<EditForm Model="@_changedAdvertCampaign" class="form-check-inline" OnSubmit="@(async () => await SaveChanges())">
+				<DataAnnotationsValidator />
+				<ValidationSummary />
 
-                <div class="form-group">
-                    <label style="padding-top: 5px">Название кампании:</label>
-                    <InputText onblur="@OnAdvertCampaignChanged" class="form-control" @bind-Value="_changedAdvertCampaign.Name" />
+				<div class="form-group">
+					<label style="padding-top: 5px">Название кампании:</label>
+					<InputText style="width: 300px" onblur="@OnAdvertCampaignChanged" class="form-control" @bind-Value="_changedAdvertCampaign.Name" />
 
-                    <label style="padding-top: 5px">Ключевая фраза:</label>
-                    <InputText onblur="@OnAdvertCampaignChanged" class="form-control" @bind-Value="_changedAdvertCampaign.Keyword" />
+					<label style="padding-top: 5px">Ключевая фраза:</label>
+					<InputText onblur="@OnAdvertCampaignChanged" class="form-control" @bind-Value="_changedAdvertCampaign.Keyword" />
 
-                    <label style ="padding-top: 5px">Состояние:</label>
-                    <InputSelect onblur="@OnAdvertCampaignChanged" class="form-control" @bind-Value="_changedAdvertCampaign.Status">
-                        @foreach (var status in Enum.GetValues<AdvertStatus>())
-                        {
-                            <option value="@status">@(status.GetDescription())</option>
-                        }
-                    </InputSelect>
-                </div>
+					<label style="padding-top: 5px">Состояние:</label>
+					<InputSelect onblur="@OnAdvertCampaignChanged" class="form-control" @bind-Value="_changedAdvertCampaign.Status">
+						<option value="@AdvertStatus.InProgress">@AdvertStatus.InProgress.GetDescription()</option>
+						<option value="@AdvertStatus.Stopped">@AdvertStatus.Stopped.GetDescription()</option>
+					</InputSelect>
+				</div>
 
-                <div style="padding-top: 10px">
-                    <button type="submit" class="btn btn-primary" disabled="@(!_updatedProperties.Any())">Сохранить</button>
-                </div>
-            </EditForm>
-        </Content>
-    </Tab>
-    <Tab Title="Автобиддер">
-        <Content>
-        </Content>
-    </Tab>
+				<div style="padding-top: 10px">
+					<button type="submit" class="btn btn-primary" disabled="@(!_updatedProperties.Any())">Сохранить</button>
+				</div>
+			</EditForm>
+		</Content>
+	</Tab>
+	<Tab Title="Автобиддер">
+		<Content>
+		</Content>
+	</Tab>
 </Tabs>
 
 @code {
-    [Parameter] 
-    public Advert AdvertCampaign { get; set; }
+	[Parameter]
+	public Advert AdvertCampaign { get; set; }
 
-    private ConfirmDialog _updateDialog;
-    private Advert _changedAdvertCampaign { get; set; }
-    private List<PropertyInfo> _updatedProperties { get; set; }
-    private Tabs _tabs = default!;
+	[Parameter]
+	public WildberriesService WildberriesService { get; set; }
 
-    protected override async Task OnInitializedAsync()
-    {
-        _changedAdvertCampaign = AdvertCampaign.GetDeepCopy();
-        _updatedProperties = new();
-    }
+	[Inject]
+	private PreloadService _preloadService { get; set; }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (_changedAdvertCampaign.AdvertId != AdvertCampaign.AdvertId)
-        {
-            _changedAdvertCampaign = AdvertCampaign.GetDeepCopy();
-            await _tabs.ShowTabByIndexAsync(0);
-            StateHasChanged();
-        }
-    }
+	[Inject]
+	ToastService _notificationsService { get; set; }
 
-    private async Task SaveChanges()
-    {
-        var parameters = new Dictionary<string, object>();
-        parameters.Add("OldCampaign", AdvertCampaign);
-        parameters.Add("NewCampaign", _changedAdvertCampaign);
-        parameters.Add("UpdatedProperties", _updatedProperties);
+	private ConfirmDialog _updateDialog;
+	private Advert _changedAdvertCampaign { get; set; }
+	private List<PropertyInfo> _updatedProperties { get; set; }
+	private Tabs _tabs = default!;
 
-        var confirmation = await _updateDialog.ShowAsync<UpdateAdvertPage>("Подтвердите обновление РК", parameters);
-    }
+	protected override async Task OnInitializedAsync()
+	{
+		_changedAdvertCampaign = AdvertCampaign.GetDeepCopy();
+		_updatedProperties = new();
+	}
 
-    private void OnAdvertCampaignChanged()
-    {
-        _updatedProperties = AdvertCampaign.GetPropertiesDifference(_changedAdvertCampaign);
-    }
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (_changedAdvertCampaign.AdvertId != AdvertCampaign.AdvertId)
+		{
+			_changedAdvertCampaign = AdvertCampaign.GetDeepCopy();
+			await _tabs.ShowTabByIndexAsync(0);
+			StateHasChanged();
+		}
+	}
+
+	private async Task SaveChanges()
+	{
+		var parameters = new Dictionary<string, object>();
+		parameters.Add("OldCampaign", AdvertCampaign);
+		parameters.Add("NewCampaign", _changedAdvertCampaign);
+		parameters.Add("UpdatedProperties", _updatedProperties);
+
+		var confirmation = await _updateDialog.ShowAsync<UpdateAdvertPage>("Подтвердите обновление РК", parameters);
+		if (confirmation)
+		{
+			_preloadService.Show();
+			var result = await UpdateAdvert();
+			_preloadService.Hide();
+
+			if (result.IsUpdateFailed)
+			{
+				var message = $"Произошла неизвестная ошибка при сохранении следующих параметров: {result.GetNonUpdatedFieldsString()}";
+				_notificationsService.Notify(new ToastMessage() { Type = ToastType.Danger, Title = "Ошибка при сохранении РК", Message = message });
+			}
+			else
+			{
+				_notificationsService.Notify(new ToastMessage()
+					{
+						Type = ToastType.Success,
+						Title = "Настройки РК сохранены",
+						Message = "Все настройки РК успешно сохранены"
+					});
+			}
+
+			AdvertCampaign = _changedAdvertCampaign.GetDeepCopy();
+			_updatedProperties.Clear();
+		}
+	}
+
+	private async Task<AdvertUpdateResult> UpdateAdvert()
+	{
+		var result = new AdvertUpdateResult();
+		var advertId = _changedAdvertCampaign.AdvertId;
+
+		if (AdvertCampaign.Status != _changedAdvertCampaign.Status)
+			result.IsStatusChanged = await WildberriesService.ChangeAdvertStatus(advertId, _changedAdvertCampaign.Status);
+
+		if (AdvertCampaign.Name != _changedAdvertCampaign.Name)
+			result.IsNameChanged = await WildberriesService.RenameAdvert(advertId, _changedAdvertCampaign.Name);
+
+		if (AdvertCampaign.Keyword != _changedAdvertCampaign.Keyword)
+			result.IsKeywordChanged = await WildberriesService.ChangeAdvertKeyword(advertId, _changedAdvertCampaign.Keyword);
+
+		return result;
+	}
+
+	private void OnAdvertCampaignChanged()
+	{
+		_updatedProperties = AdvertCampaign.GetPropertiesDifference(_changedAdvertCampaign);
+	}
 }
