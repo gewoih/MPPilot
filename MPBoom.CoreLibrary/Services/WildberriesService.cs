@@ -20,7 +20,8 @@ namespace MPBoom.Core.Services
 		private const string _stopAdvertUrl = "https://advert-api.wb.ru/adv/v0/stop";
 		private const string _depositToAdvertUrl = "https://advert-api.wb.ru/adv/v1/budget/deposit";
 		private const string _renameAdvertUrl = "https://advert-api.wb.ru/adv/v0/rename";
-		private readonly HttpClient _httpClient;
+		private const string _changeAdvertKeywordUrl = "https://advert-api.wb.ru/adv/v1/search/set-plus";
+        private readonly HttpClient _httpClient;
 
 		public WildberriesService(IHttpClientFactory httpClientFactory)
 		{
@@ -32,6 +33,34 @@ namespace MPBoom.Core.Services
 			_httpClient.DefaultRequestHeaders.Clear();
 			_httpClient.DefaultRequestHeaders.Add("Authorization", apiKey);
 		}
+
+		public async Task<bool> ChangeAdvertKeyword(int advertId, string newKeyword)
+		{
+			var data = new
+			{
+				pluse = new string[] { newKeyword }
+			};
+
+			var serializedData = JsonConvert.SerializeObject(data);
+			var content = new StringContent(serializedData, Encoding.UTF8, "application/json");
+
+			var query = $"{_changeAdvertKeywordUrl}?id={advertId}";
+			var result = await _httpClient.PostAsync(query, content);
+			if (result.StatusCode == HttpStatusCode.BadRequest)
+				throw new ArgumentException($"Произошла ошибка при изменении ключевой фразы. {nameof(newKeyword)} = '{newKeyword}'");
+
+			return result.IsSuccessStatusCode;
+		}
+
+		public async Task<bool> ChangeKeywordModeStatus(int advertId, bool enabled)
+		{
+            var query = $"{_changeAdvertKeywordUrl}?id={advertId}&fixed={enabled}";
+            var result = await _httpClient.GetAsync(query);
+            if (result.StatusCode == HttpStatusCode.BadRequest)
+                throw new ArgumentException($"Произошла ошибка при изменении статуса режима ключевых фраз.");
+
+            return result.IsSuccessStatusCode;
+        }
 
 		public async Task<bool> RenameAdvert(int advertId, string name)
 		{
@@ -61,8 +90,6 @@ namespace MPBoom.Core.Services
 				query = $"{_startAdvertUrl}?id={advertId}";
 			else if (newStatus == AdvertStatus.Stopped)
 				query = $"{_pauseAdvertUrl}?id={advertId}";
-			else if (newStatus == AdvertStatus.Finished)
-				query = $"{_stopAdvertUrl}?id={advertId}";
 			else
 				throw new ArgumentException($"Передан некорректный статус для рекламной кампании: '{newStatus}'");
 

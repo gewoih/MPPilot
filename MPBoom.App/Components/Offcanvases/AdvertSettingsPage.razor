@@ -22,10 +22,8 @@
 
                     <label style ="padding-top: 5px">Состояние:</label>
                     <InputSelect onblur="@OnAdvertCampaignChanged" class="form-control" @bind-Value="_changedAdvertCampaign.Status">
-                        @foreach (var status in Enum.GetValues<AdvertStatus>())
-                        {
-                            <option value="@status">@(status.GetDescription())</option>
-                        }
+                        <option value="@AdvertStatus.InProgress">@AdvertStatus.InProgress.GetDescription()</option>
+                        <option value="@AdvertStatus.Stopped">@AdvertStatus.Stopped.GetDescription()</option>
                     </InputSelect>
                 </div>
 

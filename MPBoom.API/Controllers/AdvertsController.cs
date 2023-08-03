@@ -85,5 +85,20 @@ namespace MPBoom.API.Controllers
 			var result = await _wildberriesService.RenameAdvert(advertId, name);
 			return Ok(result);
 		}
-	}
+
+        [HttpPost]
+        [Route("changeAdvertKeyword")]
+        public async Task<IActionResult> ChangeAdvertKeyword([Required] int advertId, string keyword = null)
+        {
+			var keywordsModeEnabled = true;
+            var result = await _wildberriesService.ChangeAdvertKeyword(advertId, keyword);
+
+			if (string.IsNullOrEmpty(keyword))
+				keywordsModeEnabled = false;
+
+            _ = await _wildberriesService.ChangeKeywordModeStatus(advertId, keywordsModeEnabled);
+
+            return Ok(result);
+        }
+    }
 }
