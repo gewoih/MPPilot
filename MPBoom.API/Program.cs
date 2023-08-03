@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using MPBoom.API.Infrastructure.Contexts;
+using MPBoom.API.Services;
 using MPBoom.Domain.Services;
 using System.Text;
 
@@ -18,6 +21,11 @@ namespace MPBoom.API
 			builder.Services.AddSwaggerGen();
 
 			builder.Services.AddHttpClient();
+
+			var connectionString = builder.Configuration.GetConnectionString("Default");
+			builder.Services.AddDbContext<MPBoomContext>(options => options.UseNpgsql(connectionString));
+
+			builder.Services.AddScoped<AccountsService>();
 			builder.Services.AddScoped<AdvertsBidService>();
 			builder.Services.AddScoped<WildberriesService>();
 

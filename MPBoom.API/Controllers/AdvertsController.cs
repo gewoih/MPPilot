@@ -31,17 +31,6 @@ namespace MPBoom.API.Controllers
 			return Ok(await _advertBidService.GetAverageCPM(keyword));
 		}
 
-		[HttpGet]
-		[Route("getAdvertCampaignSearchInfo")]
-		public async Task<IActionResult> GetAdvertCampaignSearchInfo([Required] string advertId, [Required] string keyword)
-		{
-			var result = await _advertBidService.GetAdvertCampaignsStatistics(advertId, keyword);
-			if (result is not null)
-				return Ok(result);
-			else
-				return NotFound("Ваша рекламная кампания не найдена на первых 5-и страницах.");
-		}
-
 		[HttpPost]
 		[Route("changeCPM")]
 		public async Task<IActionResult> ChangeCPM([Required] Advert advertCampaign, [Required] int newCPM)
