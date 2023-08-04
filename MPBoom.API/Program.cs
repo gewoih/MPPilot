@@ -1,3 +1,7 @@
+using Microsoft.EntityFrameworkCore;
+using MPBoom.API.Infrastructure.Contexts;
+using MPBoom.API.Services;
+using MPBoom.Domain.Models.Token;
 using MPBoom.Domain.Services;
 using System.Text;
 
@@ -18,10 +22,18 @@ namespace MPBoom.API
 			builder.Services.AddSwaggerGen();
 
 			builder.Services.AddHttpClient();
+
+			AuthOptions.SetKey(builder.Configuration);
+			var connectionString = builder.Configuration.GetConnectionString("Default");
+			builder.Services.AddDbContext<MPBoomContext>(options => options.UseNpgsql(connectionString));
+
+			builder.Services.AddScoped<AccountsService>();
 			builder.Services.AddScoped<AdvertsBidService>();
 			builder.Services.AddScoped<WildberriesService>();
 
-			var app = builder.Build();
+            builder.WebHost.UseUrls("http://localhost:5050", "https://localhost:5051");
+
+            var app = builder.Build();
 
 			// Configure the HTTP request pipeline.
 			if (app.Environment.IsDevelopment())

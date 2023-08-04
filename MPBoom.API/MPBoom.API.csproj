@@ -15,9 +15,9 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.15.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MPBoom.CoreLibrary\MPBoom.Domain.csproj" />
     <ProjectReference Include="..\MPBoom.Domain\MPBoom.Domain.csproj" />
   </ItemGroup>
 

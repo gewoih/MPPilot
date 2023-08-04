@@ -1,5 +1,4 @@
-﻿using MPBoom.Domain.Models;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace MPBoom.Domain.Services
@@ -26,30 +25,6 @@ namespace MPBoom.Domain.Services
 			}
 
 			return totalCPM / advertsCount;
-		}
-
-		public async Task<AdvertSearchPosition> GetAdvertCampaignsStatistics(string advertId, string keyword)
-		{
-			var jObject = await GetMarketAdverts(keyword);
-			var advertsCount = jObject["adverts"].Count();
-
-			for (int i = 0; i < advertsCount; i++)
-			{
-				var advertJson = jObject["adverts"][i];
-				if (advertJson["advertId"].Value<string>() == advertId)
-				{
-					var searchPositionResult = new AdvertSearchPosition
-					{
-						AdPlace = i + 1
-					};
-
-					searchPositionResult.RealPlace = jObject["pages"][searchPositionResult.Page - 1]["positions"][i].Value<int>();
-
-					return searchPositionResult;
-				}
-			}
-
-			return null;
 		}
 
 		private async Task<JObject> GetMarketAdverts(string keyword)

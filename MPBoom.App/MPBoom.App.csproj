@@ -7,15 +7,22 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="wwwroot\css\**" />
-    <Content Remove="wwwroot\css\**" />
-    <EmbeddedResource Remove="wwwroot\css\**" />
-    <None Remove="wwwroot\css\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Blazor.Bootstrap" Version="1.9.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.9">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="6.5.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.5.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.5.0" />
+	<PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.31.0" />
+	<PackageReference Include="Microsoft.IdentityModel.Protocols" Version="6.31.0" />
+	<PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.31.0" />
   </ItemGroup>
 
   <ItemGroup>

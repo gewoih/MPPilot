@@ -1,0 +1,74 @@
+﻿@page "/register"
+
+@using MPBoom.App.Services;
+@using MPBoom.Domain.Exceptions;
+@using MPBoom.Domain.Models.Account;
+
+<div class="centered-div">
+	<h3>Регистрация</h3>
+
+	<EditForm Model="@_account" class="form-check-inline">
+		<DataAnnotationsValidator />
+		<ValidationSummary />
+
+		<div class="form-group">
+			<label style="padding-top: 5px">Имя:</label>
+			<InputText class="form-control" @bind-Value="_account.Name" />
+
+			<label style="padding-top: 5px">Email:</label>
+			<InputText class="form-control" @bind-Value="_account.Email" />
+
+			<label style="padding-top: 5px">Пароль:</label>
+			<InputText type="password" class="form-control" @bind-Value="_account.Password" />
+		</div>
+
+		<div style="padding-top: 10px" class="d-grid gap-2">
+			<Button Color="ButtonColor.Primary">Зарегистрироваться</Button>
+			<Button Color="ButtonColor.Light" @onclick='(() => _navigationManager.NavigateTo($"/login"))'>Авторизоваться</Button>
+		</div>
+	</EditForm>
+</div>
+
+@code {
+	[Inject] private ToastService _notificationService { get; set; }
+	[Inject] private AccountsService _accountsService { get; set; }
+	[Inject] private JWTAuthenticationStateProvider _authStateProvider { get; set; }
+	[Inject] private NavigationManager _navigationManager { get; set; }
+
+	private Account _account { get; set; }
+
+	protected override Task OnInitializedAsync()
+	{
+		_account = new();
+
+		return base.OnInitializedAsync();
+	}
+
+	public async Task Register()
+	{
+		var notification = new ToastMessage
+			{
+				Type = ToastType.Success,
+				Title = "Успешная регистрация!"
+			};
+
+		try
+		{
+			var isRegistered = await _accountsService.RegisterAsync(_account);
+			if (!isRegistered)
+			{
+				notification.Type = ToastType.Danger;
+				notification.Title = "Неизвестная ошибка регистрации...";
+			}
+		}
+		catch (UserAlreadyExistsException)
+		{
+			notification.Type = ToastType.Danger;
+			notification.Title = "Ошибка регистрации";
+			notification.Message = "Такой аккаунт уже существует";
+		}
+
+		_notificationService.Notify(notification);
+		_account.Password = string.Empty;
+	}
+}

@@ -1,0 +1,181 @@
+﻿@page "/adverts";
+
+@using MPBoom.App.Services;
+@using MPBoom.Domain.Enums;
+@using MPBoom.Domain.Exceptions;
+@using MPBoom.Domain.Models.Advert;
+@using MPBoom.Domain.Models;
+@using MPBoom.Domain.Services.API;
+@using MPBoom.Domain.Services.LocalStorage;
+
+@if (!string.IsNullOrEmpty(_userSettings?.WildberriesApiKey))
+{
+	<Offcanvas @ref="_offcanvas" Size="OffcanvasSize.Regular" />
+
+	<div>
+		<label>Показать:</label>
+		<select @onchange="FilterAdvertsByStatus"
+				style="width: 200px">
+
+			<option value="@AdvertStatusFilters.All">Все</option>
+			<option value="@AdvertStatusFilters.Active">Активные</option>
+			<option value="@AdvertStatusFilters.Paused">Приостановленные</option>
+			<option value="@AdvertStatusFilters.Finished">Завершенные</option>
+		</select>
+
+		<Tooltip Title="Обновить данные" @onclick="UpdateAdverts" role="button">
+			<i class="bi bi-arrow-repeat text-danger"></i>
+		</Tooltip>
+
+		<label>Данные актуальны на: @_advertsUpdatedDate.ToString("dd-MM-yyyy HH:mm:ss")</label>
+	</div>
+
+	<Grid @ref="_advertsGrid"
+		  TItem="Advert"
+		  AllowSorting="true"
+		  AllowPaging="true"
+		  AllowFiltering="true"
+		  EmptyText="Рекламные кампании не найдены:("
+		  PageSize="10"
+		  Class="table table-hover table-bordered table-striped"
+		  DataProvider="AdvertCampaignsDataProvider"
+		  Responsive="true"
+		  ItemsPerPageText="Тест"
+		  PageSizeSelectorItems=@(new int[] {5, 10, 50})
+		  PaginationItemsTextFormat="{0}-{1} из {2} кампаний"
+		  AllowRowClick="true"
+		  OnRowClick="ShowAdvertCampaignSettings">
+
+		<GridColumn TItem="Advert" HeaderText="Тип" FilterOperator="FilterOperator.Contains" FilterTextboxWidth="80" PropertyName="TypeString" SortKeySelector="item => item.Type">@context.TypeString</GridColumn>
+		<GridColumn TItem="Advert" HeaderText="Название" FilterOperator="FilterOperator.Contains" FilterTextboxWidth="80" PropertyName="Name" SortKeySelector="item => item.Name">@context.Name</GridColumn>
+		<GridColumn TItem="Advert" HeaderText="Фраза" FilterOperator="FilterOperator.Contains" FilterTextboxWidth="80" PropertyName="Keyword" SortKeySelector="item => item.Keyword">@context.Keyword</GridColumn>
+		<GridColumn TItem="Advert" HeaderText="Арт." FilterOperator="FilterOperator.Contains" FilterTextboxWidth="80" PropertyName="ProductArticle" SortKeySelector="item => item.ProductArticle">@context.ProductArticle</GridColumn>
+		<GridColumn TItem="Advert" HeaderText="Статус" Filterable="false" SortKeySelector="item => item.Status">@context.StatusString</GridColumn>
+
+		<GridColumn TItem="Advert" HeaderText="Просмотры" Filterable="false" SortKeySelector="item => item.TotalViews">@context.TotalViews</GridColumn>
+		<GridColumn TItem="Advert" HeaderText="Кликов" Filterable="false" SortKeySelector="item => item.Clicks">@context.Clicks</GridColumn>
+		<GridColumn TItem="Advert" HeaderText="Заказов" Filterable="false" SortKeySelector="item => item.Orders">@context.Orders</GridColumn>
+		<GridColumn TItem="Advert" HeaderText="Стоимость заказа" Filterable="false" SortKeySelector="item => item.OrderCost">@context.OrderCost</GridColumn>
+		<GridColumn TItem="Advert" HeaderText="Расход" Filterable="false" SortKeySelector="item => item.TotalSpent">@context.TotalSpent</GridColumn>
+
+		<GridColumn TItem="Advert" HeaderText="CPM" Filterable="false" SortKeySelector="item => item.CPM">@(context.CPM)р.</GridColumn>
+		<GridColumn TItem="Advert" HeaderText="CTR" Filterable="false" SortKeySelector="item => item.CTR">@context.CTR</GridColumn>
+		<GridColumn TItem="Advert" HeaderText="CPC" Filterable="false" SortKeySelector="item => item.CPC">@context.CPC.ToString("0.00")</GridColumn>
+	</Grid>
+}
+
+@code {
+	[Inject] private WildberriesService _wildberriesService { get; set; }
+	[Inject] private ILocalStorageService _localStorageService { get; set; }
+	[Inject] private IConfiguration _configuration { get; set; }
+	[Inject] private ToastService _notificationsService { get; set; }
+	[Inject] private JWTAuthenticationStateProvider _authStateProvider { get; set; }
+	[Inject] private NavigationManager _navigationManager { get; set; }
+
+	private UserSettings? _userSettings;
+	private IEnumerable<Advert> _adverts;
+	private IEnumerable<Advert> _filteredAdverts;
+	private Offcanvas _offcanvas = default!;
+	private Grid<Advert> _advertsGrid;
+	private AdvertStatusFilters _advertsFilter;
+	private bool _isGridDataLoaded = false;
+	private DateTimeOffset _advertsUpdatedDate = DateTimeOffset.Now;
+	private bool _isAuthenticated = false;
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		await RedirectIfNotAuthorize();
+
+		_userSettings = await _localStorageService.GetUserSettings(_configuration);
+		if (string.IsNullOrEmpty(_userSettings?.WildberriesApiKey))
+		{
+			_notificationsService.Notify(new ToastMessage
+				{
+					Message = "Для работы с этой страницей установите API-ключ для Wildberries в настройках",
+					Title = "Не установлен API-ключ",
+					Type = ToastType.Warning
+				});
+		}
+		else
+		{
+			_wildberriesService.SetApiKey(_userSettings.WildberriesApiKey);
+
+			if (!_isGridDataLoaded)
+				StateHasChanged();
+		}
+	}
+
+	private async Task RedirectIfNotAuthorize()
+	{
+		var state = await _authStateProvider.GetAuthenticationStateAsync();
+		_isAuthenticated = state.User.Identity.IsAuthenticated;
+		if (!_isAuthenticated)
+			_navigationManager.NavigateTo("/login");
+	}
+
+	private async Task<GridDataProviderResult<Advert>> AdvertCampaignsDataProvider(GridDataProviderRequest<Advert> request)
+	{
+		try
+		{
+			if (!_isAuthenticated)
+				return null;
+
+			if (_adverts == null)
+			{
+				var searchAdverts = await _wildberriesService.GetAdvertsAsync(type: AdvertType.Search);
+				var productPageAdverts = await _wildberriesService.GetAdvertsAsync(type: AdvertType.ProductPage);
+
+				_adverts = searchAdverts.Concat(productPageAdverts);
+				_filteredAdverts = _adverts;
+				_advertsUpdatedDate = DateTimeOffset.Now;
+			}
+
+			var result = await Task.FromResult(request.ApplyTo(_filteredAdverts));
+			_isGridDataLoaded = true;
+
+			return result;
+		}
+		catch (InvalidApiKeyException ex)
+		{
+			_notificationsService.Notify(new ToastMessage()
+				{
+					Type = ToastType.Danger,
+					Title = "Ошибка доступа к Wildberries",
+					Message = "Задан некорректный API-ключ для Wildberries. Пожалуйста, проверьте корректность настроек."
+				});
+
+			return null;
+		}
+	}
+
+	private async Task ShowAdvertCampaignSettings(GridRowEventArgs<Advert> argument)
+	{
+		var parameters = new Dictionary<string, object>();
+		parameters.Add("AdvertCampaign", argument.Item);
+		parameters.Add("WildberriesService", _wildberriesService);
+
+		await _offcanvas.ShowAsync<AdvertSettingsPage>(title: "Настройки РК", parameters: parameters);
+	}
+
+	private async Task FilterAdvertsByStatus(ChangeEventArgs e)
+	{
+		var filter = (AdvertStatusFilters)Enum.Parse(typeof(AdvertStatusFilters), e.Value.ToString());
+
+		if (filter == AdvertStatusFilters.All)
+			_filteredAdverts = _adverts;
+		else if (filter == AdvertStatusFilters.Active)
+			_filteredAdverts = _adverts.Where(advert => advert.Status == AdvertStatus.Ready || advert.Status == AdvertStatus.InProgress);
+		else if (filter == AdvertStatusFilters.Paused)
+			_filteredAdverts = _adverts.Where(advert => advert.Status == AdvertStatus.Stopped);
+		else if (filter == AdvertStatusFilters.Finished)
+			_filteredAdverts = _adverts.Where(advert => advert.Status == AdvertStatus.Finished);
+
+		await _advertsGrid.RefreshDataAsync();
+	}
+
+	private async Task UpdateAdverts()
+	{
+		_adverts = null;
+		await _advertsGrid.RefreshDataAsync();
+	}
+}

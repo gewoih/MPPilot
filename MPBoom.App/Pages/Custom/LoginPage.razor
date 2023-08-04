@@ -1,0 +1,80 @@
+﻿@page "/login"
+
+@using MPBoom.App.Services;
+@using MPBoom.Domain.Models.Account;
+@using MPBoom.Domain.Models.Token;
+@using MPBoom.Domain.Services.LocalStorage;
+@using MPBoom.Domain.Services.Security.Token;
+@using System.IdentityModel.Tokens.Jwt;
+@using Microsoft.IdentityModel.Tokens;
+
+
+<div class="centered-div">
+	<h3>Авторизация</h3>
+
+	<EditForm Model="@_account" class="form-check-inline">
+		<DataAnnotationsValidator />
+		<ValidationSummary />
+
+		<div class="form-group">
+			<label style="padding-top: 5px">Email:</label>
+			<InputText class="form-control" @bind-Value="_account.Email" />
+
+			<label style="padding-top: 5px">Пароль:</label>
+			<InputText type="password" class="form-control" @bind-Value="_account.Password" />
+		</div>
+
+		<div style="padding-top: 10px" class="d-grid gap-2">
+			<Button Color="ButtonColor.Primary" @onclick="async () => await Login()">Войти</Button>
+			<Button Color="ButtonColor.Light" @onclick='(() => _navigationManager.NavigateTo($"/register"))'>Создать аккаунт</Button>
+		</div>
+	</EditForm>
+</div>
+
+@code {
+	[Inject] private ILocalStorageService _localStorageService { get; set; }
+	[Inject] private ITokenService _tokenService { get; set; }
+	[Inject] private ToastService _notificationService { get; set; }
+	[Inject] private AccountsService _accountsService { get; set; }
+	[Inject] private JWTAuthenticationStateProvider _authStateProvider { get; set; }
+	[Inject] private NavigationManager _navigationManager { get; set; }
+
+	private Account _account { get; set; }
+
+	protected override Task OnInitializedAsync()
+	{
+		_account = new();
+
+		return base.OnInitializedAsync();
+	}
+
+	private async Task Login()
+	{
+		var identity = await _accountsService.GetIdentityAsync(_account);
+		if (identity is not null)
+		{
+			var dateNow = DateTime.UtcNow;
+			var jwt = new JwtSecurityToken(
+				issuer: AuthOptions.Issuer,
+				audience: AuthOptions.Audience,
+				notBefore: dateNow,
+				claims: identity.Claims,
+				expires: dateNow.Add(AuthOptions.Lifetime),
+				signingCredentials: new SigningCredentials(AuthOptions.GetSecurityKey(), SecurityAlgorithms.HmacSha256));
+
+			var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
+
+			await _tokenService.SetTokenAsync(encodedJwt);
+			await _authStateProvider.LogInUser(_account);
+
+			_notificationService.Notify(new ToastMessage { Type = ToastType.Success, Title = "Успешная авторизация" });
+
+			_navigationManager.NavigateTo("/adverts");
+		}
+		else
+		{
+			_notificationService.Notify(new ToastMessage { Type = ToastType.Danger, Title = "Ошибка авторизации", Message = "Указан неверный Email или пароль" });
+			_account.Password = string.Empty;
+		}
+	}
+}
