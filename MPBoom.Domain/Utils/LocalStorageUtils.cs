@@ -1,16 +1,16 @@
 ﻿using Microsoft.Extensions.Configuration;
-using MPBoom.Domain.Interfaces;
 using MPBoom.Domain.Models;
+using MPBoom.Domain.Services.LocalStorage;
 using Newtonsoft.Json;
 
 namespace MPBoom.Domain.Utils
 {
-	public static class LocalStorageUtils
+    public static class LocalStorageUtils
 	{
 		public static async Task<UserSettings?> GetUserSettings(this ILocalStorageService localStorage, IConfiguration configuration)
 		{
 			var userSettingsKey = configuration["LocalStorage:Keys:UserSettings"];
-			var userSettingsJson = await localStorage.GetItem<string>(userSettingsKey);
+			var userSettingsJson = await localStorage.GetItemAsync<string>(userSettingsKey);
 			if (string.IsNullOrEmpty(userSettingsJson))
 				return null;
 

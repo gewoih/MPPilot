@@ -3,6 +3,7 @@ using MPBoom.API.Infrastructure.Contexts;
 using MPBoom.Domain.Exceptions;
 using MPBoom.Domain.Models.Account;
 using MPBoom.Domain.Services;
+using System.Security.Claims;
 
 namespace MPBoom.API.Services
 {
@@ -15,7 +16,7 @@ namespace MPBoom.API.Services
             _context = context;
         }
 
-        public async Task<bool> Register(string name, string email, string password)
+        public async Task<bool> RegisterAsync(string name, string email, string password)
         {
             try
             {
@@ -37,7 +38,7 @@ namespace MPBoom.API.Services
             }
         }
 
-        public async Task<bool> Login(string email, string password)
+        public async Task<bool> LoginAsync(string email, string password)
         {
             var account = new Account
             {
@@ -47,6 +48,27 @@ namespace MPBoom.API.Services
 
             var isFinded = await _context.Accounts.AnyAsync(a => a.Email == account.Email && a.Password == account.Password);
             return isFinded;
+        }
+
+        public async Task<ClaimsIdentity> GetIdentityAsync(string email, string password)
+        {
+            var account = new Account
+            {
+                Email = email,
+                Password = PasswordHasher.GetHashedString(password, email)
+            };
+
+            var findedAccount = await _context.Accounts.FirstOrDefaultAsync(a => a.Email == account.Email && a.Password == account.Password);
+            if (findedAccount == null)
+                return null;
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimsIdentity.DefaultNameClaimType, account.Email),
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
+            return claimsIdentity;
         }
     }
 }
