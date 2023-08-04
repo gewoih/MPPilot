@@ -2,12 +2,13 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using MPBoom.App.Infrastructure.Contexts;
 using MPBoom.App.Middleware;
 using MPBoom.Domain.Models.Token;
-using MPBoom.Domain.Services;
+using MPBoom.Domain.Services.API;
 using MPBoom.Domain.Services.LocalStorage;
-using MPBoom.Domain.Services.Token;
+using MPBoom.Domain.Services.Security.Token;
 
 namespace MPBoom.App
 {
@@ -60,10 +61,30 @@ namespace MPBoom.App
 
             builder.WebHost.UseUrls("http://localhost:5050", "https://localhost:5051");
 
+            builder.Services.AddControllers();
+            builder.Services.AddEndpointsApiExplorer();
+
+#if DEBUG
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+            });
+#endif
+
             var app = builder.Build();
 
             if (app.Environment.IsDevelopment())
+            {
                 app.UseDeveloperExceptionPage();
+
+#if DEBUG
+                app.UseSwagger();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+                });
+#endif
+            }
             else
             {
                 app.UseExceptionHandler("/Error");

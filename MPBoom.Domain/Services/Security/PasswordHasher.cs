@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace MPBoom.Domain.Services
+namespace MPBoom.Domain.Services.Security
 {
     public static class PasswordHasher
     {

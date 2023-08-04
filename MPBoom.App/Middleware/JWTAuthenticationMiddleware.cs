@@ -4,23 +4,25 @@
     {
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
-            if (!RequiresAuthentication(context))
-                await next(context);
-
-            string authorizationHeader = context.Request.Headers["Authorization"];
-            if (!string.IsNullOrEmpty(authorizationHeader) && authorizationHeader.StartsWith("Bearer "))
+            if (RequiresAuthentication(context))
             {
-                string token = authorizationHeader["Bearer ".Length..].Trim();
+                string authorizationHeader = context.Request.Headers["Authorization"];
+                if (!string.IsNullOrEmpty(authorizationHeader) && authorizationHeader.StartsWith("Bearer "))
+                {
+                    string token = authorizationHeader["Bearer ".Length..].Trim();
 
-                //if (IsValidToken(token))
-                //    await _next(context);
-                //else
+                    //if (IsValidToken(token))
+                    //    await _next(context);
+                    //else
+                    //    context.Response.Redirect("/login");
+                }
+                else
+                {
                     context.Response.Redirect("/login");
+                }
             }
             else
-            {
-                context.Response.Redirect("/login");
-            }
+                await next(context);
         }
 
         private static bool RequiresAuthentication(HttpContext context)

@@ -1,7 +1,7 @@
 ﻿using MPBoom.Domain.Models.Token;
 using MPBoom.Domain.Services.LocalStorage;
 
-namespace MPBoom.Domain.Services.Token
+namespace MPBoom.Domain.Services.Security.Token
 {
     public class JWTTokenService : ITokenService
     {

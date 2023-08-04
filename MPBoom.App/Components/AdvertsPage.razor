@@ -2,10 +2,10 @@
 @using MPBoom.App.Components.Offcanvases;
 @using MPBoom.Domain.Enums;
 @using MPBoom.Domain.Exceptions;
+@using MPBoom.Domain.Models.Advert;
 @using MPBoom.Domain.Models;
+@using MPBoom.Domain.Services.API;
 @using MPBoom.Domain.Services.LocalStorage;
-@using MPBoom.Domain.Services;
-@using MPBoom.Domain.Utils;
 
 @if (!string.IsNullOrEmpty(_userSettings?.WildberriesApiKey))
 {

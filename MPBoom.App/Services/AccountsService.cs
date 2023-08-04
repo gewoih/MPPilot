@@ -2,7 +2,7 @@
 using MPBoom.App.Infrastructure.Contexts;
 using MPBoom.Domain.Exceptions;
 using MPBoom.Domain.Models.Account;
-using MPBoom.Domain.Services;
+using MPBoom.Domain.Services.Security;
 using System.Security.Claims;
 
 namespace MPBoom.App.Services

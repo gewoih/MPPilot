@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MPBoom.Domain.Enums;
-using MPBoom.Domain.Models;
+using MPBoom.Domain.Models.Advert;
 using MPBoom.Domain.Services;
+using MPBoom.Domain.Services.API;
 using System.ComponentModel.DataAnnotations;
 
 namespace MPBoom.App.Controllers

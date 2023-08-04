@@ -3,11 +3,8 @@ using Microsoft.IdentityModel.Tokens;
 using MPBoom.App.Services;
 using MPBoom.Domain.Exceptions;
 using MPBoom.Domain.Models.Token;
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.WebSockets;
-using System.Security.Claims;
 
 namespace MPBoom.App.Controllers
 {
