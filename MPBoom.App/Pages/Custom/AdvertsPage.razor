@@ -110,16 +110,22 @@
 		var state = await _authStateProvider.GetAuthenticationStateAsync();
 		_isAuthenticated = state.User.Identity.IsAuthenticated;
 		if (!_isAuthenticated)
-			_navigationManager.NavigateTo("/login", true);
+			_navigationManager.NavigateTo("/login");
 	}
 
 	private async Task<GridDataProviderResult<Advert>> AdvertCampaignsDataProvider(GridDataProviderRequest<Advert> request)
 	{
 		try
 		{
+			if (!_isAuthenticated)
+				return null;
+
 			if (_adverts == null)
 			{
-				_adverts = await _wildberriesService.GetAdvertsAsync(count: 10);
+				var searchAdverts = await _wildberriesService.GetAdvertsAsync(type: AdvertType.Search);
+				var productPageAdverts = await _wildberriesService.GetAdvertsAsync(type: AdvertType.ProductPage);
+
+				_adverts = searchAdverts.Concat(productPageAdverts);
 				_filteredAdverts = _adverts;
 				_advertsUpdatedDate = DateTimeOffset.Now;
 			}
