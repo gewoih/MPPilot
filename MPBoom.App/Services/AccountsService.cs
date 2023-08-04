@@ -16,18 +16,13 @@ namespace MPBoom.App.Services
             _context = context;
         }
 
-        public async Task<bool> RegisterAsync(string name, string email, string password)
+        public async Task<bool> RegisterAsync(Account account)
         {
             try
             {
-                var newAccount = new Account
-                {
-                    Name = name,
-                    Email = email,
-                    Password = PasswordHasher.GetHashedString(password, email)
-                };
+                account.Password = PasswordHasher.GetHashedString(account.Password, account.Email);
 
-                _context.Accounts.Add(newAccount);
+                _context.Accounts.Add(account);
                 await _context.SaveChangesAsync();
 
                 return true;
@@ -38,15 +33,11 @@ namespace MPBoom.App.Services
             }
         }
 
-        public async Task<ClaimsIdentity> GetIdentityAsync(string email, string password)
+        public async Task<ClaimsIdentity> GetIdentityAsync(Account account)
         {
-            var account = new Account
-            {
-                Email = email,
-                Password = PasswordHasher.GetHashedString(password, email)
-            };
+            var passwordHash = PasswordHasher.GetHashedString(account.Password, account.Email);
 
-            var findedAccount = await _context.Accounts.FirstOrDefaultAsync(a => a.Email == account.Email && a.Password == account.Password);
+            var findedAccount = await _context.Accounts.FirstOrDefaultAsync(a => a.Email == account.Email && a.Password == passwordHash);
             if (findedAccount == null)
                 return null;
 

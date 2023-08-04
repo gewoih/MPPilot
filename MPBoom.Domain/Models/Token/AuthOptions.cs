@@ -11,7 +11,7 @@ namespace MPBoom.Domain.Models.Token
         public const string Issuer = "MPBoom.Server";
         public const string Audience = "MPBoom.Client";
         public const int LifetimeMinutes = 5;
-        public static SymmetricSecurityKey GetSecurityKey() => new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_key));
+        public static SymmetricSecurityKey GetSecurityKey() => new(Encoding.UTF8.GetBytes(_key));
 
         public static void SetKey(IConfiguration configuration)
         {
