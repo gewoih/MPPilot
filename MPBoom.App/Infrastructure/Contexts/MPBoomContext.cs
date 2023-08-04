@@ -1,12 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MPBoom.Domain.Models.Account;
 
-namespace MPBoom.API.Infrastructure.Contexts
+namespace MPBoom.App.Infrastructure.Contexts
 {
     public class MPBoomContext : DbContext
     {
         public DbSet<Account> Accounts { get; set; }
-        
+
         public MPBoomContext(DbContextOptions options) : base(options)
         {
         }

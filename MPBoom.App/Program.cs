@@ -1,6 +1,9 @@
 ﻿using BlazorBootstrap;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using MPBoom.App.Infrastructure.Contexts;
+using MPBoom.App.Middleware;
 using MPBoom.Domain.Models.Token;
 using MPBoom.Domain.Services;
 using MPBoom.Domain.Services.LocalStorage;
@@ -20,6 +23,13 @@ namespace MPBoom.App
 			
             builder.Services.AddBlazorBootstrap();
             builder.Services.AddHttpClient();
+
+            builder.Services.AddTransient<JWTAuthenticationMiddleware>();
+
+            AuthOptions.SetKey(builder.Configuration);
+            var connectionString = builder.Configuration.GetConnectionString("Default");
+            builder.Services.AddDbContext<MPBoomContext>(options => options.UseNpgsql(connectionString));
+
 			builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
             builder.Services.AddScoped<ITokenService, JWTTokenService>();
             builder.Services.AddSingleton<WildberriesService>();
@@ -48,22 +58,22 @@ namespace MPBoom.App
                         };
                     });
 
+            builder.WebHost.UseUrls("http://localhost:5050", "https://localhost:5051");
+
             var app = builder.Build();
 
-			// Configure the HTTP request pipeline.
-			if (!app.Environment.IsDevelopment())
+            if (app.Environment.IsDevelopment())
+                app.UseDeveloperExceptionPage();
+            else
             {
                 app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
-            //app.UseHttpsRedirection();
+            app.UseMiddleware<JWTAuthenticationMiddleware>();
 
             app.UseStaticFiles();
-
             app.UseRouting();
-
             app.MapBlazorHub();
             app.MapFallbackToPage("/_Host");
 

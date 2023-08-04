@@ -283,8 +283,6 @@ namespace MPBoom.Domain.Services
 				if (result.StatusCode == HttpStatusCode.Unauthorized)
 					throw new InvalidApiKeyException(_invalidApiKeyMessage);
 
-				result.EnsureSuccessStatusCode();
-
 				var stringResult = await result.Content.ReadAsStringAsync();
 				if (!string.IsNullOrEmpty(stringResult) && task.Result.IsSuccessStatusCode)
 					jObjects.Add(JsonConvert.DeserializeObject<JObject>(stringResult));

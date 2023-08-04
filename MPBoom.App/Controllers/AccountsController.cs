@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using MPBoom.API.Services;
+using MPBoom.App.Services;
 using MPBoom.Domain.Exceptions;
 using MPBoom.Domain.Models.Token;
 using System;
@@ -9,7 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net.WebSockets;
 using System.Security.Claims;
 
-namespace MPBoom.API.Controllers
+namespace MPBoom.App.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

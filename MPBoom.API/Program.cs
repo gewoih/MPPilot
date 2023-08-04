@@ -31,7 +31,9 @@ namespace MPBoom.API
 			builder.Services.AddScoped<AdvertsBidService>();
 			builder.Services.AddScoped<WildberriesService>();
 
-			var app = builder.Build();
+            builder.WebHost.UseUrls("http://localhost:5050", "https://localhost:5051");
+
+            var app = builder.Build();
 
 			// Configure the HTTP request pipeline.
 			if (app.Environment.IsDevelopment())

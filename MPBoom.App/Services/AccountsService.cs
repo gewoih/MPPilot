@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using MPBoom.API.Infrastructure.Contexts;
+using MPBoom.App.Infrastructure.Contexts;
 using MPBoom.Domain.Exceptions;
 using MPBoom.Domain.Models.Account;
 using MPBoom.Domain.Services;
 using System.Security.Claims;
 
-namespace MPBoom.API.Services
+namespace MPBoom.App.Services
 {
     public class AccountsService
     {
