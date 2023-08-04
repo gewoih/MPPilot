@@ -13,17 +13,38 @@ namespace MPBoom.Domain.Services.LocalStorage
 
         public async Task<T> GetItemAsync<T>(string key)
         {
-            return await jsRuntime.InvokeAsync<T>("localStorage.getItem", key);
+            try
+            {
+                return await jsRuntime.InvokeAsync<T>("localStorage.getItem", key);
+            }
+            catch (JSDisconnectedException)
+            {
+                return default;
+            }
         }
 
         public async Task SetItemAsync<T>(string key, T value)
         {
-            await jsRuntime.InvokeVoidAsync("localStorage.setItem", key, value);
+            try
+            {
+                await jsRuntime.InvokeVoidAsync("localStorage.setItem", key, value);
+            }
+            catch (JSDisconnectedException)
+            {
+
+            }
         }
 
         public async Task RemoveItemAsync(string key)
         {
-            await jsRuntime.InvokeVoidAsync("localStorage.removeItem", key);
+            try
+            {
+                await jsRuntime.InvokeVoidAsync("localStorage.removeItem", key);
+            }
+            catch (JSDisconnectedException)
+            {
+
+            }
         }
     }
 }
