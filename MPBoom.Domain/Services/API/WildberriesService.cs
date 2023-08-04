@@ -156,13 +156,15 @@ namespace MPBoom.Domain.Services.API
         {
             var query = _getAllUrl;
             if (status is not null)
-                query += $"status={status.Value}&";
+                query += $"status={(int)status}&";
             if (type is not null)
-                query += $"type={type.Value}&";
+                query += $"type={(int)type}&";
             if (count is not null)
-                query += $"limit={count.Value}&";
+                query += $"limit={count}&";
 
-            return query;
+            query += "order=change&direction=desc&";
+
+			return query;
         }
 
         private async Task<IEnumerable<Advert>> GetAdvertsFromJson(string query)
