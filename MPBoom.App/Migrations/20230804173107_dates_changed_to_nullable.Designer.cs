@@ -3,6 +3,7 @@ using System;
 using MPBoom.App.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MPBoom.API.Migrations
 {
     [DbContext(typeof(MPBoomContext))]
-    partial class MPBoomContextModelSnapshot : ModelSnapshot
+    [Migration("20230804173107_dates_changed_to_nullable")]
+    partial class dates_changed_to_nullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

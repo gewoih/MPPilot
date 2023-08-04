@@ -1,5 +1,4 @@
 ﻿using MPBoom.Domain.Models.Base;
-using System.ComponentModel.DataAnnotations;
 
 namespace MPBoom.Domain.Models.Account
 {
