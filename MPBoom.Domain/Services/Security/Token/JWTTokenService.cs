@@ -1,7 +1,6 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using MPBoom.Domain.Models.Token;
 using MPBoom.Domain.Services.LocalStorage;
-using System.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace MPBoom.Domain.Services.Security.Token

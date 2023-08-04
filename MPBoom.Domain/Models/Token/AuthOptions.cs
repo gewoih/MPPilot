@@ -10,7 +10,7 @@ namespace MPBoom.Domain.Models.Token
         private static string _key;
         public const string Issuer = "MPBoom.Server";
         public const string Audience = "MPBoom.Client";
-        public const int LifetimeMinutes = 5;
+        public static readonly TimeSpan Lifetime = TimeSpan.FromHours(2);
         public static SymmetricSecurityKey GetSecurityKey() => new(Encoding.UTF8.GetBytes(_key));
 
         public static void SetKey(IConfiguration configuration)

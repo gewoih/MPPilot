@@ -54,7 +54,7 @@
 				audience: AuthOptions.Audience,
 				notBefore: dateNow,
 				claims: identity.Claims,
-				expires: dateNow.Add(TimeSpan.FromMinutes(AuthOptions.LifetimeMinutes)),
+				expires: dateNow.Add(AuthOptions.Lifetime),
 				signingCredentials: new SigningCredentials(AuthOptions.GetSecurityKey(), SecurityAlgorithms.HmacSha256));
 
 			var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
