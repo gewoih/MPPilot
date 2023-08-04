@@ -67,7 +67,7 @@ namespace MPBoom.App
 #if DEBUG
             builder.Services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "MPBoomAPI", Version = "v1" });
             });
 #endif
 
@@ -81,7 +81,7 @@ namespace MPBoom.App
                 app.UseSwagger();
                 app.UseSwaggerUI(c =>
                 {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "MPBoomAPI");
                 });
 #endif
             }
