@@ -8,31 +8,36 @@
 @using System.IdentityModel.Tokens.Jwt;
 @using Microsoft.IdentityModel.Tokens;
 
-<h3>Авторизация</h3>
 
-<EditForm Model="@_account" class="form-check-inline" OnSubmit="@Login">
-	<DataAnnotationsValidator />
-	<ValidationSummary />
+<div class="centered-div">
+	<h3>Авторизация</h3>
 
-	<div class="form-group">
-		<label style="padding-top: 5px">Email:</label>
-		<InputText class="form-control" @bind-Value="_account.Email" />
+	<EditForm Model="@_account" class="form-check-inline">
+		<DataAnnotationsValidator />
+		<ValidationSummary />
 
-		<label style="padding-top: 5px">Пароль:</label>
-		<InputText type="password" class="form-control" @bind-Value="_account.Password" />
-	</div>
+		<div class="form-group">
+			<label style="padding-top: 5px">Email:</label>
+			<InputText class="form-control" @bind-Value="_account.Email" />
 
-	<div style="padding-top: 10px">
-		<button type="submit" class="btn btn-primary">Сохранить</button>
-	</div>
-</EditForm>
+			<label style="padding-top: 5px">Пароль:</label>
+			<InputText type="password" class="form-control" @bind-Value="_account.Password" />
+		</div>
+
+		<div style="padding-top: 10px" class="d-grid gap-2">
+			<Button Color="ButtonColor.Primary" @onclick="async () => await Login()">Войти</Button>
+			<Button Color="ButtonColor.Light" @onclick='(() => _navigationManager.NavigateTo($"/register"))'>Создать аккаунт</Button>
+		</div>
+	</EditForm>
+</div>
 
 @code {
-	[Inject] private ToastService _notificationService { get; set; }
 	[Inject] private ILocalStorageService _localStorageService { get; set; }
 	[Inject] private ITokenService _tokenService { get; set; }
+	[Inject] private ToastService _notificationService { get; set; }
 	[Inject] private AccountsService _accountsService { get; set; }
 	[Inject] private JWTAuthenticationStateProvider _authStateProvider { get; set; }
+	[Inject] private NavigationManager _navigationManager { get; set; }
 
 	private Account _account { get; set; }
 
@@ -61,8 +66,10 @@
 
 			await _tokenService.SetTokenAsync(encodedJwt);
 			await _authStateProvider.LogInUser(_account);
-			
+
 			_notificationService.Notify(new ToastMessage { Type = ToastType.Success, Title = "Успешная авторизация" });
+
+			_navigationManager.NavigateTo("/adverts");
 		}
 		else
 		{
