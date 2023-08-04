@@ -31,6 +31,10 @@ namespace MPBoom.App.Services
             {
                 throw new UserAlreadyExistsException($"Пользователь с таким Email уже существует.");
             }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         public async Task<ClaimsIdentity> GetIdentityAsync(Account account)

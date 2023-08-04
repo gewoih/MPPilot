@@ -7,13 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="wwwroot\css\**" />
-    <Content Remove="wwwroot\css\**" />
-    <EmbeddedResource Remove="wwwroot\css\**" />
-    <None Remove="wwwroot\css\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Blazor.Bootstrap" Version="1.9.5" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.9" />
