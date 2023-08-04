@@ -21,8 +21,8 @@ namespace MPBoom.Domain.Models.Token
         public static string GenerateRandomKey()
         {
             byte[] keyBytes = new byte[32];
-            using var rng = new RNGCryptoServiceProvider();
-            rng.GetBytes(keyBytes);
+            using var numberGenerator = RandomNumberGenerator.Create();
+            numberGenerator.GetBytes(keyBytes);
 
             return Convert.ToBase64String(keyBytes);
         }
