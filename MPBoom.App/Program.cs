@@ -42,8 +42,6 @@ namespace MPBoom.App
                 hubOptions.MaximumReceiveMessageSize = 10 * 1024 * 1024; // 10MB
             });
 
-            builder.WebHost.UseUrls("http://localhost:5050", "https://localhost:5051");
-
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
 
