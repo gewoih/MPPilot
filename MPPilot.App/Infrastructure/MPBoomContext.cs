@@ -12,9 +12,10 @@ namespace MPPilot.App.Infrastructure
         {
         }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Account>()
+            //Account
+			modelBuilder.Entity<Account>()
                 .Property(a => a.CreatedDate)
                 .HasDefaultValue(DateTimeOffset.Now)
                 .ValueGeneratedOnAdd();
@@ -28,12 +29,23 @@ namespace MPPilot.App.Infrastructure
                 .HasIndex(a => a.Email)
                 .IsUnique();
 
-            modelBuilder.Entity<Account>()
-                .HasOne(a => a.AccountSettings)
-                .WithOne(s => s.Account)
-                .HasForeignKey<AccountSettings>(s => s.AccountId);
+            
+            //AccountSettings
+			modelBuilder.Entity<AccountSettings>()
+				.Property(a => a.CreatedDate)
+				.HasDefaultValue(DateTimeOffset.Now)
+				.ValueGeneratedOnAdd();
 
-            base.OnModelCreating(modelBuilder);
+			modelBuilder.Entity<AccountSettings>()
+				.Property(a => a.UpdatedDate)
+				.HasDefaultValue(DateTimeOffset.Now)
+				.ValueGeneratedOnAddOrUpdate();
+
+			modelBuilder.Entity<AccountSettings>()
+				.HasIndex(a => a.WildberriesApiKey)
+				.IsUnique();
+
+			base.OnModelCreating(modelBuilder);
         }
     }
 }

@@ -21,6 +21,7 @@ namespace MPPilot.App
 			var connectionString = builder.Configuration.GetConnectionString("Default");
 			builder.Services.AddDbContext<MPBoomContext>(options => options.UseNpgsql(connectionString));
 			builder.Services.AddHttpClient();
+			builder.Services.AddHttpContextAccessor();
 
 			AuthOptions.SetKey(builder.Configuration);
 			builder.Services.AddSingleton<ITokenService, JWTTokenService>();

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MPPilot.App.Models;
 using MPPilot.App.Services;
 
 namespace MPPilot.App.Controllers
@@ -17,6 +18,20 @@ namespace MPPilot.App.Controllers
         public IActionResult Index()
         {
             return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Save(AccountSettingsDTO settings)
+        {
+			var isSaved = await _accountsService.SaveSettings(settings);
+                
+            if (isSaved)
+                return RedirectToAction("Index", "Adverts");
+            else
+            {
+                ModelState.AddModelError(string.Empty, "Произошла ошибка при сохранении API-ключа");
+                return View("Index", settings);
+            }
         }
     }
 }

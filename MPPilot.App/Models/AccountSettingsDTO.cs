@@ -1,6 +1,6 @@
 ﻿namespace MPPilot.App.Models
 {
-	public class SettingsDTO
+	public class AccountSettingsDTO
 	{
 		public string WildberriesApiKey { get; set; }
 	}

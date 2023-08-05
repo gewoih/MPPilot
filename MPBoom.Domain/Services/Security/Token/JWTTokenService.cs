@@ -1,12 +1,21 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
+using Microsoft.IdentityModel.Tokens;
 using MPBoom.Domain.Models.Token;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace MPBoom.Domain.Services.Security.Token
 {
-    public class JWTTokenService : ITokenService
+	public class JWTTokenService : ITokenService
     {
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
+        public JWTTokenService(IHttpContextAccessor httpContextAccessor) 
+        {
+            _httpContextAccessor = httpContextAccessor;
+        }
+
         public string GenerateToken(ClaimsIdentity identity)
         {
             var securityKey = AuthOptions.GetSecurityKey();
@@ -27,7 +36,19 @@ namespace MPBoom.Domain.Services.Security.Token
             return tokenHandler.WriteToken(securityToken);
         }
 
-        public bool ValidateToken(string token)
+		public string GetToken()
+		{
+			var httpContext = _httpContextAccessor.HttpContext;
+            if (httpContext is not null)
+            {
+                var token = httpContext.Request.Cookies[JwtBearerDefaults.AuthenticationScheme];
+                return token;
+            }
+
+            return null;
+		}
+
+		public bool ValidateToken(string token)
         {
             if (string.IsNullOrEmpty(token))
                 return false;

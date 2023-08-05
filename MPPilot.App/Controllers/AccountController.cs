@@ -1,12 +1,9 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using MPBoom.Domain.Exceptions;
 using MPBoom.Domain.Services.Security.Token;
 using MPPilot.App.Models;
 using MPPilot.App.Services;
-using System.Security.Claims;
 
 namespace MPPilot.App.Controllers
 {
@@ -24,8 +21,7 @@ namespace MPPilot.App.Controllers
         [HttpGet]
         public IActionResult Register()
         {
-            var account = new AccountDTO();
-            return View("Register", account);
+            return View();
         }
 
         [HttpPost]
@@ -44,13 +40,13 @@ namespace MPPilot.App.Controllers
 				ModelState.AddModelError(string.Empty, ex.Message);
             }
 
-			return View("Register", accountDTO);
+			return View(accountDTO);
 		}
 
         [HttpGet]
         public IActionResult Login()
         {
-            return View("Login");
+            return View();
         }
 
         [HttpPost]
@@ -62,7 +58,7 @@ namespace MPPilot.App.Controllers
             {
                 ModelState.Clear();
                 ModelState.AddModelError(string.Empty, "Неверный логин или пароль!");
-                return View("Login", accountDTO);
+                return View(accountDTO);
             }
             else
             {
