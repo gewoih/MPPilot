@@ -59,6 +59,8 @@ namespace MPPilot.App
 
 			app.UseHttpsRedirection();
 
+			app.UseStaticFiles();
+
 			app.UseMiddleware<JWTAuthenticationMiddleware>();
 
 			app.UseAuthentication();
