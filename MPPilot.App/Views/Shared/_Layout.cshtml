@@ -1,53 +1,64 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - MPPilot.App</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/MPPilot.App.styles.css" asp-append-version="true" />
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewData["Title"] - MPPilot.App</title>
+	<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/MPPilot.App.styles.css" asp-append-version="true" />
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css" />
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">MPPilot.App</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Adverts" asp-action="Index">Список кампаний</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Settings" asp-action="Index">Настройки</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Register">Регистрация</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+<body id="body-pd">
+	<header class="header" id="header">
+		<div class="header_toggle">
+			<i class='bx bx-menu' id="header-toggle"></i>
+		</div>
+		<div class="header_img">
+			<img src="https://i.imgur.com/hczKIze.jpg" alt="">
+		</div>
+	</header>
+	<div class="l-navbar" id="nav-bar">
+		<nav class="nav">
+			<div>
+				<a href="#" class="nav_logo"> <i class='bx bx-layer nav_logo-icon'></i> <span class="nav_logo-name">MPPilot</span> </a>
+				<div class="nav_list">
+					<a href="#" class="nav_link active">
+						<i class='bx bx-grid-alt nav_icon'></i>
+						<span class="nav_name">Панель управления</span>
+					</a>
+					<a href="#" class="nav_link">
+						<i class='bx bx-user nav_icon'></i>
+						<span class="nav_name">Рекламные кампании</span>
+					</a>
+					<a href="#" class="nav_link">
+						<i class='bx bx-message-square-detail nav_icon'></i>
+						<span class="nav_name">Управление бюджетом</span>
+					</a>
+					<a href="#" class="nav_link">
+						<i class='bx bx-bookmark nav_icon'></i>
+						<span class="nav_name">Статистика</span>
+					</a>
+					<a href="#" class="nav_link">
+						<i class='bx bx-bar-chart-alt-2 nav_icon'></i>
+						<span class="nav_name">Настройки</span>
+					</a>
+				</div>
+			</div>
+			<a href="#" class="nav_link">
+				<i class='bx bx-log-out nav_icon'></i>
+				<span class="nav_name">Выйти</span>
+			</a>
+		</nav>
+	</div>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+	<main role="main" class="pb-3">
+		@RenderBody()
+	</main>
+
+	<script src="~/lib/jquery/dist/jquery.min.js"></script>
+	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="~/js/site.js" asp-append-version="true"></script>
+	@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
