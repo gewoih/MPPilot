@@ -1,3 +1,70 @@
 ﻿@using MPBoom.Domain.Models.Advert;
+@using MPBoom.Domain.Utils;
 
 @model IEnumerable<Advert>
+
+<div class="justify-content-center">
+	<div class="centered-container">
+        <link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet" />
+
+        <table id="data-table" class="table table-striped table-hover display">
+            <thead>
+                <tr>
+                    <th class="filterable">Тип</th>
+                    <th class="filterable">Название</th>
+                    <th class="filterable">Фраза</th>
+                    <th>Арт.</th>
+                    <th>Статус</th>
+
+                    <th>Просмотры</th>
+                    <th>Клики</th>
+                    <th>Заказы</th>
+                    <th>Стоимость 1 заказа</th>
+                    <th>Расход</th>
+
+                    <th>CPM</th>
+                    <th>CTR</th>
+                    <th>CPC</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Type.GetDescription()</td>
+                        <td>@item.Name</td>
+                         <td>@item.Keyword</td>
+                        <td>@item.ProductArticle</td>
+                        <td>@item.Status.GetDescription()</td>
+
+                        <td>@item.TotalViews</td>
+                        <td>@item.Clicks</td>
+                        <td>@item.Orders</td>
+                        <td>@(item.OrderCost.ToString("#.##"))р.</td>
+                        <td>@(item.TotalSpent.ToString("#.##"))р.</td>
+
+                        <td>@item.CPM</td>
+                        <td>@item.CTR</td>
+                        <td>@item.CPC.ToString("#.##")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @section Scripts {
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+            <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+            <script>
+                $(document).ready(function () {
+                    $('#data-table').DataTable({
+                        "paging": true,
+                        "pageLength": 10,
+                        "ordering": true,
+                        "searching": true
+                    });
+                });
+            </script>
+        }
+	</div>
+</div>
