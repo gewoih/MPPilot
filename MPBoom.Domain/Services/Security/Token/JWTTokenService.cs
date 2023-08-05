@@ -1,6 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using MPBoom.Domain.Models.Token;
-using MPBoom.Domain.Services.LocalStorage;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace MPBoom.Domain.Services.Security.Token
@@ -8,26 +7,20 @@ namespace MPBoom.Domain.Services.Security.Token
     public class JWTTokenService : ITokenService
     {
         private const string _localStorageKey = "Token";
-        private readonly ILocalStorageService _localStorageService;
 
-        public JWTTokenService(ILocalStorageService localStorageService)
+        public Task<string> GetTokenAsync()
         {
-            _localStorageService = localStorageService;
+            throw new NotImplementedException();
         }
 
-        public async Task SetTokenAsync(string token)
+        public Task RemoveTokenAsync()
         {
-            await _localStorageService.SetItemAsync(_localStorageKey, token);
+            throw new NotImplementedException();
         }
 
-        public async Task<string> GetTokenAsync()
+        public Task SetTokenAsync(string token)
         {
-            return await _localStorageService.GetItemAsync<string>(_localStorageKey);
-        }
-
-        public async Task RemoveTokenAsync()
-        {
-            await _localStorageService.RemoveItemAsync(_localStorageKey);
+            throw new NotImplementedException();
         }
 
         public async Task<bool> ValidateToken(string token)
