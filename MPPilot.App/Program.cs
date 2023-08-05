@@ -1,44 +1,72 @@
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using MPBoom.Domain.Models.Token;
 using MPBoom.Domain.Services.API;
 using MPBoom.Domain.Services.Security.Token;
 using MPPilot.App.Infrastructure;
+using MPPilot.App.Middleware;
+using MPPilot.App.Services;
 
 namespace MPPilot.App
 {
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
+	public class Program
+	{
+		public static void Main(string[] args)
+		{
+			var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddControllersWithViews();
+			builder.Services.AddControllersWithViews();
 
-            builder.Services.AddHttpClient();
+			var connectionString = builder.Configuration.GetConnectionString("Default");
+			builder.Services.AddDbContext<MPBoomContext>(options => options.UseNpgsql(connectionString));
+			builder.Services.AddHttpClient();
 
-            var connectionString = builder.Configuration.GetConnectionString("Default");
-            builder.Services.AddDbContext<MPBoomContext>(options => options.UseNpgsql(connectionString));
+			AuthOptions.SetKey(builder.Configuration);
+			builder.Services.AddSingleton<ITokenService, JWTTokenService>();
+			builder.Services.AddScoped<WildberriesService>();
+			builder.Services.AddScoped<AccountsService>();
 
-            builder.Services.AddScoped<ITokenService, JWTTokenService>();
-            builder.Services.AddScoped<WildberriesService>();
+			builder.Services.AddAuthentication(options =>
+			{
+				options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+				options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+				options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+			})
+				.AddJwtBearer(options =>
+				{
+					options.TokenValidationParameters = new TokenValidationParameters
+					{
+						ValidateIssuer = true,
+						ValidateAudience = true,
+						ValidateLifetime = true,
+						ValidateIssuerSigningKey = true,
+						ValidIssuer = AuthOptions.Issuer,
+						ValidAudience = AuthOptions.Audience,
+						IssuerSigningKey = AuthOptions.GetSecurityKey()
+					};
+				});
 
-            var app = builder.Build();
+			builder.Services.AddAuthorization();
 
-            if (!app.Environment.IsDevelopment())
-            {
-                app.UseExceptionHandler("/Home/Error");
-                app.UseHsts();
-            }
+			var app = builder.Build();
 
-            app.MapDefaultControllerRoute();
+			if (!app.Environment.IsDevelopment())
+			{
+				app.UseExceptionHandler("/Home/Error");
+				app.UseHsts();
+			}
 
-            app.UseHttpsRedirection();
-            app.UseStaticFiles();
+			app.UseHttpsRedirection();
 
-            app.UseRouting();
+			app.UseMiddleware<JWTAuthenticationMiddleware>();
 
-            app.UseAuthorization();
+			app.UseAuthentication();
+			app.UseAuthorization();
 
-            app.Run();
-        }
-    }
+			app.MapDefaultControllerRoute();
+
+			app.Run();
+		}
+	}
 }

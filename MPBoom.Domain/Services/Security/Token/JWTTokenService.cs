@@ -1,29 +1,33 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using MPBoom.Domain.Models.Token;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace MPBoom.Domain.Services.Security.Token
 {
     public class JWTTokenService : ITokenService
     {
-        private const string _localStorageKey = "Token";
-
-        public Task<string> GetTokenAsync()
+        public string GenerateToken(ClaimsIdentity identity)
         {
-            throw new NotImplementedException();
+            var securityKey = AuthOptions.GetSecurityKey();
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Issuer = AuthOptions.Issuer,
+                Audience = AuthOptions.Audience,
+                Subject = identity,
+                Expires = DateTime.UtcNow.Add(AuthOptions.Lifetime),
+                SigningCredentials = credentials
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var securityToken = tokenHandler.CreateToken(tokenDescriptor);
+
+            return tokenHandler.WriteToken(securityToken);
         }
 
-        public Task RemoveTokenAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task SetTokenAsync(string token)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<bool> ValidateToken(string token)
+        public bool ValidateToken(string token)
         {
             if (string.IsNullOrEmpty(token))
                 return false;

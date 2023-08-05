@@ -8,7 +8,7 @@ namespace MPBoom.Domain.Models.Account
         public string Email { get; set; }
 		public string Password { get; set; }
 
-        public AccountSettings AccountSettings { get; set; }
-        public Guid AccountSettingsId { get; set; }
+        public AccountSettings? AccountSettings { get; set; }
+        public Guid? AccountSettingsId { get; set; }
     }
 }
