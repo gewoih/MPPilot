@@ -1,0 +1,30 @@
+﻿@using MPPilot.Domain.Models.Accounts;
+@model AccountSettings
+
+@if (!ViewData.ModelState.IsValid)
+{
+	<div class="alert alert-danger">
+		<ul>
+			@foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+			{
+				<li>@error.ErrorMessage</li>
+			}
+		</ul>
+	</div>
+}
+
+<div class="d-flex justify-content-center align-items-center" style="height: 80vh;">
+	<div class="centered-container">
+		<h3>Авторизация</h3>
+		<form style="justify-content: center" asp-controller="Settings" asp-action="Save" method="post">
+			<div class="form-group mb-3">
+				<label>Wildberries API-ключ:</label>
+				<input asp-for="WildberriesApiKey" type="text" class="form-control" required="true">
+			</div>
+			<div class="btn-group-vertical w-100">
+				<button type="submit" class="btn btn-primary">Сохранить</button>
+				<a class="btn btn-link" href="https://seller.wildberries.ru/supplier-settings/access-to-api" target="_blank">Где взять API-ключ?</a>
+			</div>
+		</form>
+	</div>
+</div>

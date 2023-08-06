@@ -1,0 +1,34 @@
+﻿@using MPPilot.Domain.Models.Accounts;
+@model Account
+
+@if (!ViewData.ModelState.IsValid)
+{
+	<div class="alert alert-danger">
+		<ul>
+			@foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+			{
+				<li>@error.ErrorMessage</li>
+			}
+		</ul>
+	</div>
+}
+
+<div class="d-flex justify-content-center align-items-center" style="height: 80vh;">
+	<div class="centered-container">
+		<h3>Авторизация</h3>
+		<form style="justify-content: center" asp-controller="Account" asp-action="Login" method="post">
+			<div class="form-group mb-3">
+				<label>Email:</label>
+				<input asp-for="Email" type="email" class="form-control" required="true">
+			</div>
+			<div class="form-group mb-3">
+				<label>Пароль:</label>
+				<input asp-for="Password" type="password" class="form-control" required="true">
+			</div>
+			<div class="btn-group-vertical w-100">
+				<button type="submit" class="btn btn-primary">Войти</button>
+				<a class="btn btn-light" href="/Account/Register">Создать аккаунт</a>
+			</div>
+		</form>
+	</div>
+</div>
