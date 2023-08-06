@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using MPPilot.App.Infrastructure;
 using MPPilot.App.Middleware;
-using MPPilot.App.Services;
+using MPPilot.Domain.Infrastructure;
 using MPPilot.Domain.Models.Token;
+using MPPilot.Domain.Services.Account;
 using MPPilot.Domain.Services.API;
 using MPPilot.Domain.Services.Security.Token;
 

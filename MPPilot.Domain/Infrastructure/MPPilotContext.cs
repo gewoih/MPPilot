@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MPPilot.Domain.Models.Account;
 
-namespace MPPilot.App.Infrastructure
+namespace MPPilot.Domain.Infrastructure
 {
     public class MPPilotContext : DbContext
     {
@@ -12,10 +12,10 @@ namespace MPPilot.App.Infrastructure
         {
         }
 
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //Account
-			modelBuilder.Entity<Account>()
+            modelBuilder.Entity<Account>()
                 .Property(a => a.CreatedDate)
                 .HasDefaultValue(DateTimeOffset.Now)
                 .ValueGeneratedOnAdd();
@@ -29,23 +29,23 @@ namespace MPPilot.App.Infrastructure
                 .HasIndex(a => a.Email)
                 .IsUnique();
 
-            
+
             //AccountSettings
-			modelBuilder.Entity<AccountSettings>()
-				.Property(a => a.CreatedDate)
-				.HasDefaultValue(DateTimeOffset.Now)
-				.ValueGeneratedOnAdd();
+            modelBuilder.Entity<AccountSettings>()
+                .Property(a => a.CreatedDate)
+                .HasDefaultValue(DateTimeOffset.Now)
+                .ValueGeneratedOnAdd();
 
-			modelBuilder.Entity<AccountSettings>()
-				.Property(a => a.UpdatedDate)
-				.HasDefaultValue(DateTimeOffset.Now)
-				.ValueGeneratedOnAddOrUpdate();
+            modelBuilder.Entity<AccountSettings>()
+                .Property(a => a.UpdatedDate)
+                .HasDefaultValue(DateTimeOffset.Now)
+                .ValueGeneratedOnAddOrUpdate();
 
-			modelBuilder.Entity<AccountSettings>()
-				.HasIndex(a => a.WildberriesApiKey)
-				.IsUnique();
+            modelBuilder.Entity<AccountSettings>()
+                .HasIndex(a => a.WildberriesApiKey)
+                .IsUnique();
 
-			base.OnModelCreating(modelBuilder);
+            base.OnModelCreating(modelBuilder);
         }
     }
 }

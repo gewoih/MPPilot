@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MPPilot.App.Models;
-using MPPilot.App.Services;
+using MPPilot.Domain.Services.Account;
 
 namespace MPPilot.App.Controllers
 {
-	[Authorize]
+    [Authorize]
 	public class SettingsController : Controller
     {
         private readonly AccountsService _accountsService;

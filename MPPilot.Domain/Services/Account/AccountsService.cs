@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using MPPilot.App.Infrastructure;
 using MPPilot.App.Models;
 using MPPilot.Domain.Exceptions;
+using MPPilot.Domain.Infrastructure;
 using MPPilot.Domain.Models.Account;
 using MPPilot.Domain.Services.Security;
 using MPPilot.Domain.Services.Security.Token;
 using System.Security.Claims;
 
-namespace MPPilot.App.Services
+namespace MPPilot.Domain.Services.Account
 {
     public class AccountsService
     {
@@ -60,7 +60,7 @@ namespace MPPilot.App.Services
                 new Claim(ClaimTypes.NameIdentifier, account.Id.ToString()),
                 new Claim(ClaimTypes.Email, account.Email),
                 new Claim(ClaimTypes.Name, account.Name),
-			};
+            };
 
             var identity = new ClaimsIdentity(claims, JwtBearerDefaults.AuthenticationScheme);
             return identity;
@@ -90,15 +90,15 @@ namespace MPPilot.App.Services
         public async Task<Account?> GetCurrentAccount()
         {
             var currentUser = _httpContextAccessor?.HttpContext?.User;
-            if (currentUser is null) 
+            if (currentUser is null)
                 return null;
 
-			var userId = Guid.Parse(currentUser.Claims.First(claim => claim.Type.Equals(ClaimTypes.NameIdentifier, StringComparison.OrdinalIgnoreCase)).Value);
+            var userId = Guid.Parse(currentUser.Claims.First(claim => claim.Type.Equals(ClaimTypes.NameIdentifier, StringComparison.OrdinalIgnoreCase)).Value);
 
             return await FindByIdAsync(userId);
-		}
+        }
 
-		private async Task<Account?> FindBycredentials(AccountDTO accountDTO)
+        private async Task<Account?> FindBycredentials(AccountDTO accountDTO)
         {
             var passwordHash = PasswordHasher.GetHashedString(accountDTO.Password, accountDTO.Email);
 
