@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace MPPilot.App.Migrations
 {
-    [DbContext(typeof(MPBoomContext))]
+    [DbContext(typeof(MPPilotContext))]
     [Migration("20230805133344_accountSettings_nullable")]
     partial class accountSettings_nullable
     {

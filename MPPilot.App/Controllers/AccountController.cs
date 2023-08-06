@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
-using MPBoom.Domain.Exceptions;
-using MPBoom.Domain.Services.Security.Token;
 using MPPilot.App.Models;
 using MPPilot.App.Services;
+using MPPilot.Domain.Exceptions;
+using MPPilot.Domain.Services.Security.Token;
 
 namespace MPPilot.App.Controllers
 {

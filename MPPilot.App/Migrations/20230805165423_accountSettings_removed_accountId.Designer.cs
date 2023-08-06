@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace MPPilot.App.Migrations
 {
-    [DbContext(typeof(MPBoomContext))]
+    [DbContext(typeof(MPPilotContext))]
     [Migration("20230805165423_accountSettings_removed_accountId")]
     partial class accountSettings_removed_accountId
     {

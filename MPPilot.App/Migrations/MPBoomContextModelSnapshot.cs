@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace MPPilot.App.Migrations
 {
-    [DbContext(typeof(MPBoomContext))]
+    [DbContext(typeof(MPPilotContext))]
     partial class MPBoomContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

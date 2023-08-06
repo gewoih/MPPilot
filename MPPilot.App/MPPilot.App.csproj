@@ -14,13 +14,13 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
-	<PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.31.0" />
-	<PackageReference Include="Microsoft.IdentityModel.Protocols" Version="6.31.0" />
-	<PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.31.0" />
+	<PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.32.1" />
+	<PackageReference Include="Microsoft.IdentityModel.Protocols" Version="6.32.1" />
+	<PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.32.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MPBoom.Domain\MPBoom.Domain.csproj" />
+    <ProjectReference Include="..\MPPilot.Domain\MPPilot.Domain.csproj" />
   </ItemGroup>
 
 </Project>

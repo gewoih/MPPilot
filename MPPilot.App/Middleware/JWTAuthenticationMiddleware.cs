@@ -1,8 +1,8 @@
-﻿using MPBoom.Domain.Services.Security.Token;
+﻿using MPPilot.Domain.Services.Security.Token;
 
 namespace MPPilot.App.Middleware
 {
-	public class JWTAuthenticationMiddleware
+    public class JWTAuthenticationMiddleware
 	{
 		private readonly RequestDelegate _next;
 		private readonly ITokenService _tokenService;

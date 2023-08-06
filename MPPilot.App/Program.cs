@@ -1,16 +1,16 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using MPBoom.Domain.Models.Token;
-using MPBoom.Domain.Services.API;
-using MPBoom.Domain.Services.Security.Token;
 using MPPilot.App.Infrastructure;
 using MPPilot.App.Middleware;
 using MPPilot.App.Services;
+using MPPilot.Domain.Models.Token;
+using MPPilot.Domain.Services.API;
+using MPPilot.Domain.Services.Security.Token;
 
 namespace MPPilot.App
 {
-	public class Program
+    public class Program
 	{
 		public static void Main(string[] args)
 		{
@@ -19,7 +19,7 @@ namespace MPPilot.App
 			builder.Services.AddControllersWithViews();
 
 			var connectionString = builder.Configuration.GetConnectionString("Default");
-			builder.Services.AddDbContext<MPBoomContext>(options => options.UseNpgsql(connectionString));
+			builder.Services.AddDbContext<MPPilotContext>(options => options.UseNpgsql(connectionString));
 			builder.Services.AddHttpClient();
 			builder.Services.AddHttpContextAccessor();
 

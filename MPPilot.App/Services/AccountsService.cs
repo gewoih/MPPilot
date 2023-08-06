@@ -1,23 +1,22 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using MPBoom.Domain.Exceptions;
-using MPBoom.Domain.Models.Account;
-using MPBoom.Domain.Services.Security;
-using MPBoom.Domain.Services.Security.Token;
 using MPPilot.App.Infrastructure;
 using MPPilot.App.Models;
-using System.IdentityModel.Tokens.Jwt;
+using MPPilot.Domain.Exceptions;
+using MPPilot.Domain.Models.Account;
+using MPPilot.Domain.Services.Security;
+using MPPilot.Domain.Services.Security.Token;
 using System.Security.Claims;
 
 namespace MPPilot.App.Services
 {
-	public class AccountsService
+    public class AccountsService
     {
-        private readonly MPBoomContext _context;
+        private readonly MPPilotContext _context;
         private readonly ITokenService _tokenService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AccountsService(MPBoomContext context, ITokenService tokenService, IHttpContextAccessor httpContextAccessor)
+        public AccountsService(MPPilotContext context, ITokenService tokenService, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _tokenService = tokenService;
