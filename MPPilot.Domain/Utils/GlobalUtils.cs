@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.ComponentModel;
 using System.Reflection;
 
 namespace MPPilot.Domain.Utils
@@ -19,11 +20,14 @@ namespace MPPilot.Domain.Utils
             var changedProperies = new List<PropertyInfo>();
             foreach (var property in properties)
             {
-                object oldValue = property.GetValue(oldObject);
-                object newValue = property.GetValue(newObject);
+                if (property.GetCustomAttribute<DescriptionAttribute>() != null)
+                {
+                    object oldValue = property.GetValue(oldObject);
+                    object newValue = property.GetValue(newObject);
 
-                if (!Equals(oldValue, newValue) && !IsNullAndEmptyString(oldValue, newValue))
-                    changedProperies.Add(property);
+                    if (!Equals(oldValue, newValue) && !IsNullAndEmptyString(oldValue, newValue))
+                        changedProperies.Add(property);
+                }
             }
 
             return changedProperies;

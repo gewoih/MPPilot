@@ -162,8 +162,6 @@ namespace MPPilot.Domain.Services
             if (count is not null)
                 query += $"limit={count}&";
 
-            query += "order=change&direction=desc&";
-
             return query;
         }
 
@@ -193,8 +191,6 @@ namespace MPPilot.Domain.Services
                     Status = (AdvertStatus)element.Value<int>("status"),
                     Type = (AdvertType)element.Value<int>("type"),
                 };
-                newCampaign.IsEnabled = newCampaign.Status == AdvertStatus.InProgress;
-                newCampaign.IsAvailableToEnable = newCampaign.Status != AdvertStatus.Finished;
 
                 advertCampaigns.Add(newCampaign);
             }

@@ -2,68 +2,154 @@
 @using MPPilot.Domain.Utils;
 @model IEnumerable<Advert>
 
-<div class="justify-content-center">
-	<div class="centered-container">
-        <link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet" />
 
-        <table id="data-table" class="table table-striped table-hover display">
-            <thead>
-                <tr>
-                    <th class="filterable">Тип</th>
-                    <th class="filterable">Название</th>
-                    <th class="filterable">Фраза</th>
-                    <th>Арт.</th>
-                    <th>Статус</th>
+<table id="data-table" class="table table-striped table-hover display">
+	<thead>
+		<tr>
+			<th class="filterable">Тип</th>
+			<th class="filterable">Название</th>
+			<th class="filterable">Фраза</th>
+			<th>Арт.</th>
+			<th>Статус</th>
 
-                    <th>Просмотры</th>
-                    <th>Клики</th>
-                    <th>Заказы</th>
-                    <th>Стоимость заказа (р.)</th>
-                    <th>Расход (р.)</th>
+			<th>Просмотры</th>
+			<th>Клики</th>
+			<th>Заказы</th>
+			<th>Стоимость заказа (р.)</th>
+			<th>Расход (р.)</th>
 
-                    <th>CPM</th>
-                    <th>CTR</th>
-                    <th>CPC</th>
-                </tr>
-            </thead>
-            <tbody>
+			<th>CPM</th>
+			<th>CTR</th>
+			<th>CPC</th>
+		</tr>
+	</thead>
+	<tbody>
 
-                @foreach (var item in Model)
-                {
-                    <tr>
-                        <td>@item.Type.GetDescription()</td>
-                        <td>@item.Name</td>
-                         <td>@item.Keyword</td>
-                        <td>@item.ProductArticle</td>
-                        <td>@item.Status.GetDescription()</td>
+		@foreach (var item in Model)
+		{
+			<tr class="edit-button" data-advertId="@item.AdvertId">
+				<td>@item.Type.GetDescription()</td>
+				<td>@item.Name</td>
+				<td>@item.Keyword</td>
+				<td>@item.ProductArticle</td>
+				<td>@item.Status.GetDescription()</td>
 
-                        <td>@item.TotalViews</td>
-                        <td>@item.Clicks</td>
-                        <td>@item.Orders</td>
-                        <td>@(item.OrderCost.ToString("F2"))</td>
-                        <td>@(item.TotalSpent.ToString("F2"))</td>
+				<td>@item.TotalViews</td>
+				<td>@item.Clicks</td>
+				<td>@item.Orders</td>
+				<td>@(item.OrderCost.ToString("F2"))</td>
+				<td>@(item.TotalSpent.ToString("F2"))</td>
 
-                        <td>@item.CPM</td>
-                        <td>@item.CTR</td>
-                        <td>@item.CPC.ToString("F2")</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-
-        @section Scripts {
-            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-            <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-            <script>
-                $(document).ready(function () {
-                    $('#data-table').DataTable({
-                        "paging": true,
-                        "pageLength": 10,
-                        "ordering": true,
-                        "searching": true
-                    });
-                });
-            </script>
-        }
+				<td>@item.CPM.ToString("F2")</td>
+				<td>@item.CTR.ToString("F2")</td>
+				<td>@item.CPC.ToString("F2")</td>
+			</tr>
+		}
+	</tbody>
+</table>
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel">Настройки рекламной кампании</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<div class="form-group py-1">
+					<label for="advertNameInput">Название:</label>
+					<input type="text" class="form-control" id="advertNameInput">
+				</div>
+				<div class="form-group py-1">
+					<label for="advertKeywordInput">Ключевая фраза:</label>
+					<input type="text" class="form-control" id="advertKeywordInput">
+				</div>
+				<div class="form-check form-switch py-1">
+					<label class="form-check-label" for="advertIsEnabled">Вкл/Выкл.</label>
+					<input class="form-check-input" type="checkbox" id="advertIsEnabled">
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+				<button type="button" class="btn btn-primary" id="saveButton">Сохранить</button>
+			</div>
+		</div>
 	</div>
 </div>
+
+@section Scripts {
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+	<script>
+		$(document).ready(function () {
+			$('#data-table').DataTable({
+				"paging": true,
+				"pageLength": 10,
+				"ordering": false,
+				"searching": true
+			});
+		});
+	</script>
+
+	<script>
+		let advertId;
+		let advertName;
+		let advertKeyword;
+		let advertIsEnabled;
+
+		$(".edit-button").click(function () {
+			advertId = $(this).data("advertid");
+			
+			var model = @Html.Raw(Json.Serialize(Model));
+			var advert = model.find(function (item) {
+				return item.advertId === advertId;
+			});
+
+			advertName = advert.name;
+			advertKeyword = advert.keyword;
+			advertIsEnabled = advert.isEnabled;
+
+			if (advert) {
+				$("#advertId").val(advertId);
+				$("#advertNameInput").val(advertName);
+				$("#advertKeywordInput").val(advertKeyword);
+				$("#advertIsEnabled").prop("checked", advertIsEnabled);
+				
+				var modal = new bootstrap.Modal(document.getElementById("exampleModal"));
+				modal.show();
+			}
+			else {
+				alert("Рекламная кампания " + id + " не найдена");
+			}
+		});
+
+		$("#saveButton").click(function () {
+			var model = @Html.Raw(Json.Serialize(Model));
+			var oldAdvert = model.find(function (item) {
+				return item.advertId === advertId;
+			});
+
+			var status = $("#advertIsEnabled").prop("checked") ? "InProgress" : "Stopped";
+
+			var newAdvert = {
+				advertId: advertId,
+				name: $("#advertNameInput").val(),
+				keyword: $("#advertKeywordInput").val(),
+				status: status
+			};
+
+			$.post("/Adverts/Edit", { oldAdvert: oldAdvert, newAdvert: newAdvert }, function (data) {
+				if (data.success) {
+					location.reload();
+				} 
+				else {
+					alert("Ошибка при сохранении данных.");
+				}
+
+				var modal = new bootstrap.Modal(document.getElementById("exampleModal"));
+				modal.hide();
+			});
+		});
+	</script>
+}
