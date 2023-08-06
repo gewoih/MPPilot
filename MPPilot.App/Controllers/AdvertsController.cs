@@ -8,7 +8,7 @@ namespace MPPilot.App.Controllers
     {
         private readonly WildberriesService _wildberriesService;
 
-        public AdvertsController(WildberriesService wildberriesService) 
+        public AdvertsController(WildberriesService wildberriesService)
         {
             _wildberriesService = wildberriesService;
             _wildberriesService.SetApiKey("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NJRCI6IjExYTEzYjJhLTBjY2ItNDhhYS04NjE1LTYyNDg3NmY4MzdjZSJ9.0Lhiz7X_SjLE-kOqXEJ7BEIVdH673sbpVMfuV9VyX5M");
@@ -19,11 +19,19 @@ namespace MPPilot.App.Controllers
         {
             try
             {
-                var searchAdverts = await _wildberriesService.GetAdvertsAsync(type: AdvertType.Search);
-                var productPageAdverts = await _wildberriesService.GetAdvertsAsync(type: AdvertType.ProductPage);
+                var adverts = new List<Advert>();
+                var searchAdvertsTask = _wildberriesService.GetAdvertsAsync(type: AdvertType.Search);
+                var productPageAdvertsTask = _wildberriesService.GetAdvertsAsync(type: AdvertType.ProductPage);
+                await Task.WhenAll(searchAdvertsTask, productPageAdvertsTask)
+                    .ContinueWith(task =>
+                    {
+                        foreach (var list in task.Result)
+                        {
+                            adverts.AddRange(list);
+                        }
+                    });
 
-                var _adverts = searchAdverts.Concat(productPageAdverts);
-                return View(_adverts);
+                return View(adverts);
             }
             catch
             {

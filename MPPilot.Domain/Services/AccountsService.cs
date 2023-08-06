@@ -60,24 +60,23 @@ namespace MPPilot.Domain.Services
             return identity;
         }
 
-        public async Task<bool> SaveSettings(AccountSettings settings)
+        public async Task SaveSettings(AccountSettings settings)
         {
+            var currentAccount = await GetCurrentAccount() ?? throw new UnauthorizedAccessException("Пользователь не авторизован");
+            currentAccount.AccountSettings = new AccountSettings
+            {
+                WildberriesApiKey = settings.WildberriesApiKey
+            };
+
+            _context.Accounts.Update(currentAccount);
+
             try
             {
-                var currentAccount = await GetCurrentAccount();
-                currentAccount.AccountSettings = new AccountSettings
-                {
-                    WildberriesApiKey = settings.WildberriesApiKey
-                };
-
-                _context.Accounts.Update(currentAccount);
                 await _context.SaveChangesAsync();
-
-                return true;
             }
-            catch
+            catch (DbUpdateException)
             {
-                return false;
+                throw new APIKeyAlreadyExistsException("Данный API-ключ уже используется другим пользователем");
             }
         }
 

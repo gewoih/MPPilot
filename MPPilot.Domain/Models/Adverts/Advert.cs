@@ -20,11 +20,11 @@ namespace MPPilot.Domain.Models.Adverts
         public int AddedToCart { get; set; }
         public int Orders { get; set; }
         public double OrdersSum { get; set; }
-        public double CTR => TotalViews > 0 ? Clicks / TotalViews * 100 : 0;
+        public double CTR => TotalViews > 0 ? (double)Clicks / TotalViews * 100 : 0;
         public double CPC => Clicks > 0 ? TotalSpent / Clicks : 0;
-        public double Frequency => UniqueViews > 0 ? TotalViews / UniqueViews : 0;
+        public double Frequency => UniqueViews > 0 ? (double)TotalViews / UniqueViews : 0;
         public double OrderCost => Orders > 0 ? TotalSpent / Orders : 0;
-        public double ConversionRate => Clicks > 0 ? Orders / Clicks * 100 : 0;
+        public double ConversionRate => Clicks > 0 ? (double)Orders / Clicks * 100 : 0;
         public AdvertType Type { get; set; }
         public string TypeString => Type.GetDescription();
         public AdvertStatus Status { get; set; }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MPPilot.Domain.Exceptions;
 using MPPilot.Domain.Models.Accounts;
 using MPPilot.Domain.Services;
 
@@ -23,14 +24,16 @@ namespace MPPilot.App.Controllers
         [HttpPost]
         public async Task<IActionResult> Save(AccountSettings settings)
         {
-			var isSaved = await _accountsService.SaveSettings(settings);
-                
-            if (isSaved)
-                return RedirectToAction("Index", "Adverts");
-            else
+            try
             {
-                ModelState.AddModelError(string.Empty, "Произошла ошибка при сохранении API-ключа");
+                await _accountsService.SaveSettings(settings);
+                return RedirectToAction("Index", "Adverts");
+            }
+            catch (APIKeyAlreadyExistsException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
                 return View("Index", settings);
+
             }
         }
     }

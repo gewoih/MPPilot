@@ -7,10 +7,7 @@ namespace MPPilot.Domain.Utils
     {
         public static T GetDeepCopy<T>(this T source)
         {
-            if (source == null)
-                return default;
-
-            string serializedObject = JsonConvert.SerializeObject(source);
+            var serializedObject = JsonConvert.SerializeObject(source);
             return JsonConvert.DeserializeObject<T>(serializedObject);
         }
 
