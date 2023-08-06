@@ -1,4 +1,5 @@
-﻿using MPPilot.Domain.Models.Base;
+﻿using MPPilot.Domain.Models.Autobidders;
+using MPPilot.Domain.Models.Base;
 
 namespace MPPilot.Domain.Models.Accounts
 {
@@ -10,5 +11,7 @@ namespace MPPilot.Domain.Models.Accounts
 
         public AccountSettings? AccountSettings { get; set; }
         public Guid? AccountSettingsId { get; set; }
+
+        public List<Autobidder> Autobidders { get; set; }
     }
 }
