@@ -3,11 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MPPilot.App.Middleware;
 using MPPilot.Domain.Infrastructure;
-using MPPilot.Domain.Models.Accounts;
 using MPPilot.Domain.Models.Auth;
 using MPPilot.Domain.Services;
+using MPPilot.Domain.Services.Autobidders;
 using MPPilot.Domain.Services.Token;
-using MPPilot.Domain.Utils;
+using System.Text;
 
 namespace MPPilot.App
 {
@@ -15,6 +15,8 @@ namespace MPPilot.App
 	{
 		public static void Main(string[] args)
 		{
+			Console.OutputEncoding = Encoding.UTF8;
+
 			var builder = WebApplication.CreateBuilder(args);
 
 			builder.Services.AddControllersWithViews();
@@ -26,8 +28,11 @@ namespace MPPilot.App
 
 			AuthOptions.SetKey(builder.Configuration);
 			builder.Services.AddSingleton<ITokenService, JWTTokenService>();
-			builder.Services.AddScoped<WildberriesService>();
+			builder.Services.AddSingleton<WildberriesService>();
 			builder.Services.AddScoped<AccountsService>();
+			builder.Services.AddScoped<AutobidderService>();
+			builder.Services.AddSingleton<AdvertsMarketService>();
+			builder.Services.AddSingleton<AutobiddersManager>();
 
 			builder.Services.AddAuthentication(options =>
 			{
@@ -52,6 +57,9 @@ namespace MPPilot.App
 			builder.Services.AddAuthorization();
 
 			var app = builder.Build();
+
+			var autobiddersManager = app.Services.GetRequiredService<AutobiddersManager>();
+			autobiddersManager.StartManagement();
 
 			if (!app.Environment.IsDevelopment())
 			{

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MPPilot.Domain.Models.Accounts;
+using MPPilot.Domain.Models.Autobidders;
 
 namespace MPPilot.Domain.Infrastructure
 {
@@ -7,6 +8,8 @@ namespace MPPilot.Domain.Infrastructure
     {
         public DbSet<Account> Accounts { get; set; }
         public DbSet<AccountSettings> AccountSettings { get; set; }
+        public DbSet<Autobidder> Autobidders { get; set; }
+        public DbSet<AdvertBid> AdvertBids { get; set; }
 
         public MPPilotContext(DbContextOptions options) : base(options)
         {
@@ -45,7 +48,35 @@ namespace MPPilot.Domain.Infrastructure
                 .HasIndex(a => a.WildberriesApiKey)
                 .IsUnique();
 
-            base.OnModelCreating(modelBuilder);
+
+			//Autobidders
+			modelBuilder.Entity<Autobidder>()
+				.Property(a => a.CreatedDate)
+				.HasDefaultValue(DateTimeOffset.Now)
+				.ValueGeneratedOnAdd();
+
+			modelBuilder.Entity<Autobidder>()
+				.Property(a => a.UpdatedDate)
+				.HasDefaultValue(DateTimeOffset.Now)
+				.ValueGeneratedOnAddOrUpdate();
+
+			modelBuilder.Entity<Autobidder>()
+				.HasIndex(a => a.AdvertId)
+				.IsUnique();
+
+
+			//AdvertBids
+			modelBuilder.Entity<AdvertBid>()
+				.Property(a => a.CreatedDate)
+				.HasDefaultValue(DateTimeOffset.Now)
+				.ValueGeneratedOnAdd();
+
+			modelBuilder.Entity<AdvertBid>()
+				.Property(a => a.UpdatedDate)
+				.HasDefaultValue(DateTimeOffset.Now)
+				.ValueGeneratedOnAddOrUpdate();
+
+			base.OnModelCreating(modelBuilder);
         }
     }
 }
