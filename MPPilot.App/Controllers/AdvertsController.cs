@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MPPilot.Domain.Models.Advert;
-using MPPilot.Domain.Services.API;
+using MPPilot.Domain.Models.Adverts;
+using MPPilot.Domain.Services;
 
 namespace MPPilot.App.Controllers
 {

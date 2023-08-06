@@ -3,10 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MPPilot.App.Middleware;
 using MPPilot.Domain.Infrastructure;
-using MPPilot.Domain.Models.Token;
-using MPPilot.Domain.Services.Account;
-using MPPilot.Domain.Services.API;
-using MPPilot.Domain.Services.Security.Token;
+using MPPilot.Domain.Models.Auth;
+using MPPilot.Domain.Services;
+using MPPilot.Domain.Services.Token;
 
 namespace MPPilot.App
 {

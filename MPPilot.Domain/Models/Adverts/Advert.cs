@@ -1,6 +1,6 @@
 ﻿using MPPilot.Domain.Utils;
 
-namespace MPPilot.Domain.Models.Advert
+namespace MPPilot.Domain.Models.Adverts
 {
     public class Advert
     {

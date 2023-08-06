@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MPPilot.App.Models;
-using MPPilot.Domain.Services.Account;
+using MPPilot.Domain.Models.Accounts;
+using MPPilot.Domain.Services;
 
 namespace MPPilot.App.Controllers
 {
@@ -21,7 +21,7 @@ namespace MPPilot.App.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Save(AccountSettingsDTO settings)
+        public async Task<IActionResult> Save(AccountSettings settings)
         {
 			var isSaved = await _accountsService.SaveSettings(settings);
                 

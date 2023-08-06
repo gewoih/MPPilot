@@ -1,4 +1,4 @@
-﻿using MPPilot.Domain.Services.Security.Token;
+﻿using MPPilot.Domain.Services.Token;
 
 namespace MPPilot.App.Middleware
 {

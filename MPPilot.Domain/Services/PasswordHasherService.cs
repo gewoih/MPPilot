@@ -1,9 +1,9 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace MPPilot.Domain.Services.Security
+namespace MPPilot.Domain.Services
 {
-    public static class PasswordHasher
+    public static class PasswordHasherService
     {
         public static string GetHashedString(string value, string salt)
         {

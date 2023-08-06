@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
-using MPPilot.Domain.Models.Token;
+using MPPilot.Domain.Models.Auth;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
-namespace MPPilot.Domain.Services.Security.Token
+namespace MPPilot.Domain.Services.Token
 {
     public class JWTTokenService : ITokenService
     {

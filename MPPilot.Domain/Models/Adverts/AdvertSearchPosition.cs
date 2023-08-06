@@ -1,4 +1,4 @@
-﻿namespace MPPilot.Domain.Models.Advert
+﻿namespace MPPilot.Domain.Models.Adverts
 {
     public class AdvertSearchPosition
     {

@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace MPPilot.Domain.Services.Security.Token
+namespace MPPilot.Domain.Services.Token
 {
     public interface ITokenService
     {

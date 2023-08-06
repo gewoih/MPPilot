@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace MPPilot.Domain.Models.Advert
+namespace MPPilot.Domain.Models.Adverts
 {
     public enum AdvertType
     {

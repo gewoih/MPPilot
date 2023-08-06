@@ -1,12 +1,12 @@
 ﻿using MPPilot.Domain.Exceptions;
-using MPPilot.Domain.Models.Advert;
+using MPPilot.Domain.Models.Adverts;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Globalization;
 using System.Net;
 using System.Text;
 
-namespace MPPilot.Domain.Services.API
+namespace MPPilot.Domain.Services
 {
     public class WildberriesService : IDisposable
     {

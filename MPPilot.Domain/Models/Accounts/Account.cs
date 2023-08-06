@@ -1,6 +1,6 @@
 ﻿using MPPilot.Domain.Models.Base;
 
-namespace MPPilot.Domain.Models.Account
+namespace MPPilot.Domain.Models.Accounts
 {
     public class Account : Entity
     {

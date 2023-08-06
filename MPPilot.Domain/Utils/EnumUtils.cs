@@ -10,7 +10,7 @@ namespace MPPilot.Domain.Utils
             var attribute = e.GetType()
                                 .GetTypeInfo()
                                 .GetMember(e.ToString())
-                                .FirstOrDefault(member => member.MemberType == MemberTypes.Field)
+                                .FirstOrDefault(member => member.MemberType == MemberTypes.Field)?
                                 .GetCustomAttributes(typeof(DescriptionAttribute), false)
                                 .SingleOrDefault()
                                 as DescriptionAttribute;

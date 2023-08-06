@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using MPPilot.Domain.Models.Account;
+using MPPilot.Domain.Models.Accounts;
 
 namespace MPPilot.Domain.Infrastructure
 {

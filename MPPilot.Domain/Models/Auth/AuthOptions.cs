@@ -3,7 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace MPPilot.Domain.Models.Token
+namespace MPPilot.Domain.Models.Auth
 {
     public class AuthOptions
     {

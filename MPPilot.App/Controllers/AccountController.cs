@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
-using MPPilot.App.Models;
 using MPPilot.Domain.Exceptions;
-using MPPilot.Domain.Services.Account;
-using MPPilot.Domain.Services.Security.Token;
+using MPPilot.Domain.Models.Accounts;
+using MPPilot.Domain.Services;
+using MPPilot.Domain.Services.Token;
 
 namespace MPPilot.App.Controllers
 {
@@ -25,11 +25,11 @@ namespace MPPilot.App.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(AccountDTO accountDTO)
+        public async Task<IActionResult> Register(Account account)
         {
             try
             {
-                var isRegistered = await _accountService.RegisterAsync(accountDTO);
+                var isRegistered = await _accountService.RegisterAsync(account);
                 if (!isRegistered)
                     ModelState.AddModelError(string.Empty, "Неизвестная ошибка при регистрации пользователя.");
 					
@@ -40,7 +40,7 @@ namespace MPPilot.App.Controllers
 				ModelState.AddModelError(string.Empty, ex.Message);
             }
 
-			return View(accountDTO);
+			return View(account);
 		}
 
         [HttpGet]
@@ -50,15 +50,15 @@ namespace MPPilot.App.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(AccountDTO accountDTO)
+        public async Task<IActionResult> Login(Account account)
         {
-            var identity = await _accountService.LoginAsync(accountDTO);
+            var identity = await _accountService.LoginAsync(account.Email, account.Password);
 
             if (identity is null)
             {
                 ModelState.Clear();
                 ModelState.AddModelError(string.Empty, "Неверный логин или пароль!");
-                return View(accountDTO);
+                return View(account);
             }
             else
             {

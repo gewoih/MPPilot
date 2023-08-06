@@ -1,6 +1,5 @@
-﻿@using MPPilot.Domain.Models.Advert;
+﻿@using MPPilot.Domain.Models.Adverts;
 @using MPPilot.Domain.Utils;
-
 @model IEnumerable<Advert>
 
 <div class="justify-content-center">
@@ -19,8 +18,8 @@
                     <th>Просмотры</th>
                     <th>Клики</th>
                     <th>Заказы</th>
-                    <th>Стоимость 1 заказа</th>
-                    <th>Расход</th>
+                    <th>Стоимость заказа (р.)</th>
+                    <th>Расход (р.)</th>
 
                     <th>CPM</th>
                     <th>CTR</th>
@@ -41,12 +40,12 @@
                         <td>@item.TotalViews</td>
                         <td>@item.Clicks</td>
                         <td>@item.Orders</td>
-                        <td>@(item.OrderCost.ToString("#.##"))р.</td>
-                        <td>@(item.TotalSpent.ToString("#.##"))р.</td>
+                        <td>@(item.OrderCost.ToString("F2"))</td>
+                        <td>@(item.TotalSpent.ToString("F2"))</td>
 
                         <td>@item.CPM</td>
                         <td>@item.CTR</td>
-                        <td>@item.CPC.ToString("#.##")</td>
+                        <td>@item.CPC.ToString("F2")</td>
                     </tr>
                 }
             </tbody>

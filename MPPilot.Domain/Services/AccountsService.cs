@@ -1,14 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using MPPilot.App.Models;
 using MPPilot.Domain.Exceptions;
 using MPPilot.Domain.Infrastructure;
-using MPPilot.Domain.Models.Account;
-using MPPilot.Domain.Services.Security;
-using MPPilot.Domain.Services.Security.Token;
+using MPPilot.Domain.Models.Accounts;
+using MPPilot.Domain.Services.Token;
 using System.Security.Claims;
 
-namespace MPPilot.Domain.Services.Account
+namespace MPPilot.Domain.Services
 {
     public class AccountsService
     {
@@ -23,16 +22,11 @@ namespace MPPilot.Domain.Services.Account
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<bool> RegisterAsync(AccountDTO accountDTO)
+        public async Task<bool> RegisterAsync(Account account)
         {
             try
             {
-                var account = new Account
-                {
-                    Name = accountDTO.Name,
-                    Email = accountDTO.Email,
-                    Password = PasswordHasher.GetHashedString(accountDTO.Password, accountDTO.Email)
-                };
+                account.Password = PasswordHasherService.GetHashedString(account.Password, account.Email);
 
                 _context.Accounts.Add(account);
                 await _context.SaveChangesAsync();
@@ -49,9 +43,9 @@ namespace MPPilot.Domain.Services.Account
             }
         }
 
-        public async Task<ClaimsIdentity> LoginAsync(AccountDTO accountDTO)
+        public async Task<ClaimsIdentity> LoginAsync(string email, string password)
         {
-            var account = await FindBycredentials(accountDTO);
+            var account = await FindBycredentials(email, password);
             if (account is null)
                 return null;
 
@@ -66,7 +60,7 @@ namespace MPPilot.Domain.Services.Account
             return identity;
         }
 
-        public async Task<bool> SaveSettings(AccountSettingsDTO settings)
+        public async Task<bool> SaveSettings(AccountSettings settings)
         {
             try
             {
@@ -98,11 +92,11 @@ namespace MPPilot.Domain.Services.Account
             return await FindByIdAsync(userId);
         }
 
-        private async Task<Account?> FindBycredentials(AccountDTO accountDTO)
+        private async Task<Account?> FindBycredentials(string email, string password)
         {
-            var passwordHash = PasswordHasher.GetHashedString(accountDTO.Password, accountDTO.Email);
+            var passwordHash = PasswordHasherService.GetHashedString(password, email);
 
-            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Email == accountDTO.Email && a.Password == passwordHash);
+            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Email == email && a.Password == passwordHash);
             return account;
         }
 
