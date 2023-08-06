@@ -16,4 +16,8 @@
     <ProjectReference Include="..\MPPilot.Domain\MPPilot.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\content\" />
+  </ItemGroup>
+
 </Project>
