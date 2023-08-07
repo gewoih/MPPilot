@@ -62,7 +62,7 @@ namespace MPPilot.Domain.Services.Autobidders
                         .Include(autobidder => autobidder.Account)
                             .ThenInclude(account => account.Settings)
                         .Where(autobidder => autobidder.IsActive)
-                        .Where(autobidder => string.IsNullOrEmpty(autobidder.Account.Settings.WildberriesApiKey))
+                        .Where(autobidder => !string.IsNullOrEmpty(autobidder.Account.Settings.WildberriesApiKey))
                         .ToListAsync();
         }
 

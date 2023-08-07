@@ -1,5 +1,4 @@
-﻿using MPPilot.Domain.Exceptions;
-using MPPilot.Domain.Models.Adverts;
+﻿using MPPilot.Domain.Models.Adverts;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Globalization;
@@ -14,21 +13,16 @@ namespace MPPilot.Domain.Services
         private const string _baseUrl = "https://advert-api.wb.ru/adv/";
         private readonly HttpClient _httpClient;
 
-        public WildberriesService(IHttpClientFactory httpClientFactory, AccountsService accountsService)
+        public WildberriesService(IHttpClientFactory httpClientFactory)
         {
             _httpClient = httpClientFactory.CreateClient();
             _httpClient.BaseAddress = new Uri(_baseUrl);
-
-            var accountSettings = accountsService.GetCurrentAccountSettings().Result;
-
-			if (string.IsNullOrEmpty(accountSettings.WildberriesApiKey))
-				throw new InvalidApiKeyException("API-ключ для Wildberries не установлен");
-
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(accountSettings.WildberriesApiKey);
         }
 
-        public async Task<bool> ChangeAdvertKeyword(int advertId, string newKeyword)
+        public async Task<bool> ChangeAdvertKeyword(string apiKey, int advertId, string newKeyword)
         {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
+
             var data = new { pluse = Array.Empty<string>() };
 
             if (!string.IsNullOrEmpty(newKeyword))
@@ -45,9 +39,11 @@ namespace MPPilot.Domain.Services
             return result.IsSuccessStatusCode;
         }
 
-        public async Task<bool> RenameAdvert(int advertId, string name)
+        public async Task<bool> RenameAdvert(string apiKey, int advertId, string name)
         {
-            if (string.IsNullOrEmpty(name))
+			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
+
+			if (string.IsNullOrEmpty(name))
                 throw new ArgumentNullException(nameof(name));
 
             var serializedData = JsonConvert.SerializeObject(new { advertId, name });
@@ -61,9 +57,11 @@ namespace MPPilot.Domain.Services
             return result.IsSuccessStatusCode;
         }
 
-        public async Task<bool> ChangeAdvertStatus(int advertId, AdvertStatus newStatus)
+        public async Task<bool> ChangeAdvertStatus(string apiKey, int advertId, AdvertStatus newStatus)
         {
-            string? query;
+			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
+
+			string? query;
             if (newStatus == AdvertStatus.InProgress)
                 query = $"v0/start?id={advertId}";
             else if (newStatus == AdvertStatus.Stopped)
@@ -79,28 +77,45 @@ namespace MPPilot.Domain.Services
             return result.IsSuccessStatusCode;
         }
 
-        public async Task<IEnumerable<Advert>> GetAdvertsAsync(AdvertStatus? status = null, AdvertType? type = null, int? count = null)
+        public async Task<Advert> GetAdvertWithKeywordAndCPM(string apiKey, int advertId)
         {
-            var advertsQuery = GetAllAdvertsQuery(status, type, count);
-            var campaigns = await GetAdvertsFromJson(advertsQuery);
-            await FillUpAdvertsInfo(campaigns);
-            await FillUpAdvertsKeywords(campaigns);
-            await FillUpAdvertsStatistics(campaigns);
+			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
 
-            return campaigns;
+			var adverts = new List<Advert> { new Advert { AdvertId = advertId } };
+            var infoTask = FillUpAdvertsInfo(adverts);
+            var keywordsTask = FillUpAdvertsKeywords(adverts);
+
+            await Task.WhenAll(infoTask, keywordsTask);
+
+            return adverts.First();
+		}
+
+        public async Task<IEnumerable<Advert>> GetAdvertsAsync(string apiKey, AdvertStatus? status = null, AdvertType? type = null, int? count = null)
+        {
+			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
+
+			var advertsQuery = GetAllAdvertsQuery(status, type, count);
+            var adverts = await GetAdvertsFromJson(advertsQuery);
+            await FillUpAdvertsInfo(adverts);
+            await FillUpAdvertsKeywords(adverts);
+            await FillUpAdvertsStatistics(adverts);
+
+            return adverts;
         }
 
-        public async Task<bool> ChangeCPM(Advert advertCampaign, int newCPM)
+        public async Task<bool> ChangeCPM(string apiKey, Advert advert, int newCPM)
         {
-            if (newCPM < 50)
+			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
+
+			if (newCPM < 50)
                 throw new ArgumentException("Новое значение CPM должно быть > 50");
 
             var jsonData = JsonConvert.SerializeObject(new
 			{
-				advertId = advertCampaign.AdvertId,
-				type = (int)advertCampaign.Type,
+				advertId = advert.AdvertId,
+				type = (int)advert.Type,
 				cpm = newCPM,
-				param = advertCampaign.CategoryId
+				param = advert.CategoryId
 			});
 
             var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
@@ -177,6 +192,8 @@ namespace MPPilot.Domain.Services
                         findedCampaign.CategoryId = setId.Value;
                     else if (menuId is not null)
                         findedCampaign.CategoryId = menuId.Value;
+
+                    findedCampaign.Type = (AdvertType)jObject["type"].Value<int>();
 
                     if (jsonProducts.HasValues)
                         findedCampaign.ProductArticle = jsonProducts[0]["nm"].Value<string>();

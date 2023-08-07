@@ -4,7 +4,7 @@ using Newtonsoft.Json.Linq;
 
 namespace MPPilot.Domain.Services.Autobidders
 {
-    public class AdvertsMarketService : IDisposable
+    public class AdvertsMarketService
     {
         private const string _url = "https://catalog-ads.wildberries.ru/api/v5/search?keyword=";
         private readonly HttpClient _httpClient;
@@ -61,12 +61,6 @@ namespace MPPilot.Domain.Services.Autobidders
             }
 
             return advertsInfo;
-        }
-
-        public void Dispose()
-        {
-            _httpClient.Dispose();
-            GC.SuppressFinalize(this);
         }
     }
 }
