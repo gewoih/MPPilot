@@ -58,7 +58,12 @@ namespace MPPilot.Domain.Services.Autobidders
 
         public async Task<List<Autobidder>> GetActiveAutobidders()
         {
-            return await _context.Autobidders.Where(autobidder => autobidder.IsActive).ToListAsync();
+            return await _context.Autobidders
+                        .Include(autobidder => autobidder.Account)
+                            .ThenInclude(account => account.Settings)
+                        .Where(autobidder => autobidder.IsActive)
+                        .Where(autobidder => string.IsNullOrEmpty(autobidder.Account.Settings.WildberriesApiKey))
+                        .ToListAsync();
         }
 
         private async Task<Autobidder?> FindById(Guid id)

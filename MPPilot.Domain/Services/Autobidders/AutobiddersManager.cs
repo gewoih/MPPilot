@@ -10,20 +10,15 @@ namespace MPPilot.Domain.Services.Autobidders
 		private readonly WildberriesService _wildberriesService;
 		private readonly AdvertsMarketService _advertsMarketService;
 		private readonly ILogger<AutobiddersManager> _logger;
-		private readonly IHttpContextAccessor _httpContextAccessor;
 		private readonly IServiceProvider _serviceProvider;
 
-		public AutobiddersManager(WildberriesService wildberriesService,
-			AdvertsMarketService advertsMarketService,
+		public AutobiddersManager(AdvertsMarketService advertsMarketService,
 			ILogger<AutobiddersManager> logger,
-			IHttpContextAccessor httpContextAccessor,
 			IServiceProvider serviceProvider)
 		{
-			_wildberriesService = wildberriesService;
 			_advertsMarketService = advertsMarketService;
-			_logger = logger;
-			_httpContextAccessor = httpContextAccessor;
 			_serviceProvider = serviceProvider;
+			_logger = logger;
 		}
 
 		public void StartManagement()
@@ -58,7 +53,6 @@ namespace MPPilot.Domain.Services.Autobidders
 
 		private async Task HandleConservativeAutobidder(Autobidder autobidder, AutobidderService autobidderService)
 		{
-			_wildberriesService.SetApiKey("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NJRCI6IjExYTEzYjJhLTBjY2ItNDhhYS04NjE1LTYyNDg3NmY4MzdjZSJ9.0Lhiz7X_SjLE-kOqXEJ7BEIVdH673sbpVMfuV9VyX5M");
 			var adverts = await _wildberriesService.GetAdvertsAsync();
 			var advert = adverts.First(a => a.AdvertId == autobidder.AdvertId);
 

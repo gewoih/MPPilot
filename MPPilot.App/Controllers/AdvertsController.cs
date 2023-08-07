@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MPPilot.Domain.Models.Adverts;
 using MPPilot.Domain.Services;
-using MPPilot.Domain.Utils;
 
 namespace MPPilot.App.Controllers
 {
@@ -12,7 +11,6 @@ namespace MPPilot.App.Controllers
         public AdvertsController(WildberriesService wildberriesService)
         {
             _wildberriesService = wildberriesService;
-            _wildberriesService.SetApiKey("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NJRCI6IjExYTEzYjJhLTBjY2ItNDhhYS04NjE1LTYyNDg3NmY4MzdjZSJ9.0Lhiz7X_SjLE-kOqXEJ7BEIVdH673sbpVMfuV9VyX5M");
         }
 
         [HttpGet]

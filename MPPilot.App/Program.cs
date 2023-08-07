@@ -28,9 +28,9 @@ namespace MPPilot.App
 
 			AuthOptions.SetKey(builder.Configuration);
 			builder.Services.AddSingleton<ITokenService, JWTTokenService>();
-			builder.Services.AddSingleton<WildberriesService>();
 			builder.Services.AddScoped<AccountsService>();
 			builder.Services.AddScoped<AutobidderService>();
+			builder.Services.AddScoped<WildberriesService>();
 			builder.Services.AddSingleton<AdvertsMarketService>();
 			builder.Services.AddSingleton<AutobiddersManager>();
 
