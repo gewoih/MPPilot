@@ -3,17 +3,20 @@ using System;
 using MPPilot.Domain.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace MPPilot.App.Migrations
+namespace MPPilot.Domain.Migrations
 {
     [DbContext(typeof(MPPilotContext))]
-    partial class MPBoomContextModelSnapshot : ModelSnapshot
+    [Migration("20230807105319_init1")]
+    partial class init1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,7 +37,7 @@ namespace MPPilot.App.Migrations
                     b.Property<DateTimeOffset?>("CreatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 6, 20, 43, 21, 514, DateTimeKind.Unspecified).AddTicks(8371), new TimeSpan(0, 7, 0, 0, 0)));
+                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 7, 17, 53, 19, 60, DateTimeKind.Unspecified).AddTicks(8535), new TimeSpan(0, 7, 0, 0, 0)));
 
                     b.Property<DateTimeOffset?>("DeletedDate")
                         .HasColumnType("timestamp with time zone");
@@ -57,11 +60,12 @@ namespace MPPilot.App.Migrations
                     b.Property<DateTimeOffset?>("UpdatedDate")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp with time zone")
-                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 6, 20, 43, 21, 514, DateTimeKind.Unspecified).AddTicks(8583), new TimeSpan(0, 7, 0, 0, 0)));
+                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 7, 17, 53, 19, 60, DateTimeKind.Unspecified).AddTicks(8743), new TimeSpan(0, 7, 0, 0, 0)));
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AccountSettingsId");
+                    b.HasIndex("AccountSettingsId")
+                        .IsUnique();
 
                     b.HasIndex("Email")
                         .IsUnique();
@@ -78,7 +82,7 @@ namespace MPPilot.App.Migrations
                     b.Property<DateTimeOffset?>("CreatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 6, 20, 43, 21, 514, DateTimeKind.Unspecified).AddTicks(8900), new TimeSpan(0, 7, 0, 0, 0)));
+                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 7, 17, 53, 19, 60, DateTimeKind.Unspecified).AddTicks(9012), new TimeSpan(0, 7, 0, 0, 0)));
 
                     b.Property<DateTimeOffset?>("DeletedDate")
                         .HasColumnType("timestamp with time zone");
@@ -89,10 +93,9 @@ namespace MPPilot.App.Migrations
                     b.Property<DateTimeOffset?>("UpdatedDate")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp with time zone")
-                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 6, 20, 43, 21, 514, DateTimeKind.Unspecified).AddTicks(9010), new TimeSpan(0, 7, 0, 0, 0)));
+                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 7, 17, 53, 19, 60, DateTimeKind.Unspecified).AddTicks(9090), new TimeSpan(0, 7, 0, 0, 0)));
 
                     b.Property<string>("WildberriesApiKey")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -125,7 +128,7 @@ namespace MPPilot.App.Migrations
                     b.Property<DateTimeOffset?>("CreatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 6, 20, 43, 21, 514, DateTimeKind.Unspecified).AddTicks(9583), new TimeSpan(0, 7, 0, 0, 0)));
+                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 7, 17, 53, 19, 60, DateTimeKind.Unspecified).AddTicks(9629), new TimeSpan(0, 7, 0, 0, 0)));
 
                     b.Property<int>("CurrentCPM")
                         .HasColumnType("integer");
@@ -151,7 +154,7 @@ namespace MPPilot.App.Migrations
                     b.Property<DateTimeOffset?>("UpdatedDate")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp with time zone")
-                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 6, 20, 43, 21, 514, DateTimeKind.Unspecified).AddTicks(9713), new TimeSpan(0, 7, 0, 0, 0)));
+                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 7, 17, 53, 19, 60, DateTimeKind.Unspecified).AddTicks(9719), new TimeSpan(0, 7, 0, 0, 0)));
 
                     b.HasKey("Id");
 
@@ -166,7 +169,7 @@ namespace MPPilot.App.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("AccountId")
+                    b.Property<Guid>("AccountId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("AdvertId")
@@ -175,7 +178,7 @@ namespace MPPilot.App.Migrations
                     b.Property<DateTimeOffset?>("CreatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 6, 20, 43, 21, 514, DateTimeKind.Unspecified).AddTicks(9199), new TimeSpan(0, 7, 0, 0, 0)));
+                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 7, 17, 53, 19, 60, DateTimeKind.Unspecified).AddTicks(9277), new TimeSpan(0, 7, 0, 0, 0)));
 
                     b.Property<DateTimeOffset?>("DeletedDate")
                         .HasColumnType("timestamp with time zone");
@@ -192,7 +195,7 @@ namespace MPPilot.App.Migrations
                     b.Property<DateTimeOffset?>("UpdatedDate")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp with time zone")
-                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 6, 20, 43, 21, 514, DateTimeKind.Unspecified).AddTicks(9288), new TimeSpan(0, 7, 0, 0, 0)));
+                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 7, 17, 53, 19, 60, DateTimeKind.Unspecified).AddTicks(9386), new TimeSpan(0, 7, 0, 0, 0)));
 
                     b.HasKey("Id");
 
@@ -206,11 +209,11 @@ namespace MPPilot.App.Migrations
 
             modelBuilder.Entity("MPPilot.Domain.Models.Accounts.Account", b =>
                 {
-                    b.HasOne("MPPilot.Domain.Models.Accounts.AccountSettings", "AccountSettings")
-                        .WithMany()
-                        .HasForeignKey("AccountSettingsId");
+                    b.HasOne("MPPilot.Domain.Models.Accounts.AccountSettings", "Settings")
+                        .WithOne("Account")
+                        .HasForeignKey("MPPilot.Domain.Models.Accounts.Account", "AccountSettingsId");
 
-                    b.Navigation("AccountSettings");
+                    b.Navigation("Settings");
                 });
 
             modelBuilder.Entity("MPPilot.Domain.Models.Autobidders.AdvertBid", b =>
@@ -222,14 +225,24 @@ namespace MPPilot.App.Migrations
 
             modelBuilder.Entity("MPPilot.Domain.Models.Autobidders.Autobidder", b =>
                 {
-                    b.HasOne("MPPilot.Domain.Models.Accounts.Account", null)
+                    b.HasOne("MPPilot.Domain.Models.Accounts.Account", "Account")
                         .WithMany("Autobidders")
-                        .HasForeignKey("AccountId");
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("MPPilot.Domain.Models.Accounts.Account", b =>
                 {
                     b.Navigation("Autobidders");
+                });
+
+            modelBuilder.Entity("MPPilot.Domain.Models.Accounts.AccountSettings", b =>
+                {
+                    b.Navigation("Account")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("MPPilot.Domain.Models.Autobidders.Autobidder", b =>

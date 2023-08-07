@@ -9,7 +9,7 @@ namespace MPPilot.Domain.Models.Accounts
         public string Email { get; set; }
         public string Password { get; set; }
 
-        public AccountSettings? AccountSettings { get; set; }
+        public AccountSettings? Settings { get; set; }
         public Guid? AccountSettingsId { get; set; }
 
         public List<Autobidder> Autobidders { get; set; }
