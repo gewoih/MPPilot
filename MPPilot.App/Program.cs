@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using MPPilot.App.Middleware;
 using MPPilot.Domain.Infrastructure;
@@ -28,9 +29,9 @@ namespace MPPilot.App
 
 			AuthOptions.SetKey(builder.Configuration);
 			builder.Services.AddSingleton<ITokenService, JWTTokenService>();
-			builder.Services.AddSingleton<WildberriesService>();
 			builder.Services.AddScoped<AccountsService>();
 			builder.Services.AddScoped<AutobidderService>();
+			builder.Services.AddSingleton<WildberriesService>();
 			builder.Services.AddSingleton<AdvertsMarketService>();
 			builder.Services.AddSingleton<AutobiddersManager>();
 
@@ -58,9 +59,6 @@ namespace MPPilot.App
 
 			var app = builder.Build();
 
-			var autobiddersManager = app.Services.GetRequiredService<AutobiddersManager>();
-			autobiddersManager.StartManagement();
-
 			if (!app.Environment.IsDevelopment())
 			{
 				app.UseExceptionHandler("/Home/Error");
@@ -75,8 +73,16 @@ namespace MPPilot.App
 
 			app.UseAuthentication();
 			app.UseAuthorization();
-
 			app.MapDefaultControllerRoute();
+
+			using (var scope = app.Services.CreateScope())
+			{
+				var db = scope.ServiceProvider.GetRequiredService<MPPilotContext>();
+				db.Database.Migrate();
+			}
+
+			var autobiddersManager = app.Services.GetRequiredService<AutobiddersManager>();
+			autobiddersManager.StartManagement();
 
 			app.Run();
 		}

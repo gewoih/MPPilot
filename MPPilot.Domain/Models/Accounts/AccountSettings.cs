@@ -4,6 +4,7 @@ namespace MPPilot.Domain.Models.Accounts
 {
     public class AccountSettings : Entity
     {
-        public string WildberriesApiKey { get; set; }
+        public Account Account { get; set; }
+        public string? WildberriesApiKey { get; set; }
     }
 }

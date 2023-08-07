@@ -1,40 +1,28 @@
-﻿using MPPilot.Domain.Exceptions;
-using MPPilot.Domain.Models.Adverts;
+﻿using MPPilot.Domain.Models.Adverts;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Globalization;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 
 namespace MPPilot.Domain.Services
 {
-    public class WildberriesService : IDisposable
+    public class WildberriesService
     {
-        private const string _getAllUrl = "https://advert-api.wb.ru/adv/v0/adverts?";
-        private const string _getInfoUrl = "https://advert-api.wb.ru/adv/v0/advert?id=";
-        private const string _getKeywordsUrl = "https://advert-api.wb.ru/adv/v1/stat/words?id=";
-        private const string _getFullStatUrl = "https://advert-api.wb.ru/adv/v1/fullstat?id=";
-        private const string _changeAdvertCPMUrl = "https://advert-api.wb.ru/adv/v0/cpm";
-        private const string _startAdvertUrl = "https://advert-api.wb.ru/adv/v0/start";
-        private const string _pauseAdvertUrl = "https://advert-api.wb.ru/adv/v0/pause";
-        private const string _renameAdvertUrl = "https://advert-api.wb.ru/adv/v0/rename";
-        private const string _changeAdvertKeywordUrl = "https://advert-api.wb.ru/adv/v1/search/set-plus";
-        private const string _invalidApiKeyMessage = "Задан некорректный API-ключ";
+        private const string _baseUrl = "https://advert-api.wb.ru/adv/";
         private readonly HttpClient _httpClient;
 
         public WildberriesService(IHttpClientFactory httpClientFactory)
         {
             _httpClient = httpClientFactory.CreateClient();
+            _httpClient.BaseAddress = new Uri(_baseUrl);
         }
 
-        public void SetApiKey(string apiKey)
+        public async Task<bool> ChangeAdvertKeyword(string apiKey, int advertId, string newKeyword)
         {
-            _httpClient.DefaultRequestHeaders.Clear();
-            _httpClient.DefaultRequestHeaders.Add("Authorization", apiKey);
-        }
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
 
-        public async Task<bool> ChangeAdvertKeyword(int advertId, string newKeyword)
-        {
             var data = new { pluse = Array.Empty<string>() };
 
             if (!string.IsNullOrEmpty(newKeyword))
@@ -43,58 +31,41 @@ namespace MPPilot.Domain.Services
             var serializedData = JsonConvert.SerializeObject(data);
             var content = new StringContent(serializedData, Encoding.UTF8, "application/json");
 
-            var query = $"{_changeAdvertKeywordUrl}?id={advertId}";
+            var query = $"/v1/search/set-plus?id={advertId}";
             var result = await _httpClient.PostAsync(query, content);
             if (result.StatusCode == HttpStatusCode.BadRequest)
                 throw new ArgumentException($"Произошла ошибка при изменении ключевой фразы. {nameof(newKeyword)} = '{newKeyword}'");
-            else if (result.StatusCode == HttpStatusCode.Unauthorized)
-                throw new InvalidApiKeyException(_invalidApiKeyMessage);
 
             return result.IsSuccessStatusCode;
         }
 
-        public async Task<bool> ChangeKeywordModeStatus(int advertId, bool enabled)
+        public async Task<bool> RenameAdvert(string apiKey, int advertId, string name)
         {
-            var query = $"{_changeAdvertKeywordUrl}?id={advertId}&fixed={enabled}";
-            var result = await _httpClient.GetAsync(query);
-            if (result.StatusCode == HttpStatusCode.BadRequest)
-                throw new ArgumentException($"Произошла ошибка при изменении статуса режима ключевых фраз.");
-            else if (result.StatusCode == HttpStatusCode.Unauthorized)
-                throw new InvalidApiKeyException(_invalidApiKeyMessage);
+			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
 
-            return result.IsSuccessStatusCode;
-        }
-
-        public async Task<bool> RenameAdvert(int advertId, string name)
-        {
-            if (string.IsNullOrEmpty(name))
+			if (string.IsNullOrEmpty(name))
                 throw new ArgumentNullException(nameof(name));
 
-            var data = new
-            {
-                advertId,
-                name
-            };
-
-            var serializedData = JsonConvert.SerializeObject(data);
+            var serializedData = JsonConvert.SerializeObject(new { advertId, name });
             var content = new StringContent(serializedData, Encoding.UTF8, "application/json");
 
-            var result = await _httpClient.PostAsync(_renameAdvertUrl, content);
-            if (result.StatusCode == HttpStatusCode.BadRequest)
+            var result = await _httpClient.PostAsync("v0/rename", content);
+
+			if (result.StatusCode == HttpStatusCode.BadRequest)
                 throw new ArgumentException($"Неверный формат запроса для изменения названия РК. {nameof(advertId)}={advertId}; {nameof(name)}={name}");
-            else if (result.StatusCode == HttpStatusCode.Unauthorized)
-                throw new InvalidApiKeyException(_invalidApiKeyMessage);
 
             return result.IsSuccessStatusCode;
         }
 
-        public async Task<bool> ChangeAdvertStatus(int advertId, AdvertStatus newStatus)
+        public async Task<bool> ChangeAdvertStatus(string apiKey, int advertId, AdvertStatus newStatus)
         {
-            string? query;
+			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
+
+			string? query;
             if (newStatus == AdvertStatus.InProgress)
-                query = $"{_startAdvertUrl}?id={advertId}";
+                query = $"v0/start?id={advertId}";
             else if (newStatus == AdvertStatus.Stopped)
-                query = $"{_pauseAdvertUrl}?id={advertId}";
+                query = $"v0/pause?id={advertId}";
             else
                 throw new ArgumentException($"Передан некорректный статус для рекламной кампании: '{newStatus}'");
 
@@ -102,59 +73,63 @@ namespace MPPilot.Domain.Services
 
             if (result.StatusCode == HttpStatusCode.BadRequest)
                 throw new ArgumentException($"Передан некорректный ID рекламной кампании: '{advertId}'");
-            else if (result.StatusCode == HttpStatusCode.Unauthorized)
-                throw new InvalidApiKeyException(_invalidApiKeyMessage);
 
             return result.IsSuccessStatusCode;
         }
 
-        public async Task<IEnumerable<Advert>> GetAdvertsAsync(AdvertStatus? status = null, AdvertType? type = null, int? count = null)
+        public async Task<Advert> GetAdvertWithKeywordAndCPM(string apiKey, int advertId)
         {
-            try
-            {
-                var advertCampaignsListQuery = GetAllAdvertsQuery(status, type, count);
-                var campaigns = await GetAdvertsFromJson(advertCampaignsListQuery);
-                await FillUpAdvertsInfo(campaigns);
-                await FillUpAdvertsKeywords(campaigns);
-                await FillUpAdvertsStatistics(campaigns);
+			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
 
-                return campaigns;
-            }
-            catch (InvalidApiKeyException)
-            {
-                throw;
-            }
+			var adverts = new List<Advert> { new Advert { AdvertId = advertId } };
+            var infoTask = FillUpAdvertsInfo(adverts);
+            var keywordsTask = FillUpAdvertsKeywords(adverts);
+
+            await Task.WhenAll(infoTask, keywordsTask);
+
+            return adverts.First();
+		}
+
+        public async Task<IEnumerable<Advert>> GetAdvertsAsync(string apiKey, AdvertStatus? status = null, AdvertType? type = null, int? count = null)
+        {
+			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
+
+			var advertsQuery = GetAllAdvertsQuery(status, type, count);
+            var adverts = await GetAdvertsFromJson(advertsQuery);
+            await FillUpAdvertsInfo(adverts);
+            await FillUpAdvertsKeywords(adverts);
+            await FillUpAdvertsStatistics(adverts);
+
+            return adverts;
         }
 
-        public async Task<bool> ChangeCPM(Advert advertCampaign, int newCPM)
+        public async Task<bool> ChangeCPM(string apiKey, Advert advert, int newCPM)
         {
-            if (newCPM < 50)
+			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
+
+			if (newCPM < 50)
                 throw new ArgumentException("Новое значение CPM должно быть > 50");
 
-            var data = new
-            {
-                advertId = advertCampaign.AdvertId,
-                type = (int)advertCampaign.Type,
-                cpm = newCPM,
-                param = advertCampaign.CategoryId
-            };
+            var jsonData = JsonConvert.SerializeObject(new
+			{
+				advertId = advert.AdvertId,
+				type = (int)advert.Type,
+				cpm = newCPM,
+				param = advert.CategoryId
+			});
 
-            var jsonData = JsonConvert.SerializeObject(data);
             var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
-
-            var response = await _httpClient.PostAsync(_changeAdvertCPMUrl, content);
+            var response = await _httpClient.PostAsync("v0/cpm", content);
 
             if (response.StatusCode == HttpStatusCode.BadRequest)
                 throw new ArgumentException("Некорректно переданы параметры для изменения CPM");
-            else if (response.StatusCode == HttpStatusCode.Unauthorized)
-                throw new InvalidApiKeyException(_invalidApiKeyMessage);
 
             return response.IsSuccessStatusCode;
         }
 
         private static string GetAllAdvertsQuery(AdvertStatus? status, AdvertType? type, int? count)
         {
-            var query = _getAllUrl;
+            var query = "v0/adverts?";
             if (status is not null)
                 query += $"status={(int)status}&";
             if (type is not null)
@@ -168,9 +143,6 @@ namespace MPPilot.Domain.Services
         private async Task<IEnumerable<Advert>> GetAdvertsFromJson(string query)
         {
             var result = await _httpClient.GetAsync(query);
-
-            if (result.StatusCode == HttpStatusCode.Unauthorized)
-                throw new InvalidApiKeyException(_invalidApiKeyMessage);
 
             result.EnsureSuccessStatusCode();
 
@@ -200,7 +172,7 @@ namespace MPPilot.Domain.Services
 
         private async Task FillUpAdvertsInfo(IEnumerable<Advert> campaigns)
         {
-            var jObjects = await GetJObjectsByHttpQueries(campaigns, _getInfoUrl);
+            var jObjects = await GetJObjectsByHttpQueries(campaigns, "v0/advert?id=");
             foreach (var jObject in jObjects)
             {
                 if (jObject.ContainsKey("params"))
@@ -221,6 +193,8 @@ namespace MPPilot.Domain.Services
                     else if (menuId is not null)
                         findedCampaign.CategoryId = menuId.Value;
 
+                    findedCampaign.Type = (AdvertType)jObject["type"].Value<int>();
+
                     if (jsonProducts.HasValues)
                         findedCampaign.ProductArticle = jsonProducts[0]["nm"].Value<string>();
                 }
@@ -229,7 +203,7 @@ namespace MPPilot.Domain.Services
 
         private async Task FillUpAdvertsKeywords(IEnumerable<Advert> campaigns)
         {
-            var jObjects = await GetJObjectsByHttpQueries(campaigns, _getKeywordsUrl);
+            var jObjects = await GetJObjectsByHttpQueries(campaigns, "v1/stat/words?id=");
             foreach (var jObject in jObjects)
             {
                 if (jObject is not null && jObject["words"].Value<JObject>().ContainsKey("pluse"))
@@ -245,7 +219,7 @@ namespace MPPilot.Domain.Services
 
         private async Task FillUpAdvertsStatistics(IEnumerable<Advert> campaigns)
         {
-            var jObjects = await GetJObjectsByHttpQueries(campaigns, _getFullStatUrl);
+            var jObjects = await GetJObjectsByHttpQueries(campaigns, "v1/fullstat?id=");
             foreach (var jObject in jObjects)
             {
                 if (jObject is not null)
@@ -270,15 +244,12 @@ namespace MPPilot.Domain.Services
                 var query = url + advertCampaign.AdvertId;
                 httpTasks.Add(_httpClient.GetAsync(query));
             }
-            Task.WaitAll(httpTasks.ToArray());
+            await Task.WhenAll(httpTasks);
 
             var jObjects = new List<JObject>();
             foreach (var task in httpTasks)
             {
                 var result = await task;
-
-                if (result.StatusCode == HttpStatusCode.Unauthorized)
-                    throw new InvalidApiKeyException(_invalidApiKeyMessage);
 
                 var stringResult = await result.Content.ReadAsStringAsync();
                 if (!string.IsNullOrEmpty(stringResult) && task.Result.IsSuccessStatusCode)
@@ -286,12 +257,6 @@ namespace MPPilot.Domain.Services
             }
 
             return jObjects;
-        }
-
-        public void Dispose()
-        {
-            _httpClient.Dispose();
-            GC.SuppressFinalize(this);
         }
     }
 }

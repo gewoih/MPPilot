@@ -1,29 +1,29 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MPPilot.Domain.Models.Autobidders;
+using System.Diagnostics;
 
 namespace MPPilot.Domain.Services.Autobidders
 {
 	public class AutobiddersManager
 	{
+		private AutobidderService _autobidderService;
 		private readonly WildberriesService _wildberriesService;
 		private readonly AdvertsMarketService _advertsMarketService;
 		private readonly ILogger<AutobiddersManager> _logger;
-		private readonly IHttpContextAccessor _httpContextAccessor;
 		private readonly IServiceProvider _serviceProvider;
+		private readonly Stopwatch _stopwatch;
 
-		public AutobiddersManager(WildberriesService wildberriesService,
-			AdvertsMarketService advertsMarketService,
+		public AutobiddersManager(AdvertsMarketService advertsMarketService,
 			ILogger<AutobiddersManager> logger,
-			IHttpContextAccessor httpContextAccessor,
+			WildberriesService wildberriesService,
 			IServiceProvider serviceProvider)
 		{
-			_wildberriesService = wildberriesService;
 			_advertsMarketService = advertsMarketService;
-			_logger = logger;
-			_httpContextAccessor = httpContextAccessor;
+			_wildberriesService = wildberriesService;
 			_serviceProvider = serviceProvider;
+			_logger = logger;
+			_stopwatch = new Stopwatch();
 		}
 
 		public void StartManagement()
@@ -32,10 +32,12 @@ namespace MPPilot.Domain.Services.Autobidders
 			{
 				while (true)
 				{
+					_stopwatch.Restart();
+
 					using var scope = _serviceProvider.CreateScope();
 
-					var autobiddersService = scope.ServiceProvider.GetRequiredService<AutobidderService>();
-					var autobidders = await autobiddersService.GetActiveAutobidders();
+					_autobidderService = scope.ServiceProvider.GetRequiredService<AutobidderService>();
+					var autobidders = await _autobidderService.GetActiveAutobidders();
 
 					if (autobidders.Any())
 					{
@@ -43,7 +45,7 @@ namespace MPPilot.Domain.Services.Autobidders
 						foreach (var autobidder in autobidders)
 						{
 							if (autobidder.Mode == AutobidderMode.Conservative)
-								await HandleConservativeAutobidder(autobidder, autobiddersService);
+								await HandleConservativeAutobidder(autobidder);
 
 							_logger.LogInformation($"Завершена обработка автобиддера (тип = {autobidder.Mode}, id = {autobidder.Id}) для РК '{autobidder.AdvertId}'");
 						}
@@ -51,16 +53,17 @@ namespace MPPilot.Domain.Services.Autobidders
 					else
 						_logger.LogInformation($"Активные автобиддеры не найдены...");
 
+					_logger.LogInformation($"Обработка всех автобиддеров заняла: {_stopwatch.Elapsed}");
+
 					await Task.Delay(TimeSpan.FromSeconds(10));
 				}
 			});
 		}
 
-		private async Task HandleConservativeAutobidder(Autobidder autobidder, AutobidderService autobidderService)
+		private async Task HandleConservativeAutobidder(Autobidder autobidder)
 		{
-			_wildberriesService.SetApiKey("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NJRCI6IjExYTEzYjJhLTBjY2ItNDhhYS04NjE1LTYyNDg3NmY4MzdjZSJ9.0Lhiz7X_SjLE-kOqXEJ7BEIVdH673sbpVMfuV9VyX5M");
-			var adverts = await _wildberriesService.GetAdvertsAsync();
-			var advert = adverts.First(a => a.AdvertId == autobidder.AdvertId);
+			var apiKey = autobidder.Account.Settings.WildberriesApiKey;
+			var advert = await _wildberriesService.GetAdvertWithKeywordAndCPM(apiKey, autobidder.AdvertId);
 
 			var advertMarketStatistics = await _advertsMarketService.GetAdvertMarketStatistics(advert.Keyword, advert.AdvertId);
 			var averageCpm = (int)advertMarketStatistics.AverageCPM;
@@ -69,7 +72,7 @@ namespace MPPilot.Domain.Services.Autobidders
 
 			if (advert.CPM != targetAdvert.CPM)
 			{
-				var isCpmChanged = await _wildberriesService.ChangeCPM(advert, targetAdvert.CPM);
+				var isCpmChanged = await _wildberriesService.ChangeCPM(apiKey, advert, targetAdvert.CPM);
 				if (isCpmChanged)
 				{
 					var newBid = new AdvertBid
@@ -84,7 +87,7 @@ namespace MPPilot.Domain.Services.Autobidders
 						Reason = ChangeBidReason.BelowAverageCpm
 					};
 
-					await autobidderService.AddBid(autobidder, newBid);
+					await _autobidderService.AddBid(autobidder, newBid);
 				}
 			}
 		}

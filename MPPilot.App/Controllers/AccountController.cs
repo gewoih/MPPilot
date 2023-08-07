@@ -29,15 +29,12 @@ namespace MPPilot.App.Controllers
         {
             try
             {
-                var isRegistered = await _accountService.RegisterAsync(account);
-                if (!isRegistered)
-                    ModelState.AddModelError(string.Empty, "Неизвестная ошибка при регистрации пользователя.");
-					
+                await _accountService.RegisterAsync(account);
                 return RedirectToAction("Login");
             }
             catch (UserAlreadyExistsException ex)
             {
-				ModelState.AddModelError(string.Empty, ex.Message);
+                ModelState.AddModelError(string.Empty, ex.Message);
             }
 
 			return View(account);
@@ -52,20 +49,19 @@ namespace MPPilot.App.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(Account account)
         {
-            var identity = await _accountService.LoginAsync(account.Email, account.Password);
-
-            if (identity is null)
+            try
             {
-                ModelState.Clear();
-                ModelState.AddModelError(string.Empty, "Неверный логин или пароль!");
-                return View(account);
-            }
-            else
-            {
+                var identity = await _accountService.LoginAsync(account.Email, account.Password);
                 var token = _tokenService.GenerateToken(identity);
                 SaveTokenToCookie(token);
 
                 return RedirectToAction("Index", "Settings");
+            }
+            catch (ArgumentException ex)
+            {
+                ModelState.Clear();
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View(account);
             }
         }
 
