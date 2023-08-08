@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MPPilot.Domain.Models.Accounts;
 using MPPilot.Domain.Models.Adverts;
 using MPPilot.Domain.Services;
 
@@ -24,8 +23,8 @@ namespace MPPilot.App.Controllers
                 var accountSettings = await _accountService.GetCurrentAccountSettings();
 
                 var adverts = new List<Advert>();
-                var searchAdvertsTask = _wildberriesService.GetAdvertsAsync(accountSettings.WildberriesApiKey, type: AdvertType.Search);
-                var productPageAdvertsTask = _wildberriesService.GetAdvertsAsync(accountSettings.WildberriesApiKey, type: AdvertType.ProductPage);
+                var searchAdvertsTask = _wildberriesService.GetAdvertsAsync(accountSettings.WildberriesApiKey, type: AdvertType.Search, count: 2);
+                var productPageAdvertsTask = _wildberriesService.GetAdvertsAsync(accountSettings.WildberriesApiKey, type: AdvertType.ProductPage, count: 2);
                 await Task.WhenAll(searchAdvertsTask, productPageAdvertsTask)
                     .ContinueWith(task =>
                     {
