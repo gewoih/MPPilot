@@ -16,20 +16,29 @@ namespace MPPilot.Domain.Services.Autobidders
             _logger = logger;
         }
 
-        public async Task AddBid(Autobidder autobidder, AdvertBid bid)
+        public async Task<Autobidder> Create(int advertId)
         {
-            autobidder.Bids = new List<AdvertBid> { bid };
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task CreateAsync(Autobidder autobidder)
-        {
-            autobidder.IsActive = false;
+            var autobidder = new Autobidder
+            {
+                AdvertId = advertId,
+                Mode = AutobidderMode.Conservative,
+            };
 
             await _context.Autobidders.AddAsync(autobidder);
             await _context.SaveChangesAsync();
+            return autobidder;
+        }
 
-            _logger.LogInformation($"Создан новый автобиддер для РК '{autobidder.AdvertId}'");
+        public async Task<Autobidder> GetByAdvert(int advertId)
+        {
+            var autobidder = await _context.Autobidders.FirstOrDefaultAsync(autobidder => autobidder.AdvertId == advertId);
+			return autobidder is null ? throw new ArgumentException($"Для РК '{advertId}' не найден автобиддер") : autobidder;
+		}
+
+		public async Task AddBid(Autobidder autobidder, AdvertBid bid)
+        {
+            autobidder.Bids = new List<AdvertBid> { bid };
+            await _context.SaveChangesAsync();
         }
 
         public async Task StopAsync(Guid id)
