@@ -37,6 +37,7 @@ namespace MPPilot.App
 			builder.Services.AddSingleton<AutobiddersManager>();
 
 			builder.Services.AddScoped<JWTAuthenticationMiddleware>();
+			builder.Services.AddScoped<LongQueryMiddleware>();
 
 			builder.Services.AddAuthentication(options =>
 			{
@@ -72,6 +73,7 @@ namespace MPPilot.App
 
 			app.UseStaticFiles();
 
+			app.UseMiddleware<LongQueryMiddleware>();
 			app.UseMiddleware<JWTAuthenticationMiddleware>();
 
 			app.UseAuthentication();
