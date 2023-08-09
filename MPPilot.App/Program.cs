@@ -38,6 +38,7 @@ namespace MPPilot.App
 
 			builder.Services.AddScoped<JWTAuthenticationMiddleware>();
 			builder.Services.AddScoped<LongQueryMiddleware>();
+			builder.Services.AddScoped<ExceptionsHandlerMiddleware>();
 
 			builder.Services.AddAuthentication(options =>
 			{
@@ -73,6 +74,7 @@ namespace MPPilot.App
 
 			app.UseStaticFiles();
 
+			app.UseMiddleware<ExceptionsHandlerMiddleware>();
 			app.UseMiddleware<LongQueryMiddleware>();
 			app.UseMiddleware<JWTAuthenticationMiddleware>();
 
