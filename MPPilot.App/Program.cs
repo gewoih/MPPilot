@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
@@ -34,6 +35,8 @@ namespace MPPilot.App
 			builder.Services.AddSingleton<WildberriesService>();
 			builder.Services.AddSingleton<AdvertsMarketService>();
 			builder.Services.AddSingleton<AutobiddersManager>();
+
+			builder.Services.AddScoped<JWTAuthenticationMiddleware>();
 
 			builder.Services.AddAuthentication(options =>
 			{

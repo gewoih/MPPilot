@@ -2,18 +2,16 @@
 
 namespace MPPilot.App.Middleware
 {
-    public class JWTAuthenticationMiddleware
+    public class JWTAuthenticationMiddleware : IMiddleware
 	{
-		private readonly RequestDelegate _next;
 		private readonly ITokenService _tokenService;
 
-		public JWTAuthenticationMiddleware(RequestDelegate next, ITokenService tokenService)
+		public JWTAuthenticationMiddleware(ITokenService tokenService)
 		{
-			_next = next;
 			_tokenService = tokenService;
 		}
 
-		public async Task Invoke(HttpContext context)
+		public async Task InvokeAsync(HttpContext context, RequestDelegate next)
 		{
 			if (!context.Request.Path.StartsWithSegments("/Account", StringComparison.OrdinalIgnoreCase))
 			{
@@ -29,7 +27,7 @@ namespace MPPilot.App.Middleware
 				context.Request.Headers.Add("Authorization", $"Bearer {token}");
 			}
 			
-			await _next(context);
+			await next(context);
 		}
 	}
 }
