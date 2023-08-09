@@ -3,6 +3,7 @@ using System;
 using MPPilot.Domain.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MPPilot.Domain.Migrations
 {
     [DbContext(typeof(MPPilotContext))]
-    partial class MPPilotContextModelSnapshot : ModelSnapshot
+    [Migration("20230809052050_autobidder_isEnabled_renamed")]
+    partial class autobidder_isEnabled_renamed
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,7 +35,9 @@ namespace MPPilot.Domain.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset?>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 9, 12, 20, 50, 382, DateTimeKind.Unspecified).AddTicks(9167), new TimeSpan(0, 7, 0, 0, 0)));
 
                     b.Property<DateTimeOffset?>("DeletedDate")
                         .HasColumnType("timestamp with time zone");
@@ -53,7 +58,9 @@ namespace MPPilot.Domain.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTimeOffset?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 9, 12, 20, 50, 382, DateTimeKind.Unspecified).AddTicks(9371), new TimeSpan(0, 7, 0, 0, 0)));
 
                     b.HasKey("Id");
 
@@ -73,7 +80,9 @@ namespace MPPilot.Domain.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset?>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 9, 12, 20, 50, 382, DateTimeKind.Unspecified).AddTicks(9636), new TimeSpan(0, 7, 0, 0, 0)));
 
                     b.Property<DateTimeOffset?>("DeletedDate")
                         .HasColumnType("timestamp with time zone");
@@ -82,7 +91,9 @@ namespace MPPilot.Domain.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<DateTimeOffset?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 9, 12, 20, 50, 382, DateTimeKind.Unspecified).AddTicks(9739), new TimeSpan(0, 7, 0, 0, 0)));
 
                     b.Property<string>("WildberriesApiKey")
                         .HasColumnType("text");
@@ -115,7 +126,9 @@ namespace MPPilot.Domain.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset?>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 9, 12, 20, 50, 383, DateTimeKind.Unspecified).AddTicks(239), new TimeSpan(0, 7, 0, 0, 0)));
 
                     b.Property<int>("CurrentCPM")
                         .HasColumnType("integer");
@@ -139,7 +152,9 @@ namespace MPPilot.Domain.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 9, 12, 20, 50, 383, DateTimeKind.Unspecified).AddTicks(351), new TimeSpan(0, 7, 0, 0, 0)));
 
                     b.HasKey("Id");
 
@@ -161,7 +176,9 @@ namespace MPPilot.Domain.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset?>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 9, 12, 20, 50, 382, DateTimeKind.Unspecified).AddTicks(9917), new TimeSpan(0, 7, 0, 0, 0)));
 
                     b.Property<double>("DailyBudget")
                         .HasColumnType("double precision");
@@ -179,7 +196,9 @@ namespace MPPilot.Domain.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValue(new DateTimeOffset(new DateTime(2023, 8, 9, 12, 20, 50, 383, DateTimeKind.Unspecified).AddTicks(8), new TimeSpan(0, 7, 0, 0, 0)));
 
                     b.HasKey("Id");
 
