@@ -1,10 +1,12 @@
-﻿using MPPilot.Domain.Utils;
-using System.ComponentModel;
+﻿using MPPilot.Domain.Models.Autobidders;
+using MPPilot.Domain.Utils;
 
 namespace MPPilot.Domain.Models.Adverts
 {
     public class Advert
     {
+        public Autobidder Autobidder { get; set; }
+
         public int AdvertId { get; set; }
         public string Name { get; set; }
         public string Keyword { get; set; }
