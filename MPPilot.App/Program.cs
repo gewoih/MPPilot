@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
@@ -35,6 +36,9 @@ namespace MPPilot.App
 			builder.Services.AddSingleton<AdvertsMarketService>();
 			builder.Services.AddSingleton<AutobiddersManager>();
 
+			builder.Services.AddScoped<JWTAuthenticationMiddleware>();
+			builder.Services.AddScoped<LongQueryMiddleware>();
+
 			builder.Services.AddAuthentication(options =>
 			{
 				options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -69,6 +73,7 @@ namespace MPPilot.App
 
 			app.UseStaticFiles();
 
+			app.UseMiddleware<LongQueryMiddleware>();
 			app.UseMiddleware<JWTAuthenticationMiddleware>();
 
 			app.UseAuthentication();

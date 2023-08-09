@@ -63,7 +63,19 @@ namespace MPPilot.Domain.Services.Autobidders
 		private async Task HandleConservativeAutobidder(Autobidder autobidder)
 		{
 			var apiKey = autobidder.Account.Settings.WildberriesApiKey;
-			var advert = await _wildberriesService.GetAdvertWithKeywordAndCPM(apiKey, autobidder.AdvertId);
+
+			var advertTask = _wildberriesService.GetAdvertWithKeywordAndCPM(apiKey, autobidder.AdvertId);
+			var advertTodayExpensesTask = _wildberriesService.GetExpensesForToday(apiKey, autobidder.AdvertId);
+			await Task.WhenAll(advertTask, advertTodayExpensesTask);
+
+			var advert = advertTask.Result;
+			var advertTodayExpenses = advertTodayExpensesTask.Result;
+
+			if (advertTodayExpenses >= autobidder.DailyBudget)
+			{
+				_logger.LogInformation($"Превышение по бюджету для РК '{advert.AdvertId}'. Автобиддер пропущен.");
+				return;
+			}
 
 			var advertMarketStatistics = await _advertsMarketService.GetAdvertMarketStatistics(advert.Keyword, advert.AdvertId);
 			var averageCpm = (int)advertMarketStatistics.AverageCPM;

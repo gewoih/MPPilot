@@ -19,6 +19,27 @@ namespace MPPilot.Domain.Services
             _httpClient.BaseAddress = new Uri(_baseUrl);
         }
 
+        public async Task<double> GetExpensesForToday(string apiKey, int advertId)
+        {
+			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
+
+			var query = $"v1/fullstat?id={advertId}";
+            var result = await _httpClient.GetAsync(query);
+            var jsonResult = await result.Content.ReadAsStringAsync();
+            var jObject = JObject.Parse(jsonResult);
+
+            if (jObject["days"] is null)
+                return 0;
+
+            var lastDay = jObject["days"].Last;
+            var date = lastDay.Value<DateTime>("date");
+
+			if (date.Date == DateTimeOffset.Now.Date)
+				return lastDay.Value<double>("sum");
+			else
+				return 0;
+		}
+
         public async Task<bool> ChangeAdvertKeyword(string apiKey, int advertId, string newKeyword)
         {
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
