@@ -21,7 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Autobidder\" />
     <Folder Include="wwwroot\content\" />
   </ItemGroup>
 

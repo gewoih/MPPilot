@@ -115,6 +115,11 @@
 					$("#autobidderDailyBudgetInput").val(advert.Autobidder.DailyBudget);
 					$("#autobidderIsEnabled").prop("checked", advert.Autobidder.IsEnabled);
 				}
+				else {
+					$("#autobidderTypeInput").val(null);
+					$("#autobidderDailyBudgetInput").val(null);
+					$("#autobidderIsEnabled").prop("checked", false);
+				}
 
 				var modal = new bootstrap.Modal(document.getElementById("settingsModal"));
 				modal.show();
@@ -137,15 +142,8 @@
 			};
 
 			$.post("/Adverts/Edit", { oldAdvert: advert, newAdvert: newAdvert }, function (jqXHR) {
-				if (jqXHR.status === 200) {
-					location.reload();
-				}
-				else {
-					alert("Ошибка при сохранении данных.");
-				}
-
-				var modal = new bootstrap.Modal(document.getElementById("settingsModal"));
-				modal.hide();
+				location.reload();
+				$('#settingsModal').modal('hide');
 			});
 		});
 	</script>
@@ -162,10 +160,8 @@
 			};
 
 			$.post("/Autobidder/Edit", { autobidder: newAutobidder }, function (data) {
-				alert("Настройки автобиддера успешно сохранены!");
-
-				var modal = new bootstrap.Modal(document.getElementById("settingsModal"));
-				modal.hide();
+				location.reload();
+				$('#settingsModal').modal('hide');
 			});
 		});
 	</script>

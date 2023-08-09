@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MPPilot.Domain.Models.Accounts;
 using MPPilot.Domain.Models.Autobidders;
+using MPPilot.Domain.Models.Base;
 
 namespace MPPilot.Domain.Infrastructure
 {
@@ -19,64 +20,66 @@ namespace MPPilot.Domain.Infrastructure
         {
             //Account
             modelBuilder.Entity<Account>()
-                .Property(a => a.CreatedDate)
-                .HasDefaultValue(DateTimeOffset.Now)
-                .ValueGeneratedOnAdd();
-
-            modelBuilder.Entity<Account>()
-                .Property(a => a.UpdatedDate)
-                .HasDefaultValue(DateTimeOffset.Now)
-                .ValueGeneratedOnAddOrUpdate();
-
-            modelBuilder.Entity<Account>()
                 .HasIndex(a => a.Email)
                 .IsUnique();
 
-
             //AccountSettings
-            modelBuilder.Entity<AccountSettings>()
-                .Property(a => a.CreatedDate)
-                .HasDefaultValue(DateTimeOffset.Now)
-                .ValueGeneratedOnAdd();
-
-            modelBuilder.Entity<AccountSettings>()
-                .Property(a => a.UpdatedDate)
-                .HasDefaultValue(DateTimeOffset.Now)
-                .ValueGeneratedOnAddOrUpdate();
-
             modelBuilder.Entity<AccountSettings>()
                 .HasIndex(a => a.WildberriesApiKey)
                 .IsUnique();
 
-
 			//Autobidders
-			modelBuilder.Entity<Autobidder>()
-				.Property(a => a.CreatedDate)
-				.HasDefaultValue(DateTimeOffset.Now)
-				.ValueGeneratedOnAdd();
-
-			modelBuilder.Entity<Autobidder>()
-				.Property(a => a.UpdatedDate)
-				.HasDefaultValue(DateTimeOffset.Now)
-				.ValueGeneratedOnAddOrUpdate();
-
 			modelBuilder.Entity<Autobidder>()
 				.HasIndex(a => a.AdvertId)
 				.IsUnique();
 
-
-			//AdvertBids
-			modelBuilder.Entity<AdvertBid>()
-				.Property(a => a.CreatedDate)
-				.HasDefaultValue(DateTimeOffset.Now)
-				.ValueGeneratedOnAdd();
-
-			modelBuilder.Entity<AdvertBid>()
-				.Property(a => a.UpdatedDate)
-				.HasDefaultValue(DateTimeOffset.Now)
-				.ValueGeneratedOnAddOrUpdate();
-
 			base.OnModelCreating(modelBuilder);
-        }
-    }
+		}
+
+		private void HandleEntitiesUpdates()
+		{
+			var entries = ChangeTracker
+							.Entries()
+							.Where(e => e.Entity is Entity && (e.State == EntityState.Added || e.State == EntityState.Modified || e.State == EntityState.Deleted));
+
+			foreach (var entityEntry in entries)
+			{
+				var entity = (Entity)entityEntry.Entity;
+
+				if (entityEntry.State == EntityState.Added)
+					entity.CreatedDate = DateTimeOffset.UtcNow;
+
+				if (entityEntry.State == EntityState.Deleted)
+				{
+					entityEntry.State = EntityState.Modified;
+					entity.DeletedDate = DateTimeOffset.UtcNow;
+				}
+
+				entity.UpdatedDate = DateTime.UtcNow;
+			}
+		}
+
+		public override int SaveChanges()
+		{
+			HandleEntitiesUpdates();
+			return base.SaveChanges();
+		}
+		public override int SaveChanges(bool acceptAllChangesOnSuccess)
+		{
+			HandleEntitiesUpdates();
+			return base.SaveChanges(acceptAllChangesOnSuccess);
+		}
+
+		public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+		{
+			HandleEntitiesUpdates();
+			return base.SaveChangesAsync(cancellationToken);
+		}
+
+		public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+		{
+			HandleEntitiesUpdates();
+			return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+		}
+	}
 }
