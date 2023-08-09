@@ -60,7 +60,7 @@
 			<div class="modal-body">
 				<ul class="nav nav-tabs">
 					<li class="nav-item">
-						<a class="nav-link active show" href="#advert" data-bs-toggle="tab">Настройки</a>
+						<a class="nav-link active show" href="#advert" data-bs-toggle="tab">Основные</a>
 					</li>
 					<li class="nav-item">
 						<a class="nav-link" href="#autobidder" data-bs-toggle="tab">Автобиддер</a>
@@ -110,6 +110,12 @@
 				$("#advertKeywordInput").val(advert.Keyword);
 				$("#advertIsEnabled").prop("checked", advert.IsEnabled);
 
+				if (advert.Autobidder) {
+					$("#autobidderTypeInput").val(advert.Autobidder.Mode);
+					$("#autobidderDailyBudgetInput").val(advert.Autobidder.DailyBudget);
+					$("#autobidderIsEnabled").prop("checked", advert.Autobidder.IsEnabled);
+				}
+
 				var modal = new bootstrap.Modal(document.getElementById("settingsModal"));
 				modal.show();
 			}
@@ -130,13 +136,33 @@
 				status: status
 			};
 
-			$.post("/Adverts/Edit", { oldAdvert: advert, newAdvert: newAdvert }, function (data) {
-				if (data.success) {
+			$.post("/Adverts/Edit", { oldAdvert: advert, newAdvert: newAdvert }, function (jqXHR) {
+				if (jqXHR.status === 200) {
 					location.reload();
 				}
 				else {
 					alert("Ошибка при сохранении данных.");
 				}
+
+				var modal = new bootstrap.Modal(document.getElementById("settingsModal"));
+				modal.hide();
+			});
+		});
+	</script>
+
+
+	<script>
+		$("#saveAutobidder").click(function () {
+
+			var newAutobidder = {
+				advertId: advert.AdvertId,
+				mode: $("#autobidderTypeInput").val(),
+				dailyBudget: $("#autobidderDailyBudgetInput").val(),
+				isEnabled: $("#autobidderIsEnabled").prop("checked")
+			};
+
+			$.post("/Autobidder/Edit", { autobidder: newAutobidder }, function (data) {
+				alert("Настройки автобиддера успешно сохранены!");
 
 				var modal = new bootstrap.Modal(document.getElementById("settingsModal"));
 				modal.hide();

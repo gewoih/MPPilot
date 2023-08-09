@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MPPilot.Domain.Models.Adverts;
 using MPPilot.Domain.Services;
+using MPPilot.Domain.Services.Autobidders;
 
 namespace MPPilot.App.Controllers
 {
@@ -8,11 +9,13 @@ namespace MPPilot.App.Controllers
     {
         private readonly WildberriesService _wildberriesService;
         private readonly AccountsService _accountService;
+        private readonly AutobidderService _autobidderService;
 
-        public AdvertsController(WildberriesService wildberriesService, AccountsService accountsService)
+        public AdvertsController(WildberriesService wildberriesService, AccountsService accountsService, AutobidderService autobidderService)
         {
             _wildberriesService = wildberriesService;
             _accountService = accountsService;
+            _autobidderService = autobidderService;
         }
 
         [HttpGet]
@@ -34,7 +37,12 @@ namespace MPPilot.App.Controllers
                         }
                     });
 
+                //Заполнение автобиддеров, возможна оптимизация
                 adverts = adverts.OrderByDescending(advert => advert.LastUpdateDate).ToList();
+                foreach (var advert in adverts)
+                {
+                    advert.Autobidder = await _autobidderService.GetByAdvert(advert.AdvertId);
+                }
 
                 return View(adverts);
             }

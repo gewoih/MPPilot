@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MPPilot.Domain.Models.Autobidders;
 using MPPilot.Domain.Services.Autobidders;
 
 namespace MPPilot.App.Controllers
@@ -12,25 +13,11 @@ namespace MPPilot.App.Controllers
 			_autobidderService = autobidderService;
 		}
 
-		[HttpGet]
-		public async Task<IActionResult> GetByAdvertId(int advertId)
-		{
-			try
-			{
-				var autobidder = await _autobidderService.GetByAdvert(advertId);
-				return View();
-			}
-			catch (ArgumentException ex)
-			{
-				return RedirectToAction("Create");
-			}
-		}
-
 		[HttpPost]
-		public async Task<IActionResult> Create(int advertId)
+		public async Task<IActionResult> Edit(Autobidder autobidder)
 		{
-			var autobidder = await _autobidderService.Create(advertId);
-			return View();
+			await _autobidderService.Update(autobidder);
+			return Ok();
 		}
 	}
 }
