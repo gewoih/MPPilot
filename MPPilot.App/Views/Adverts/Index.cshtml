@@ -5,13 +5,23 @@
 
 <link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet" />
 
+<div>
+	<label for="filterDropdown">Показать: </label>
+	<select id="filterDropdown">
+		<option value="0">Все</option>
+		<option value="1">Активные</option>
+		<option value="2">Приостановленные</option>
+		<option value="3">Архив</option>
+	</select>
+</div>
+
 <table id="data-table" class="table table-striped table-hover display">
 	<thead>
 		<tr>
 			<th></th>
-			<th class="filterable">Тип</th>
-			<th class="filterable">Название</th>
-			<th class="filterable">Фраза</th>
+			<th>Тип</th>
+			<th>Название</th>
+			<th>Фраза</th>
 			<th>Арт.</th>
 			<th>Статус</th>
 
@@ -92,6 +102,12 @@
 	</div>
 </div>
 
+<style>
+	#data-table tbody tr:hover {
+    cursor: pointer;
+}
+</style>
+
 @section Scripts {
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -102,8 +118,30 @@
 	</script>
 
 	<script>
-		$(function () {
-			$("[rel='tooltip']").tooltip();
+		$(document).ready(function () {
+			var dataTable = $('#data-table').DataTable({
+				"paging": true,
+				"pageLength": 10,
+				"ordering": false,
+				"searching": true
+			});
+
+			$('#filterDropdown').on('change', function () {
+				var dataTable = $('#data-table').DataTable();
+				var selectedValue = $(this).val();
+				
+				if (selectedValue === "0")
+					dataTable.column(5).search("").draw();
+
+				if (selectedValue === "1")
+					dataTable.columns(5).search("Запущена").draw();
+
+				if (selectedValue === "2")
+					dataTable.columns(5).search("Приостановлена|Готова к запуску", true, false).draw();
+
+				if (selectedValue === "3")
+					dataTable.columns(5).search("Завершена").draw();
+			});
 		});
 	</script>
 
@@ -162,12 +200,19 @@
 
 	<script>
 		$("#saveAutobidder").click(function () {
+			var keyword = $("#advertKeywordInput").val();
+			var isAutobidderEnabled = $("#autobidderIsEnabled").prop("checked");
+
+			if (isAutobidderEnabled && !keyword) {
+				alert("Перед запуском автобиддера необходимо установить ключевую фразу для РК");
+				return;
+			}
 
 			var newAutobidder = {
 				advertId: advert.AdvertId,
 				mode: $("#autobidderTypeInput").val(),
 				dailyBudget: $("#autobidderDailyBudgetInput").val(),
-				isEnabled: $("#autobidderIsEnabled").prop("checked")
+				isEnabled: isAutobidderEnabled
 			};
 
 			$.post("/Autobidder/Edit", { autobidder: newAutobidder }, function (data) {

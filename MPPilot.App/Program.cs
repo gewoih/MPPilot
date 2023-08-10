@@ -66,16 +66,16 @@ namespace MPPilot.App
 
 			if (!app.Environment.IsDevelopment())
 			{
-				app.UseExceptionHandler("/Home/Error");
+				app.UseMiddleware<ExceptionsHandlerMiddleware>();
+				app.UseMiddleware<LongQueryMiddleware>();
+				
 				app.UseHsts();
 			}
 
 			app.UseHttpsRedirection();
 
 			app.UseStaticFiles();
-
-			app.UseMiddleware<ExceptionsHandlerMiddleware>();
-			app.UseMiddleware<LongQueryMiddleware>();
+			
 			app.UseMiddleware<JWTAuthenticationMiddleware>();
 
 			app.UseAuthentication();
