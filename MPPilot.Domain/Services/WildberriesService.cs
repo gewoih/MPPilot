@@ -52,7 +52,7 @@ namespace MPPilot.Domain.Services
             var serializedData = JsonConvert.SerializeObject(data);
             var content = new StringContent(serializedData, Encoding.UTF8, "application/json");
 
-            var query = $"/v1/search/set-plus?id={advertId}";
+            var query = $"v1/search/set-plus?id={advertId}";
             var result = await _httpClient.PostAsync(query, content);
             if (result.StatusCode == HttpStatusCode.BadRequest)
                 throw new ArgumentException($"Произошла ошибка при изменении ключевой фразы. {nameof(newKeyword)} = '{newKeyword}'");
@@ -161,7 +161,7 @@ namespace MPPilot.Domain.Services
             return query;
         }
 
-        private async Task<IEnumerable<Advert>> GetAdvertsFromJson(string query)
+        private async Task<List<Advert>> GetAdvertsFromJson(string query)
         {
             var result = await _httpClient.GetAsync(query);
 
@@ -222,17 +222,17 @@ namespace MPPilot.Domain.Services
             }
         }
 
-        private async Task FillUpAdvertsKeywords(IEnumerable<Advert> campaigns)
+        private async Task FillUpAdvertsKeywords(List<Advert> campaigns)
         {
             var jObjects = await GetJObjectsByHttpQueries(campaigns, "v1/stat/words?id=");
-            foreach (var jObject in jObjects)
+            for (int i = 0; i < jObjects.Count; i++)
             {
-                if (jObject is not null && jObject["words"].Value<JObject>().ContainsKey("pluse"))
+                if (jObjects[i] is not null && jObjects[i]["words"].Value<JObject>().ContainsKey("pluse"))
                 {
-                    if (jObject["words"]["pluse"].HasValues && jObject["stat"].HasValues)
+                    if (jObjects[i]["words"]["pluse"].HasValues)
                     {
-                        var findedCampaign = campaigns.First(campaign => campaign.AdvertId == jObject["stat"][0]["advertId"].Value<int>());
-                        findedCampaign.Keyword = jObject["words"]["pluse"][0].Value<string>();
+                        var foundAdvert = campaigns[i];
+						foundAdvert.Keyword = jObjects[i]["words"]["pluse"][0].Value<string>();
                     }
                 }
             }
