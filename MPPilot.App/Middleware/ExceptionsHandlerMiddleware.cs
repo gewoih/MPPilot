@@ -6,6 +6,11 @@ namespace MPPilot.App.Middleware
 	{
 		private readonly ILogger<ExceptionsHandlerMiddleware> _logger;
 
+		public ExceptionsHandlerMiddleware(ILogger<ExceptionsHandlerMiddleware> logger)
+		{
+			_logger = logger;
+		}
+
 		public async Task InvokeAsync(HttpContext context, RequestDelegate next)
 		{
 			try
