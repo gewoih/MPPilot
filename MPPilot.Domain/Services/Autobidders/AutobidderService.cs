@@ -20,47 +20,79 @@ namespace MPPilot.Domain.Services.Autobidders
 
 		public async Task Update(Autobidder autobidder)
 		{
-			var foundAutobidder = await GetByAdvert(autobidder.AdvertId);
-			if (foundAutobidder is not null)
+			try
 			{
-				foundAutobidder.Mode = autobidder.Mode;
-				foundAutobidder.DailyBudget = autobidder.DailyBudget;
-				foundAutobidder.IsEnabled = autobidder.IsEnabled;
+				var foundAutobidder = await GetByAdvert(autobidder.AdvertId);
+				if (foundAutobidder is not null)
+				{
+					foundAutobidder.Mode = autobidder.Mode;
+					foundAutobidder.DailyBudget = autobidder.DailyBudget;
+					foundAutobidder.IsEnabled = autobidder.IsEnabled;
+				}
+				else
+				{
+					var currentAccount = await _accountService.GetCurrentAccount();
+					autobidder.Account = currentAccount;
+
+					await _context.Autobidders.AddAsync(autobidder);
+				}
+
+				await _context.SaveChangesAsync();
+
+				_logger.LogInformation("Настройки автобиддера {Id} успешно обновлены.", autobidder.Id);
 			}
-			else
+			catch (Exception ex)
 			{
-				var currentAccount = await _accountService.GetCurrentAccount();
-				autobidder.Account = currentAccount;
-
-				await _context.Autobidders.AddAsync(autobidder);
+				_logger.LogError(ex, "Ошибка при обновлении автобиддера {Id} для РК {AdvertId}", autobidder.Id, autobidder.AdvertId);
+				throw;
 			}
-
-			await _context.SaveChangesAsync();
 		}
 
 		public async Task<Autobidder> Create(int advertId)
 		{
-			var autobidder = new Autobidder
+			try
 			{
-				AdvertId = advertId,
-				Mode = AutobidderMode.Conservative,
-			};
+				var autobidder = new Autobidder
+				{
+					AdvertId = advertId,
+					Mode = AutobidderMode.Conservative,
+				};
 
-			await _context.Autobidders.AddAsync(autobidder);
-			await _context.SaveChangesAsync();
-			return autobidder;
+				await _context.Autobidders.AddAsync(autobidder);
+				await _context.SaveChangesAsync();
+
+				_logger.LogInformation("Автобиддер {Id} успешно создан!", autobidder.Id);
+
+				return autobidder;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Ошибка при создании автобиддера для РК {AdvertId}", advertId);
+				throw;
+			}
 		}
 
-		public async Task<Autobidder> GetByAdvert(int advertId)
+		public async Task<Autobidder?> GetByAdvert(int advertId)
 		{
 			var autobidder = await _context.Autobidders.FirstOrDefaultAsync(autobidder => autobidder.AdvertId == advertId);
+			if (autobidder is null)
+				_logger.LogWarning("Не найден автобиддер для РК {AdvertId}!", advertId);
+
 			return autobidder;
 		}
 
 		public async Task AddBid(Autobidder autobidder, AdvertBid bid)
 		{
-			autobidder.Bids = new List<AdvertBid> { bid };
-			await _context.SaveChangesAsync();
+			try
+			{
+				autobidder.Bids = new List<AdvertBid> { bid };
+				await _context.SaveChangesAsync();
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Произошла ошибка при добавлении ставки для автобиддера {Id}!", autobidder.Id);
+				throw;
+			}
 		}
 
 		public async Task StopAsync(Guid id)
@@ -71,7 +103,7 @@ namespace MPPilot.Domain.Services.Autobidders
 				autobidder.IsEnabled = false;
 				await _context.SaveChangesAsync();
 
-				_logger.LogInformation($"Автобиддер '{id}' для РК '{autobidder.AdvertId}' выключен");
+				_logger.LogInformation("Автобиддер '{Id}' для РК '{AdvertId}' выключен.", id, autobidder.AdvertId);
 			}
 		}
 
@@ -83,7 +115,7 @@ namespace MPPilot.Domain.Services.Autobidders
 				autobidder.IsEnabled = true;
 				await _context.SaveChangesAsync();
 
-				_logger.LogInformation($"Автобиддер '{id}' для РК '{autobidder.AdvertId}' включен");
+				_logger.LogInformation("Автобиддер '{Id}' для РК '{AdvertId}' включен.", id, autobidder.AdvertId);
 			}
 		}
 
@@ -99,7 +131,11 @@ namespace MPPilot.Domain.Services.Autobidders
 
 		private async Task<Autobidder?> FindById(Guid id)
 		{
-			return await _context.Autobidders.FindAsync(id);
+			var foundAutobidder = await _context.Autobidders.FindAsync(id);
+			if (foundAutobidder is null)
+				_logger.LogWarning("Автобиддер {Id} не найден!", id);
+
+			return foundAutobidder;
 		}
 	}
 }

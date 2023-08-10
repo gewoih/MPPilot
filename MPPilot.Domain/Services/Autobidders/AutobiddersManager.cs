@@ -41,19 +41,19 @@ namespace MPPilot.Domain.Services.Autobidders
 
 					if (autobidders.Any())
 					{
-						_logger.LogInformation($"Найдено {autobidders.Count} активных автобиддеров. Начинаем обработку...");
+						_logger.LogInformation("Найдено {Count} активных автобиддеров. Начинаем обработку...", autobidders.Count);
 						foreach (var autobidder in autobidders)
 						{
 							if (autobidder.Mode == AutobidderMode.Conservative)
 								await HandleConservativeAutobidder(autobidder);
 
-							_logger.LogInformation($"Завершена обработка автобиддера (тип = {autobidder.Mode}, id = {autobidder.Id}) для РК '{autobidder.AdvertId}'");
+							_logger.LogInformation("Завершена обработка автобиддера (тип = {Mode}, id = {Id}) для РК '{AdvertId}'", autobidder.Mode, autobidder.Id, autobidder.AdvertId);
 						}
 					}
 					else
 						_logger.LogInformation($"Активные автобиддеры не найдены...");
 
-					_logger.LogInformation($"Обработка всех автобиддеров заняла: {_stopwatch.Elapsed}");
+					_logger.LogInformation("Обработка всех автобиддеров заняла: {Elapsed}", _stopwatch.Elapsed);
 
 					await Task.Delay(TimeSpan.FromSeconds(10));
 				}
@@ -73,7 +73,7 @@ namespace MPPilot.Domain.Services.Autobidders
 
 			if (advertTodayExpenses >= autobidder.DailyBudget)
 			{
-				_logger.LogInformation($"Превышение по бюджету для РК '{advert.AdvertId}'. Автобиддер пропущен.");
+				_logger.LogInformation("Превышение по бюджету для РК '{AdvertId}'. Автобиддер пропущен.", advert.AdvertId);
 				return;
 			}
 
