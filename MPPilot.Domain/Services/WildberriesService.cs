@@ -111,7 +111,7 @@ namespace MPPilot.Domain.Services
             return adverts.First();
 		}
 
-        public async Task<IEnumerable<Advert>> GetAdvertsAsync(string apiKey, AdvertStatus? status = null, AdvertType? type = null, int? count = null)
+        public async Task<List<Advert>> GetAdvertsAsync(string apiKey, AdvertStatus? status = null, AdvertType? type = null, int? count = null)
         {
 			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
 
@@ -191,14 +191,14 @@ namespace MPPilot.Domain.Services
             return advertCampaigns;
         }
 
-        private async Task FillUpAdvertsInfo(IEnumerable<Advert> campaigns)
+        private async Task FillUpAdvertsInfo(List<Advert> adverts)
         {
-            var jObjects = await GetJObjectsByHttpQueries(campaigns, "v0/advert?id=");
+            var jObjects = await GetJObjectsByHttpQueries(adverts, "v0/advert?id=");
             foreach (var jObject in jObjects)
             {
                 if (jObject.ContainsKey("params"))
                 {
-                    var findedCampaign = campaigns.First(campaign => campaign.AdvertId == jObject["advertId"].Value<int>());
+                    var findedCampaign = adverts.First(campaign => campaign.AdvertId == jObject["advertId"].Value<int>());
                     var jsonProducts = jObject["params"][0]["nms"];
 
                     findedCampaign.CPM = jObject["params"][0]["price"].Value<int>();
@@ -222,16 +222,18 @@ namespace MPPilot.Domain.Services
             }
         }
 
-        private async Task FillUpAdvertsKeywords(List<Advert> campaigns)
+        private async Task FillUpAdvertsKeywords(List<Advert> adverts)
         {
-            var jObjects = await GetJObjectsByHttpQueries(campaigns, "v1/stat/words?id=");
+            var jObjects = await GetJObjectsByHttpQueries(adverts, "v1/stat/words?id=");
             for (int i = 0; i < jObjects.Count; i++)
             {
                 if (jObjects[i] is not null && jObjects[i]["words"].Value<JObject>().ContainsKey("pluse"))
                 {
                     if (jObjects[i]["words"]["pluse"].HasValues)
                     {
-                        var foundAdvert = campaigns[i];
+                        //Рассчет на то, что adverts будут в правильном порядке
+                        //Сейчас работает корректно, но в теории возможны баги
+                        var foundAdvert = adverts[i];
 						foundAdvert.Keyword = jObjects[i]["words"]["pluse"][0].Value<string>();
                     }
                 }
