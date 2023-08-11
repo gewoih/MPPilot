@@ -1,99 +1,119 @@
 ﻿@using MPPilot.Domain.Models.Adverts;
 @using MPPilot.Domain.Utils;
 @using Newtonsoft.Json;
-@model IEnumerable<Advert>
 
-<link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet" />
+<div id="app">
+	<div v-if="isLoading">
+		Загрузка данных...
+	</div>
 
-<div>
-	<label for="filterDropdown">Показать: </label>
-	<select id="filterDropdown">
-		<option value="0">Все</option>
-		<option value="1">Активные</option>
-		<option value="2">Приостановленные</option>
-	</select>
-</div>
+	<div v-else>
+		<table id="data-table" class="table table-striped table-hover display">
+			<thead>
+				<tr>
+					<th></th>
+					<th>Тип</th>
+					<th>Название</th>
+					<th>Фраза</th>
+					<th>Арт.</th>
+					<th>Статус</th>
 
-<table id="data-table" class="table table-striped table-hover display">
-	<thead>
-		<tr>
-			<th></th>
-			<th>Тип</th>
-			<th>Название</th>
-			<th>Фраза</th>
-			<th>Арт.</th>
-			<th>Статус</th>
+					<th>Просмотры</th>
+					<th>Клики</th>
+					<th>Заказы</th>
+					<th>Стоимость заказа (р.)</th>
+					<th>Расход (р.)</th>
 
-			<th>Просмотры</th>
-			<th>Клики</th>
-			<th>Заказы</th>
-			<th>Стоимость заказа (р.)</th>
-			<th>Расход (р.)</th>
-
-			<th>CPM</th>
-			<th>CTR</th>
-			<th>CPC</th>
-		</tr>
-	</thead>
-	<tbody>
-
-		@foreach (var item in Model)
-		{
-			<tr class="edit-button" data-advert="@JsonConvert.SerializeObject(item)">
-				<td>
-					@if (item.Autobidder?.IsEnabled == true)
-					{
-						<svg data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Под управлением автобиддера" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-circle" viewBox="0 0 16 16">
+					<th>CPM</th>
+					<th>CTR</th>
+					<th>CPC</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr v-on:click="openModal(advert)" v-for="advert in adverts" :key="advert.advertId" data-bs-toggle="modal" data-bs-target="#settingsModal">
+					<td>
+						<svg v-if="advert.isAutobidderEnabled" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Под управлением автобиддера"
+							 xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-circle" viewBox="0 0 16 16">
 							<path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
 							<path d="M6.271 5.055a.5.5 0 0 1 .52.038l3.5 2.5a.5.5 0 0 1 0 .814l-3.5 2.5A.5.5 0 0 1 6 10.5v-5a.5.5 0 0 1 .271-.445z" />
 						</svg>
-					}
-				</td>
+					</td>
 
-				<td>@item.Type.GetDescription()</td>
-				<td>@item.Name</td>
-				<td>@item.Keyword</td>
-				<td>@item.ProductArticle</td>
-				<td>@item.Status.GetDescription()</td>
+					<td>{{ advert.typeString }}</td>
+					<td>{{ advert.name }}</td>
+					<td>{{ advert.keyword }}</td>
+					<td>{{ advert.productArticle }}</td>
+					<td>{{ advert.statusString }}</td>
 
-				<td>@item.TotalViews</td>
-				<td>@item.Clicks</td>
-				<td>@item.Orders</td>
-				<td>@(item.OrderCost.ToString("F2"))</td>
-				<td>@(item.TotalSpent.ToString("F2"))</td>
+					<td>{{ advert.totalViews }}</td>
+					<td>{{ advert.clicks }}</td>
+					<td>{{ advert.orders }}</td>
+					<td>{{ advert.orderCost.toFixed(2) }}</td>
+					<td>{{ advert.totalSpent.toFixed(2) }}</td>
 
-				<td>@item.CPM</td>
-				<td>@item.CTR.ToString("F2")</td>
-				<td>@item.CPC.ToString("F2")</td>
-			</tr>
-		}
-	</tbody>
-</table>
-<div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title" id="modalLabel">Настройки рекламной кампании</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
+					<td>{{ advert.cpm }}</td>
+					<td>{{ advert.ctr.toFixed(2) }}</td>
+					<td>{{ advert.cpc.toFixed(2) }}</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
 
-			<div class="modal-body">
-				<ul class="nav nav-tabs">
-					<li class="nav-item">
-						<a class="nav-link active show" href="#advert" data-bs-toggle="tab">Основные</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link" href="#autobidder" data-bs-toggle="tab">Автобиддер</a>
-					</li>
-				</ul>
+	<div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="modalLabel">Настройки рекламной кампании</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
 
-				<div class="tab-content">
-					<div class="tab-pane show active" id="advert" role="tabpanel">
-						@(await Html.PartialAsync("AdvertSettings"))
-					</div>
+				<div class="modal-body">
+					<ul class="nav nav-tabs">
+						<li class="nav-item">
+							<a class="nav-link active show" href="#advert" data-bs-toggle="tab">Основные</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="#autobidder" data-bs-toggle="tab">Автобиддер</a>
+						</li>
+					</ul>
 
-					<div class="tab-pane" id="autobidder" role="tabpanel">
-						@(await Html.PartialAsync("AutobidderSettings"))
+					<div class="tab-content">
+						<div class="tab-pane show active" role="tabpanel" id="advert">
+							<div class="form-group py-1">
+								<label>Название:</label>
+								<input type="text" class="form-control" v-model="selectedAdvert.name">
+							</div>
+							<div class="form-group py-1">
+								<label>Ключевая фраза:</label>
+								<input type="text" class="form-control" v-model="selectedAdvert.keyword">
+							</div>
+							<div class="form-check form-switch py-1">
+								<label class="form-check-label">Вкл/Выкл.</label>
+								<input class="form-check-input" type="checkbox" v-model="selectedAdvert.isEnabled">
+							</div>
+						</div>
+
+						<div class="tab-pane" role="tabpanel" id="autobidder">
+							<div class="form-group py-1">
+								<label>Тип:</label>
+								<select class="form-select" v-model="selectedAdvert.autobidder.mode">
+									<option value="0" selected="true">Консервативная</option>
+								</select>
+							</div>
+							<div class="form-group py-1">
+								<label>Дневной бюджет (р.):</label>
+								<input type="number" class="form-control" v-model="selectedAdvert.autobidder.dailyBudget">
+							</div>
+							<div class="form-check form-switch py-1">
+								<label class="form-check-label">Вкл/Выкл.</label>
+								<input class="form-check-input" type="checkbox" v-model="selectedAdvert.autobidder.isEnabled">
+							</div>
+						</div>
+
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+							<button type="button" class="btn btn-primary" v-on:click="saveSettings()">Сохранить</button>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -103,13 +123,14 @@
 
 <style>
 	#data-table tbody tr:hover {
-    cursor: pointer;
-}
+		cursor: pointer;
+	}
 </style>
 
 @section Scripts {
+	<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-	<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
 	<script>
 		const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
@@ -117,104 +138,81 @@
 	</script>
 
 	<script>
-		$(document).ready(function () {
-			var dataTable = $('#data-table').DataTable({
-				"paging": true,
-				"pageLength": 10,
-				"ordering": false,
-				"searching": true
-			});
+		const app = Vue.createApp({
+			data() {
+				return {
+					adverts: [],
+					isLoading: true,
+					oldAdvert: null,
+					selectedAdvert: {
+						name: '',
+						keyword: '',
+						isEnabled: false,
+						autobidder: {
+							mode: '0',
+							dailyBudget: 0,
+							isEnabled: false
+						}
+					},
+					advertId: null
+				};
+			},
 
-			$('#filterDropdown').on('change', function () {
-				var dataTable = $('#data-table').DataTable();
-				var selectedValue = $(this).val();
-				
-				if (selectedValue === "0")
-					dataTable.column(5).search("").draw();
+			mounted() {
+				this.fetchAdverts();
+			},
 
-				if (selectedValue === "1")
-					dataTable.columns(5).search("Запущена").draw();
+			methods: {
+				fetchAdverts() {
+					fetch('/adverts/getAdverts')
+						.then(response => response.json())
+						.then(data => {
+							this.adverts = data;
+							this.isLoading = false;
+						})
+						.catch(error => {
+							console.error('Error fetching data:', error);
+						})
+				},
 
-				if (selectedValue === "2")
-					dataTable.columns(5).search("Приостановлена|Готова к запуску", true, false).draw();
-			});
-		});
-	</script>
+				openModal(advert) {
+					if (advert.autobidder === null) {
+						advert.autobidder = {
+							mode: '0',
+							dailyBudget: 0,
+							isEnabled: false
+						};
+					}
 
-	<script>
-		let advert;
+					this.selectedAdvert = advert;
+					this.oldAdvert = { ...advert };
+				},
 
-		$(".edit-button").click(function () {
-			var advertData = $(this).data("advert");
-			advertData = JSON.stringify(advertData);
-			advert = JSON.parse(advertData);
+				saveSettings() {
+					const headers = {
+						'Content-Type': 'application/json'
+					};
 
-			if (advert) {
-				$("#advertId").val(advert.AdvertId);
-				$("#advertNameInput").val(advert.Name);
-				$("#advertKeywordInput").val(advert.Keyword);
-				$("#advertIsEnabled").prop("checked", advert.IsEnabled);
+					const status = this.selectedAdvert.isEnabled ? 9 : 11;
+					this.selectedAdvert.status = status;
 
-				if (advert.Autobidder) {
-					$("#autobidderTypeInput").val(advert.Autobidder.Mode);
-					$("#autobidderDailyBudgetInput").val(advert.Autobidder.DailyBudget);
-					$("#autobidderIsEnabled").prop("checked", advert.Autobidder.IsEnabled);
+					const advertsData = {
+						oldAdvert: this.oldAdvert,
+						newAdvert: this.selectedAdvert
+					};
+
+					axios.post('/adverts/edit', JSON.stringify(advertsData), { headers })
+						.then(() => {
+							return axios.post('/autobidder/edit', JSON.stringify(this.selectedAdvert.autobidder), { headers })
+								.then(() => {
+									alert('Настройки успешно сохранены!');
+									return this.fetchAdverts();
+								});
+						});
 				}
-				else {
-					$("#autobidderTypeInput").val(null);
-					$("#autobidderDailyBudgetInput").val(null);
-					$("#autobidderIsEnabled").prop("checked", false);
-				}
-
-				var modal = new bootstrap.Modal(document.getElementById("settingsModal"));
-				modal.show();
-			}
-			else {
-				alert("Рекламная кампания " + id + " не найдена");
 			}
 		});
-	</script>
 
-	<script>
-		$("#saveAdvert").click(function () {
-			var status = $("#advertIsEnabled").prop("checked") ? "InProgress" : "Stopped";
-
-			var newAdvert = {
-				advertId: advert.AdvertId,
-				name: $("#advertNameInput").val(),
-				keyword: $("#advertKeywordInput").val(),
-				status: status
-			};
-
-			$.post("/Adverts/Edit", { oldAdvert: advert, newAdvert: newAdvert }, function (jqXHR) {
-				location.reload();
-				$('#settingsModal').modal('hide');
-			});
-		});
-	</script>
-
-
-	<script>
-		$("#saveAutobidder").click(function () {
-			var keyword = $("#advertKeywordInput").val();
-			var isAutobidderEnabled = $("#autobidderIsEnabled").prop("checked");
-
-			if (isAutobidderEnabled && !keyword) {
-				alert("Перед запуском автобиддера необходимо установить ключевую фразу для РК");
-				return;
-			}
-
-			var newAutobidder = {
-				advertId: advert.AdvertId,
-				mode: $("#autobidderTypeInput").val(),
-				dailyBudget: $("#autobidderDailyBudgetInput").val(),
-				isEnabled: isAutobidderEnabled
-			};
-
-			$.post("/Autobidder/Edit", { autobidder: newAutobidder }, function (data) {
-				location.reload();
-				$('#settingsModal').modal('hide');
-			});
-		});
+		app.mount('#app');
 	</script>
 }

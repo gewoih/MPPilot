@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MPPilot.App.Models;
 using MPPilot.Domain.Models.Adverts;
 using MPPilot.Domain.Services;
 using MPPilot.Domain.Services.Autobidders;
@@ -21,15 +22,7 @@ namespace MPPilot.App.Controllers
 		[HttpGet]
 		public async Task<IActionResult> Index()
 		{
-			try
-			{
-				var adverts = await GetAdverts();
-				return View(adverts);
-			}
-			catch
-			{
-				return View(Enumerable.Empty<Advert>());
-			}
+			return View();
 		}
 
 		[HttpGet]
@@ -57,17 +50,20 @@ namespace MPPilot.App.Controllers
 
 			adverts = adverts
 						.OrderByDescending(advert => advert.IsAutobidderEnabled)
-						.ThenByDescending(advert => advert.LastUpdateDate)
+						.ThenByDescending(advert => advert.CreatedDate)
 						.ToList();
 
 			return adverts;
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> Edit(Advert oldAdvert, Advert newAdvert)
+		public async Task<IActionResult> Edit([FromBody] AdvertEditModel advertEditModel)
 		{
 			var accountSettings = await _accountService.GetCurrentAccountSettings();
 			var apiKey = accountSettings.WildberriesApiKey;
+
+			var oldAdvert = advertEditModel.OldAdvert;
+			var newAdvert = advertEditModel.NewAdvert;
 
 			if (oldAdvert.AdvertId != newAdvert.AdvertId)
 				throw new Exception($"Id старой РК ({oldAdvert.AdvertId}) и обновленной РК ({newAdvert.AdvertId}) не могут отличаться.");

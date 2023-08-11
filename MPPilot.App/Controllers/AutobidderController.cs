@@ -14,7 +14,7 @@ namespace MPPilot.App.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> Edit(Autobidder autobidder)
+		public async Task<IActionResult> Edit([FromBody] Autobidder autobidder)
 		{
 			await _autobidderService.Update(autobidder);
 			return Ok();

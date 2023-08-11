@@ -189,7 +189,7 @@ namespace MPPilot.Domain.Services
                     Type = (AdvertType)element.Value<int>("type"),
                 };
 
-                if (newCampaign.Status != AdvertStatus.Stopped)
+                if (newCampaign.Status != AdvertStatus.Finished)
                     advertCampaigns.Add(newCampaign);
             }
 
