@@ -2,9 +2,10 @@
 @using MPPilot.Domain.Utils;
 @using Newtonsoft.Json;
 
-<div id="app">
-	<div v-if="isLoading">
-		Загрузка данных...
+<div id="app" v-cloak>
+	<div class="loading-container" v-if="isLoading">
+		<div class="loading-spinner"></div>
+		<p class="loading-message">Загрузка данных...</p>
 	</div>
 
 	<div v-else>
