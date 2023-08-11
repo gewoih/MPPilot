@@ -44,7 +44,14 @@
 					<td>{{ advert.name }}</td>
 					<td>{{ advert.keyword }}</td>
 					<td>{{ advert.productArticle }}</td>
-					<td>{{ advert.statusString }}</td>
+					<td>
+						<div v-if="advert.status === 9" style="background-color: #d1f1d2;">
+							{{ advert.statusString }}
+						</div>
+						<div v-else style="background-color: #fff9cc;">
+							{{ advert.statusString }}
+						</div>
+					</td>
 
 					<td>{{ advert.totalViews }}</td>
 					<td>{{ advert.clicks }}</td>
