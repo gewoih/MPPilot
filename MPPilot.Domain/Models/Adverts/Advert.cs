@@ -6,6 +6,7 @@ namespace MPPilot.Domain.Models.Adverts
     public class Advert
     {
         public Autobidder Autobidder { get; set; }
+        public bool IsAutobidderEnabled => Autobidder is not null ? Autobidder.IsEnabled : false;
 
         public int AdvertId { get; set; }
         public string Name { get; set; }

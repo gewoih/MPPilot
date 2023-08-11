@@ -11,7 +11,6 @@
 		<option value="0">Все</option>
 		<option value="1">Активные</option>
 		<option value="2">Приостановленные</option>
-		<option value="3">Архив</option>
 	</select>
 </div>
 
@@ -138,9 +137,6 @@
 
 				if (selectedValue === "2")
 					dataTable.columns(5).search("Приостановлена|Готова к запуску", true, false).draw();
-
-				if (selectedValue === "3")
-					dataTable.columns(5).search("Завершена").draw();
 			});
 		});
 	</script>

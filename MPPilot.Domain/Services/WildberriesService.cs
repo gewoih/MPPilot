@@ -26,6 +26,10 @@ namespace MPPilot.Domain.Services
 			var query = $"v1/fullstat?id={advertId}";
             var result = await _httpClient.GetAsync(query);
             var jsonResult = await result.Content.ReadAsStringAsync();
+
+            if (string.IsNullOrEmpty(jsonResult))
+                return 0;
+
             var jObject = JObject.Parse(jsonResult);
 
             if (jObject["days"] is null)
@@ -185,7 +189,8 @@ namespace MPPilot.Domain.Services
                     Type = (AdvertType)element.Value<int>("type"),
                 };
 
-                advertCampaigns.Add(newCampaign);
+                if (newCampaign.Status != AdvertStatus.Stopped)
+                    advertCampaigns.Add(newCampaign);
             }
 
             return advertCampaigns;

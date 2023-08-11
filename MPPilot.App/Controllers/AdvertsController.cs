@@ -50,11 +50,15 @@ namespace MPPilot.App.Controllers
 				});
 
 			//Заполнение автобиддеров, возможна оптимизация
-			adverts = adverts.OrderByDescending(advert => advert.LastUpdateDate).ToList();
 			foreach (var advert in adverts)
 			{
 				advert.Autobidder = await _autobidderService.GetByAdvert(advert.AdvertId);
 			}
+
+			adverts = adverts
+						.OrderByDescending(advert => advert.IsAutobidderEnabled)
+						.ThenByDescending(advert => advert.LastUpdateDate)
+						.ToList();
 
 			return adverts;
 		}
