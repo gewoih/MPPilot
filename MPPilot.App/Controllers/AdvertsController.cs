@@ -28,7 +28,7 @@ namespace MPPilot.App.Controllers
 		[HttpGet]
 		public async Task<List<Advert>> GetAdverts()
 		{
-			var accountSettings = await _accountService.GetCurrentAccountSettings();
+			\var accountSettings = await _accountService.GetCurrentAccountSettings();
 
 			var adverts = new List<Advert>();
 			var searchAdvertsTask = _wildberriesService.GetAdvertsAsync(accountSettings.WildberriesApiKey, type: AdvertType.Search);
