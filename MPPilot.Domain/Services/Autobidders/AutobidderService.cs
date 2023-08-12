@@ -95,6 +95,23 @@ namespace MPPilot.Domain.Services.Autobidders
 			}
 		}
 
+		public async Task<List<AdvertBid>> GetBids(Guid autobidderId)
+		{
+			try
+			{
+				var bids = await _context.AdvertBids
+								.Where(bid => bid.AutobidderId.Equals(autobidderId))
+								.OrderByDescending(bid => bid.CreatedDate)
+								.ToListAsync();
+
+				return bids;
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
+		}
+
 		public async Task StopAsync(Guid id)
 		{
 			var autobidder = await FindById(id);

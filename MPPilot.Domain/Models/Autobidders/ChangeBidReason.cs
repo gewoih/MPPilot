@@ -1,7 +1,10 @@
-﻿namespace MPPilot.Domain.Models.Autobidders
+﻿using System.ComponentModel;
+
+namespace MPPilot.Domain.Models.Autobidders
 {
 	public enum ChangeBidReason
 	{
-		BelowAverageCpm
+		[Description("За границами средней ставки")]
+		NotAverageCpm
 	}
 }
