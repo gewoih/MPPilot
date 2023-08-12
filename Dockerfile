@@ -6,12 +6,11 @@ EXPOSE 80
 EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
-WORKDIR /src
 COPY ["MPPilot.App/MPPilot.App.csproj", "MPPilot.App/"]
 COPY ["MPPilot.Domain/MPPilot.Domain.csproj", "MPPilot.Domain/"]
 RUN dotnet restore "MPPilot.App/MPPilot.App.csproj"
 COPY . .
-WORKDIR "/src/MPPilot.App"
+WORKDIR "MPPilot.App/"
 RUN dotnet build "MPPilot.App.csproj" -c Release -o /app/build
 
 FROM build AS publish
