@@ -81,8 +81,11 @@ namespace MPPilot.Domain.Services.Autobidders
 			var averageCpm = (int)advertMarketStatistics.AverageCPM;
 
 			var targetAdvert = advertMarketStatistics.MarketAdverts.First(a => a.CPM < averageCpm);
+			var currentPosition = advertMarketStatistics.AdvertPosition;
 
-			if (advert.CPM != targetAdvert.CPM)
+			//Если CPM понижается, то мы делаем это без дополнительных проверок
+			//Если CPM повышается, то мы должны убедиться, что мы УЖЕ не находимся в целевых границах
+			if ((advert.CPM < targetAdvert.CPM && currentPosition != targetAdvert.Position) || advert.CPM > targetAdvert.CPM)
 			{
 				var isCpmChanged = await _wildberriesService.ChangeCPM(apiKey, advert, targetAdvert.CPM);
 				if (isCpmChanged)
@@ -90,13 +93,13 @@ namespace MPPilot.Domain.Services.Autobidders
 					var newBid = new AdvertBid
 					{
 						AdvertKeyword = advert.Keyword,
-						AdvertPosition = advertMarketStatistics.AdvertPosition,
+						AdvertPosition = currentPosition,
 						AutobidderMode = AutobidderMode.Conservative,
 						LastCPM = advert.CPM,
 						CurrentCPM = targetAdvert.CPM,
 						TargetPositionLeftBound = targetAdvert.Position,
 						TargetPositionRightBound = targetAdvert.Position,
-						Reason = ChangeBidReason.BelowAverageCpm
+						Reason = ChangeBidReason.NotAverageCpm
 					};
 
 					await _autobidderService.AddBid(autobidder, newBid);

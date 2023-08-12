@@ -19,5 +19,11 @@ namespace MPPilot.App.Controllers
 			await _autobidderService.Update(autobidder);
 			return Ok();
 		}
+
+		[HttpGet]
+		public async Task<List<AdvertBid>> GetBids(Guid autobidderId)
+		{
+			return await _autobidderService.GetBids(autobidderId);
+		}
 	}
 }

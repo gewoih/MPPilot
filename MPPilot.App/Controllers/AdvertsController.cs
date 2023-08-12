@@ -80,7 +80,7 @@ namespace MPPilot.App.Controllers
 
 			await Task.WhenAll(changeSettingsTasks);
 
-			return Json(new { success = true });
+			return Ok();
 		}
 	}
 }
