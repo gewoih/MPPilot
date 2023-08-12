@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using MPPilot.App.Middleware;
 using MPPilot.Domain.Infrastructure;
@@ -75,6 +74,11 @@ namespace MPPilot.App
 			app.UseHttpsRedirection();
 
 			app.UseStaticFiles();
+			app.UseStaticFiles(new StaticFileOptions
+			{
+				FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "node_modules")),
+				RequestPath = new PathString("/lib")
+			});
 			
 			app.UseMiddleware<JWTAuthenticationMiddleware>();
 
