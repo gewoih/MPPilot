@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\content\" />
+    <Folder Include="wwwroot\lib\" />
   </ItemGroup>
 
 </Project>
