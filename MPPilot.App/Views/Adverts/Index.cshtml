@@ -31,7 +31,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				<tr v-on:click="openModal(advert)" v-for="advert in adverts" :key="advert.advertId" data-bs-toggle="modal" data-bs-target="#settingsModal">
+				<tr v-on:click="openModal(advert)" v-for="advert in adverts" :key="advert.advertId">
 					<td>
 						<svg v-if="advert.isAutobidderEnabled" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Под управлением автобиддера"
 							 xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-circle" viewBox="0 0 16 16">
@@ -119,7 +119,7 @@
 						</div>
 
 						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+							<button type="button" class="btn btn-secondary" v-on:click="closeModal()">Закрыть</button>
 							<button type="button" class="btn btn-primary" v-on:click="saveSettings()">Сохранить</button>
 						</div>
 					</div>
@@ -190,6 +190,12 @@
 
 					this.selectedAdvert = advert;
 					this.oldAdvert = { ...advert };
+
+					$("#settingsModal").modal('show');
+				},
+
+				closeModal() {
+					$("#settingsModal").modal('hide');
 				},
 
 				saveSettings() {
@@ -209,10 +215,12 @@
 						.then(() => {
 							return axios.post('/autobidder/edit', JSON.stringify(this.selectedAdvert.autobidder), { headers })
 								.then(() => {
-									alert('Настройки успешно сохранены!');
 									return this.fetchAdverts();
 								});
 						});
+
+					alert('Настройки успешно сохранены!');
+					$("#settingsModal").modal('hide');
 				}
 			}
 		});
