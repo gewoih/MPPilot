@@ -22,6 +22,11 @@ jobs:
     runs-on: self-hosted
     needs: docker_build
     steps:
+    - name: Stop and Remove Existing Container
+      run: |
+        docker stop mppilot-app || true
+        docker rm mppilot-app || true
+
     - name: Run Docker container
       run: docker run -d --name mppilot-app -p 5000:80 mppilot
 
