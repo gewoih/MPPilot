@@ -23,6 +23,8 @@ jobs:
         dotnet-version: 7.0.x
         
     - name: Restore dependencies
+      env:
+        HOME: /var/www/marketpilot/
       run: dotnet restore
       
     - name: Build
