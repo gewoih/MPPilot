@@ -28,6 +28,8 @@ jobs:
       run: dotnet restore
       
     - name: Build
+      env:
+        HOME: /var/www/marketpilot/
       run: dotnet build --no-restore
 
     - name: Build Docker image
