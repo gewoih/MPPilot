@@ -3,6 +3,7 @@ using System;
 using MPPilot.Domain.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MPPilot.Domain.Migrations
 {
     [DbContext(typeof(MPPilotContext))]
-    partial class MPPilotContextModelSnapshot : ModelSnapshot
+    [Migration("20230813161148_autobidder_bidsPausedTill_added")]
+    partial class autobidder_bidsPausedTill_added
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

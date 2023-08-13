@@ -55,7 +55,7 @@ namespace MPPilot.App.Controllers
                 var token = _tokenService.GenerateToken(identity);
                 SaveTokenToCookie(token);
 
-                return RedirectToAction("Index", "Settings");
+                return RedirectToAction("Index", "Home");
             }
             catch (ArgumentException ex)
             {

@@ -147,7 +147,7 @@
 
 								<tbody>
 									<tr v-for="bid in bids" :class="getRowStyle(bid)">
-										<td>{{ moment(bid.createdDate).format('DD.MM.YYYY hh:mm:ss') }}</td>
+										<td>{{ moment(bid.createdDate).format('DD.MM.YYYY HH:mm:ss') }}</td>
 										<td>{{ bid.advertPosition }} → {{ bid.targetPositionLeftBound }}</td>
 										<td>{{ bid.lastCPM }} → {{ bid.currentCPM }} ({{ bid.changeCPM }})</td>
 										<td>{{ bid.reasonString }}</td>
