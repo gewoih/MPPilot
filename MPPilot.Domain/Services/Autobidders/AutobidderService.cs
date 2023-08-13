@@ -136,6 +136,20 @@ namespace MPPilot.Domain.Services.Autobidders
 			}
 		}
 
+		public async Task StartBids(Autobidder autobidder)
+		{
+			autobidder.BidsPausedTill = null;
+			_context.Autobidders.Update(autobidder);
+			await _context.SaveChangesAsync();
+		}
+
+		public async Task PauseBids(Autobidder autobidder, DateTime tillDate)
+		{
+			autobidder.BidsPausedTill = tillDate;
+			_context.Autobidders.Update(autobidder);
+			await _context.SaveChangesAsync();
+		}
+
 		public async Task<List<Autobidder>> GetActiveAutobidders()
 		{
 			return await _context.Autobidders
@@ -143,6 +157,7 @@ namespace MPPilot.Domain.Services.Autobidders
 							.ThenInclude(account => account.Settings)
 						.Where(autobidder => autobidder.IsEnabled)
 						.Where(autobidder => !string.IsNullOrEmpty(autobidder.Account.Settings.WildberriesApiKey))
+						.Where(autobidder => autobidder.BidsPausedTill == null || DateTime.UtcNow > autobidder.BidsPausedTill)
 						.ToListAsync();
 		}
 

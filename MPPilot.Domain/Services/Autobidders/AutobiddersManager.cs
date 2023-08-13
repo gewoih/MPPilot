@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MPPilot.Domain.Models.Adverts;
 using MPPilot.Domain.Models.Autobidders;
 using System.Diagnostics;
 
@@ -71,10 +72,24 @@ namespace MPPilot.Domain.Services.Autobidders
 			var advert = advertTask.Result;
 			var advertTodayExpenses = advertTodayExpensesTask.Result;
 
+			//Если превышение по бюджету - ставим ставки на паузу и останавливаем РК
 			if (advertTodayExpenses >= autobidder.DailyBudget)
 			{
-				_logger.LogInformation("Превышение по бюджету для РК '{AdvertId}'. Автобиддер пропущен.", advert.AdvertId);
+				await _autobidderService.PauseBids(autobidder, DateTime.UtcNow.Date.AddDays(1));
+				_logger.LogInformation("Превышение по бюджету для РК '{AdvertId}'. Ставки по автобиддеру приостановлены до следующего дня.", advert.AdvertId);
+
+				await _wildberriesService.ChangeAdvertStatus(apiKey, advert.AdvertId, AdvertStatus.Stopped);
+				_logger.LogInformation("Рекламная кампания {AdvertId} приостановлена автобиддером.", advert.AdvertId);
+
 				return;
+			}
+			else if (autobidder.BidsPausedTill is not null)
+			{
+				await _autobidderService.StartBids(autobidder);
+				_logger.LogInformation("Ставки по автобиддеру возобновлены для РК {AdvertId}.", advert.AdvertId);
+
+				await _wildberriesService.ChangeAdvertStatus(apiKey, advert.AdvertId, AdvertStatus.InProgress);
+				_logger.LogInformation("Рекламная кампания {AdvertId} возобновлена автобиддером.", advert.AdvertId);
 			}
 
 			var advertMarketStatistics = await _advertsMarketService.GetAdvertMarketStatistics(advert.Keyword, advert.AdvertId);
