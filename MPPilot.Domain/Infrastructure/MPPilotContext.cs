@@ -55,7 +55,7 @@ namespace MPPilot.Domain.Infrastructure
 					entity.DeletedDate = DateTimeOffset.UtcNow;
 				}
 
-				entity.UpdatedDate = DateTime.UtcNow;
+				entity.UpdatedDate = DateTimeOffset.UtcNow;
 			}
 		}
 

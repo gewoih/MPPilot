@@ -9,6 +9,7 @@ namespace MPPilot.Domain.Models.Autobidders
 		public int AdvertId { get; set; }
 		public AutobidderMode Mode { get; set; }
 		public double DailyBudget { get; set; }
+		public DateTimeOffset? BidsPausedTill { get; set; }
 		public Account Account { get; set; }
 		public List<AdvertBid> Bids { get; set; }
 	}
