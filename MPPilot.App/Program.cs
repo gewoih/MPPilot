@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
@@ -9,16 +10,31 @@ using MPPilot.Domain.Services;
 using MPPilot.Domain.Services.Autobidders;
 using MPPilot.Domain.Services.Token;
 using System.Text;
+using Serilog;
+using Serilog.Sinks.Elasticsearch;
 
 namespace MPPilot.App
 {
-    public class Program
+	public class Program
 	{
 		public static void Main(string[] args)
 		{
 			Console.OutputEncoding = Encoding.UTF8;
 
 			var builder = WebApplication.CreateBuilder(args);
+
+			builder.Host.UseSerilog((context, configuration) =>
+				configuration.ReadFrom.Configuration(context.Configuration)
+				.WriteTo.Console()
+				.WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri("http://localhost:9200"))
+				{
+					AutoRegisterTemplate = true,
+				}));
+
+			builder.Services.AddLogging(builder =>
+			{
+				builder.AddSerilog();
+			});
 
 			builder.Services.AddControllersWithViews();
 
@@ -67,14 +83,14 @@ namespace MPPilot.App
 			{
 				app.UseMiddleware<ExceptionsHandlerMiddleware>();
 				app.UseMiddleware<LongQueryMiddleware>();
-				
+
 				app.UseHsts();
 			}
 
 			app.UseHttpsRedirection();
 
 			app.UseStaticFiles();
-			
+
 			app.UseMiddleware<JWTAuthenticationMiddleware>();
 
 			app.UseAuthentication();
