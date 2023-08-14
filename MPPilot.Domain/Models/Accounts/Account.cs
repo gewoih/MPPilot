@@ -13,5 +13,7 @@ namespace MPPilot.Domain.Models.Accounts
         public Guid? AccountSettingsId { get; set; }
 
         public List<Autobidder> Autobidders { get; set; }
+
+        public List<LoginHistory> LoginsHistory { get; set; }
     }
 }

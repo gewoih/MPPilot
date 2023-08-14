@@ -11,6 +11,7 @@ namespace MPPilot.Domain.Infrastructure
         public DbSet<AccountSettings> AccountSettings { get; set; }
         public DbSet<Autobidder> Autobidders { get; set; }
         public DbSet<AdvertBid> AdvertBids { get; set; }
+		public DbSet<LoginHistory> LoginsHistory { get; set; }
 
         public MPPilotContext(DbContextOptions options) : base(options)
         {

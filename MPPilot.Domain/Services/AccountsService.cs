@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using MPPilot.Domain.Exceptions;
 using MPPilot.Domain.Infrastructure;
 using MPPilot.Domain.Models.Accounts;
+using MPPilot.Domain.Utils;
 using System.Security.Claims;
 
 namespace MPPilot.Domain.Services
@@ -50,7 +51,10 @@ namespace MPPilot.Domain.Services
                 throw new ArgumentException("Пользователь с такими данными не найден в системе");
             }
             else
+            {
+                await CreateLoginHistory(account);
                 _logger.LogInformation("Пользователь {Email} успешно вошел в систему.", email);
+            }
 
 			var claims = new[]
             {
@@ -61,6 +65,24 @@ namespace MPPilot.Domain.Services
 
             var identity = new ClaimsIdentity(claims, JwtBearerDefaults.AuthenticationScheme);
             return identity;
+        }
+
+        private async Task CreateLoginHistory(Account account)
+        {
+            var userAgentString = _httpContextAccessor.HttpContext.Request.Headers["User-Agent"].ToString();
+
+            var loginHistory = new LoginHistory
+            {
+                AccountId = account.Id,
+                IPAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString(),
+                DeviceName = UserAgentUtils.GetDevice(userAgentString),
+                OSName = UserAgentUtils.GetOS(userAgentString),
+                BrowserName = UserAgentUtils.GetBrowser(userAgentString),
+                IsSuccessful = true
+            };
+
+            _context.LoginsHistory.Add(loginHistory);
+            await _context.SaveChangesAsync();
         }
 
         public async Task SaveSettings(AccountSettings settings)
