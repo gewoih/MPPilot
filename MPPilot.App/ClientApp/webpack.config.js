@@ -1,9 +1,9 @@
-const path = require('path');
+﻿const path = require('path');
 const { VueLoaderPlugin } = require("vue-loader");
 
 module.exports = {
     entry: {
-        site: './src/js/index.js'
+        advertsPage: './src/js/advertsPage.js',
     },
     output: {
         filename: 'mppilot.entry.js',
@@ -28,12 +28,6 @@ module.exports = {
         ]
     },
     plugins: [
-        new VueLoaderPlugin()
-    ],
-    resolve: {
-        extensions: ['.tsx', '.ts', '.js', '.vue'],
-        alias: {
-            vue: 'vue/dist/vue.js'
-        }
-    }
+        new VueLoaderPlugin(),
+    ]
 };

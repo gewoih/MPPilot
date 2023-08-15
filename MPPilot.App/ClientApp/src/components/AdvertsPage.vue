@@ -1,0 +1,267 @@
+﻿<template>
+	<div id="advertsPage" v-cloak>
+		<div class="loading-container" v-if="isLoading">
+			<div class="loading-spinner"></div>
+			<p class="loading-message">Загрузка данных...</p>
+		</div>
+
+		<div v-else>
+			<button type="button" class="btn btn-light" v-on:click="fetchAdverts()">Обновить список РК</button>
+			<table id="data-table" class="table table-striped table-hover display">
+				<thead>
+					<tr>
+						<th></th>
+						<th>Тип</th>
+						<th>Название</th>
+						<th>Фраза</th>
+						<th>Арт.</th>
+						<th>Статус</th>
+
+						<th>Просмотры</th>
+						<th>Клики</th>
+						<th>Заказы</th>
+						<th>Стоимость заказа (р.)</th>
+						<th>Расход (р.)</th>
+
+						<th>CPM</th>
+						<th>CTR</th>
+						<th>CPC</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr v-on:click="openModal(advert)" v-for="advert in adverts" :key="advert.advertId">
+						<td>
+							<svg v-if="advert.isAutobidderEnabled" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Под управлением автобиддера"
+								 xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-circle" viewBox="0 0 16 16">
+								<path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+								<path d="M6.271 5.055a.5.5 0 0 1 .52.038l3.5 2.5a.5.5 0 0 1 0 .814l-3.5 2.5A.5.5 0 0 1 6 10.5v-5a.5.5 0 0 1 .271-.445z" />
+							</svg>
+						</td>
+
+						<td>{{ advert.typeString }}</td>
+						<td>{{ advert.name }}</td>
+						<td>{{ advert.keyword }}</td>
+						<td>{{ advert.productArticle }}</td>
+						<td>
+							<div v-if="advert.status === 9" style="background-color: #d1f1d2;">
+								{{ advert.statusString }}
+							</div>
+							<div v-else style="background-color: #fff9cc;">
+								{{ advert.statusString }}
+							</div>
+						</td>
+
+						<td>{{ advert.totalViews }}</td>
+						<td>{{ advert.clicks }}</td>
+						<td>{{ advert.orders }}</td>
+						<td>{{ advert.orderCost.toFixed(2) }}</td>
+						<td>{{ advert.totalSpent.toFixed(2) }}</td>
+
+						<td>{{ advert.cpm }}</td>
+						<td>{{ advert.ctr.toFixed(2) }}</td>
+						<td>{{ advert.cpc.toFixed(2) }}</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div class="modal fade" id="settingsModal">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">Информация о РК (ID: {{ this.selectedAdvert.advertId }})</h5>
+					</div>
+
+					<div class="modal-body">
+						<ul class="nav nav-tabs">
+							<li class="nav-item">
+								<a class="nav-link active show" href="#advert" data-bs-toggle="tab">Основные</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" href="#autobidder" data-bs-toggle="tab">Автобиддер</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" href="#bids" data-bs-toggle="tab" v-on:click="loadBids()">История ставок</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" href="#advertChanges" data-bs-toggle="tab" v-on:click="loadAdvertChanges()">История изменений</a>
+							</li>
+						</ul>
+
+						<div class="tab-content">
+							<div class="tab-pane show active" role="tabpanel" id="advert">
+								<div class="form-group py-1">
+									<label>Название:</label>
+									<input type="text" class="form-control" v-model="selectedAdvert.name">
+								</div>
+								<div class="form-group py-1">
+									<label>Ключевая фраза:</label>
+									<input type="text" class="form-control" v-model="selectedAdvert.keyword">
+								</div>
+								<div class="form-check form-switch py-1">
+									<label class="form-check-label">Вкл/Выкл.</label>
+									<input class="form-check-input" type="checkbox" v-model="selectedAdvert.isEnabled">
+								</div>
+
+								<div class="modal-footer">
+									<button type="button" class="btn btn-secondary" v-on:click="closeModal()">Закрыть</button>
+									<button type="button" class="btn btn-primary" v-on:click="saveSettings()">Сохранить</button>
+								</div>
+							</div>
+
+							<div class="tab-pane" role="tabpanel" id="autobidder">
+								<div class="form-group py-1">
+									<label>Тип:</label>
+									<select class="form-select" v-model="selectedAdvert.autobidder.mode">
+										<option value="0" selected="true">Консервативная</option>
+									</select>
+								</div>
+								<div class="form-group py-1">
+									<label>Дневной бюджет (р.):</label>
+									<input type="number" class="form-control" v-model="selectedAdvert.autobidder.dailyBudget">
+								</div>
+								<div class="form-check form-switch py-1">
+									<label class="form-check-label">Вкл/Выкл.</label>
+									<input class="form-check-input" type="checkbox" v-model="selectedAdvert.autobidder.isEnabled">
+								</div>
+
+								<div class="modal-footer">
+									<button type="button" class="btn btn-secondary" v-on:click="closeModal()">Закрыть</button>
+									<button type="button" class="btn btn-primary" v-on:click="saveSettings()">Сохранить</button>
+								</div>
+							</div>
+
+							<div class="tab-pane" role="tabpanel" id="bids">
+								<table class="table table-striped table-hover display">
+									<thead>
+										<tr>
+											<th>Дата и время</th>
+											<th>Позиция</th>
+											<th>Ставка</th>
+											<th>Причина</th>
+										</tr>
+									</thead>
+
+									<tbody>
+										<tr v-for="bid in bids" :class="getRowStyle(bid)">
+											<td>{{ moment(bid.createdDate).format('DD.MM.YYYY HH:mm:ss') }}</td>
+											<td>{{ bid.advertPosition }} → {{ bid.targetPositionLeftBound }}</td>
+											<td>{{ bid.lastCPM }} → {{ bid.currentCPM }} ({{ bid.changeCPM }})</td>
+											<td>{{ bid.reasonString }}</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</template>
+
+<script>
+	export default {
+		data() {
+			return {
+				adverts: [],
+				isLoading: true,
+				oldAdvert: null,
+				bids: [],
+				selectedAdvert: {
+					name: '',
+					keyword: '',
+					isEnabled: false,
+					autobidder: {
+						mode: '0',
+						dailyBudget: 0,
+						isEnabled: false
+					}
+				},
+				advertId: null
+			};
+		},
+		mounted() {
+			this.fetchAdverts();
+		},
+		methods: {
+			fetchAdverts() {
+				this.isLoading = true;
+
+				fetch('/adverts/getAdverts')
+					.then(response => response.json())
+					.then(data => {
+						this.adverts = data;
+						this.isLoading = false;
+					})
+					.catch(error => {
+						console.error('Error fetching data:', error);
+					})
+			},
+
+			openModal(advert) {
+				if (advert.autobidder === null) {
+					advert.autobidder = {
+						mode: '0',
+						dailyBudget: 0,
+						isEnabled: false
+					};
+				}
+
+				this.selectedAdvert = advert;
+				this.oldAdvert = { ...advert };
+
+				$("#settingsModal").modal('show');
+			},
+
+			closeModal() {
+				$("#settingsModal").modal('hide');
+			},
+
+			saveSettings() {
+				const headers = {
+					'Content-Type': 'application/json'
+				};
+
+				const status = this.selectedAdvert.isEnabled ? 9 : 11;
+				this.selectedAdvert.status = status;
+
+				const advertsData = {
+					oldAdvert: this.oldAdvert,
+					newAdvert: this.selectedAdvert
+				};
+
+				axios.post('/adverts/edit', JSON.stringify(advertsData), { headers })
+					.then(() => {
+						return axios.post('/autobidder/edit', JSON.stringify(this.selectedAdvert.autobidder), { headers })
+							.then(() => {
+								return this.fetchAdverts();
+							});
+					});
+
+				alert('Настройки успешно сохранены!');
+				$("#settingsModal").modal('hide');
+			},
+
+			loadBids() {
+				const autobidderId = this.selectedAdvert.autobidder.id;
+
+				axios.get(`/autobidder/getBids?autobidderId=${autobidderId}`)
+					.then(response => {
+						this.bids = response.data;
+					})
+					.catch(error => {
+						console.error('Error fetching autobidder bids:', error);
+					});
+			},
+
+			moment(date) {
+				return moment(date);
+			},
+
+			getRowStyle(bid) {
+				return bid.changeCPM > 0 ? 'table-danger' : 'table-success';
+			}
+		}
+	};
+</script>
