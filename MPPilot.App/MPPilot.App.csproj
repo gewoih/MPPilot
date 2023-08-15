@@ -26,4 +26,9 @@
     <ProjectReference Include="..\MPPilot.Domain\MPPilot.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ClientApp\src\css\" />
+    <Folder Include="ClientApp\src\js\" />
+  </ItemGroup>
+
 </Project>
