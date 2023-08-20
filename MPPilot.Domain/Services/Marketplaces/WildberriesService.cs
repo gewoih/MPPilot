@@ -4,7 +4,6 @@ using Newtonsoft.Json.Linq;
 using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace MPPilot.Domain.Services.Marketplaces
@@ -114,31 +113,32 @@ namespace MPPilot.Domain.Services.Marketplaces
 			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
 
 			var adverts = new List<Advert> { new Advert { AdvertId = advertId } };
-			var infoTask = FillUpAdvertsInfo(adverts);
-			var keywordsTask = FillUpAdvertsKeywords(adverts);
-
-			await Task.WhenAll(infoTask, keywordsTask);
+			await LoadInfo(adverts);
+			await LoadKeywords(adverts);
 
 			return adverts.First();
 		}
 
-		public async Task<List<Advert>> GetActiveAdvertsAsync(string apiKey, bool withInfo = false, bool withKeywords = false, bool withStatistics = false,
-			AdvertType? type = null, int? count = null)
+		public async Task<List<Advert>> GetActiveAdvertsAsync(string apiKey, bool withInfo = false, bool withKeywords = false, bool withStatistics = false, int? count = null)
 		{
 			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
 
-			var advertsQuery = GetAllAdvertsQuery(type, count);
-			var adverts = await GetAdvertsFromJson(advertsQuery);
+			var productPageAdvertsQuery = GetAllAdvertsQuery(AdvertType.ProductPage, count);
+			var searchAdvertsQuery = GetAllAdvertsQuery(AdvertType.Search, count);
 
-			var advertsFillTasks = new List<Task>();
+			var productPageAdvertsTask = GetAdverts(productPageAdvertsQuery);
+			var searchAdvertsTask = GetAdverts(searchAdvertsQuery);
+
+			await Task.WhenAll(productPageAdvertsTask, searchAdvertsTask);
+
+			var adverts = productPageAdvertsTask.Result.Concat(searchAdvertsTask.Result).ToList();
+
 			if (withInfo)
-				advertsFillTasks.Add(FillUpAdvertsInfo(adverts));
+				await LoadInfo(adverts);
 			if (withKeywords)
-				advertsFillTasks.Add(FillUpAdvertsKeywords(adverts));
-			if (withStatistics)
-				advertsFillTasks.Add(FillUpAdvertsStatistics(adverts));
-
-			await Task.WhenAll(advertsFillTasks);
+				await LoadKeywords(adverts);
+			//if (withStatistics)
+			//	await FillUpAdvertsStatistics(adverts);
 
 			return adverts;
 		}
@@ -178,7 +178,7 @@ namespace MPPilot.Domain.Services.Marketplaces
 			return query;
 		}
 
-		private async Task<List<Advert>> GetAdvertsFromJson(string query)
+		private async Task<List<Advert>> GetAdverts(string query)
 		{
 			var result = await _httpClient.GetAsync(query);
 
@@ -209,9 +209,9 @@ namespace MPPilot.Domain.Services.Marketplaces
 			return advertCampaigns;
 		}
 
-		private async Task FillUpAdvertsInfo(List<Advert> adverts)
+		private async Task LoadInfo(List<Advert> adverts)
 		{
-			var jObjects = await GetJObjectsByHttpQueries(adverts, "v0/advert?id=");
+			var jObjects = await GetJsonByAdverts(adverts, "v0/advert?id=");
 			foreach (var jObject in jObjects)
 			{
 				if (jObject.ContainsKey("params"))
@@ -240,9 +240,9 @@ namespace MPPilot.Domain.Services.Marketplaces
 			}
 		}
 
-		private async Task<List<Advert>> FillUpAdvertsKeywords(List<Advert> adverts)
+		private async Task<List<Advert>> LoadKeywords(List<Advert> adverts)
 		{
-			var jObjects = await GetJObjectsByHttpQueries(adverts, "v1/stat/words?id=");
+			var jObjects = await GetJsonByAdverts(adverts, "v1/stat/words?id=");
 			for (int i = 0; i < jObjects.Count; i++)
 			{
 				if (jObjects[i] is not null && jObjects[i]["words"].Value<JObject>().ContainsKey("pluse"))
@@ -260,9 +260,9 @@ namespace MPPilot.Domain.Services.Marketplaces
 			return adverts;
 		}
 
-		private async Task FillUpAdvertsStatistics(IEnumerable<Advert> campaigns)
+		private async Task LoadStatistics(IEnumerable<Advert> campaigns)
 		{
-			var jObjects = await GetJObjectsByHttpQueries(campaigns, "v1/fullstat?id=");
+			var jObjects = await GetJsonByAdverts(campaigns, "v1/fullstat?id=");
 			foreach (var jObject in jObjects)
 			{
 				if (jObject is not null)
@@ -279,25 +279,36 @@ namespace MPPilot.Domain.Services.Marketplaces
 			}
 		}
 
-		private async Task<List<JObject>> GetJObjectsByHttpQueries(IEnumerable<Advert> campaigns, string url)
+		private async Task<List<JObject>> GetJsonByAdverts(IEnumerable<Advert> adverts, string url)
 		{
-			var httpTasks = new List<Task<HttpResponseMessage>>();
-			foreach (var advertCampaign in campaigns)
-			{
-				var query = url + advertCampaign.AdvertId;
-				httpTasks.Add(_httpClient.GetAsync(query));
-			}
-			await Task.WhenAll(httpTasks);
-
 			var jObjects = new List<JObject>();
-			foreach (var task in httpTasks)
-			{
-				var result = await task;
+			var semaphore = new SemaphoreSlim(50);
 
-				var stringResult = await result.Content.ReadAsStringAsync();
-				if (!string.IsNullOrEmpty(stringResult) && task.Result.IsSuccessStatusCode)
-					jObjects.Add(JsonConvert.DeserializeObject<JObject>(stringResult));
-			}
+			var httpTasks = adverts.Select(async advert =>
+			{
+				await semaphore.WaitAsync();
+				try
+				{
+					var query = url + advert.AdvertId;
+					var response = await _httpClient.GetAsync(query);
+
+					if (response.IsSuccessStatusCode)
+					{
+						var stringResult = await response.Content.ReadAsStringAsync();
+						jObjects.Add(JsonConvert.DeserializeObject<JObject>(stringResult));
+					}
+					else
+					{
+						throw new Exception($"Request failed with status code {response.StatusCode}");
+					}
+				}
+				finally
+				{
+					semaphore.Release();
+				}
+			});
+
+			await Task.WhenAll(httpTasks);
 
 			return jObjects;
 		}
