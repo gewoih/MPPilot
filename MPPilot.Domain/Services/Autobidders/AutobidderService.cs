@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MPPilot.Domain.Infrastructure;
+using MPPilot.Domain.Models.Adverts;
 using MPPilot.Domain.Models.Autobidders;
+using MPPilot.Domain.Services.Accounts;
 
 namespace MPPilot.Domain.Services.Autobidders
 {
@@ -22,21 +24,12 @@ namespace MPPilot.Domain.Services.Autobidders
 		{
 			try
 			{
-				var foundAutobidder = await GetByAdvert(autobidder.AdvertId);
-				if (foundAutobidder is not null)
-				{
-					foundAutobidder.Mode = autobidder.Mode;
-					foundAutobidder.DailyBudget = autobidder.DailyBudget;
-					foundAutobidder.IsEnabled = autobidder.IsEnabled;
-				}
-				else
-				{
-					var currentAccount = await _accountService.GetCurrentAccount();
-					autobidder.Account = currentAccount;
+				var foundAutobidder = await FindById(autobidder.Id);
+				foundAutobidder.Mode = autobidder.Mode;
+				foundAutobidder.DailyBudget = autobidder.DailyBudget;
+				foundAutobidder.IsEnabled = autobidder.IsEnabled;
 
-					await _context.Autobidders.AddAsync(autobidder);
-				}
-
+				_context.Autobidders.Update(foundAutobidder);
 				await _context.SaveChangesAsync();
 
 				_logger.LogInformation("Настройки автобиддера {Id} успешно обновлены.", autobidder.Id);
@@ -48,16 +41,12 @@ namespace MPPilot.Domain.Services.Autobidders
 			}
 		}
 
-		public async Task<Autobidder> Create(int advertId)
+		public async Task<Autobidder> Create(Autobidder autobidder)
 		{
 			try
 			{
-				var autobidder = new Autobidder
-				{
-					AdvertId = advertId,
-					Mode = AutobidderMode.Conservative,
-				};
-
+				var currentAccount = await _accountService.GetCurrentAccount();
+				autobidder.Account = currentAccount;
 				await _context.Autobidders.AddAsync(autobidder);
 				await _context.SaveChangesAsync();
 
@@ -67,18 +56,24 @@ namespace MPPilot.Domain.Services.Autobidders
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Ошибка при создании автобиддера для РК {AdvertId}", advertId);
+				_logger.LogError(ex, "Ошибка при создании автобиддера для РК {AdvertId}", autobidder.AdvertId);
 				throw;
 			}
 		}
 
-		public async Task<Autobidder?> GetByAdvert(int advertId)
+		public async Task<List<Advert>> LoadAutobidders(List<Advert> adverts)
 		{
-			var autobidder = await _context.Autobidders.FirstOrDefaultAsync(autobidder => autobidder.AdvertId == advertId);
-			if (autobidder is null)
-				_logger.LogWarning("Не найден автобиддер для РК {AdvertId}!", advertId);
+			var advertIds = adverts.Select(advert => advert.AdvertId);
+			var autobidders = await _context.Autobidders
+									.Where(autobidder => advertIds.Contains(autobidder.AdvertId))
+									.ToListAsync();
 
-			return autobidder;
+			foreach (var advert in adverts)
+			{
+				advert.Autobidder = autobidders.FirstOrDefault(autobidder => autobidder.AdvertId == advert.AdvertId);
+			}
+
+			return adverts;
 		}
 
 		public async Task AddBid(Autobidder autobidder, AdvertBid bid)
@@ -109,30 +104,6 @@ namespace MPPilot.Domain.Services.Autobidders
 			catch (Exception ex)
 			{
 				throw;
-			}
-		}
-
-		public async Task StopAsync(Guid id)
-		{
-			var autobidder = await FindById(id);
-			if (autobidder is not null)
-			{
-				autobidder.IsEnabled = false;
-				await _context.SaveChangesAsync();
-
-				_logger.LogInformation("Автобиддер '{Id}' для РК '{AdvertId}' выключен.", id, autobidder.AdvertId);
-			}
-		}
-
-		public async Task StartAsync(Guid id)
-		{
-			var autobidder = await FindById(id);
-			if (autobidder is not null)
-			{
-				autobidder.IsEnabled = true;
-				await _context.SaveChangesAsync();
-
-				_logger.LogInformation("Автобиддер '{Id}' для РК '{AdvertId}' включен.", id, autobidder.AdvertId);
 			}
 		}
 

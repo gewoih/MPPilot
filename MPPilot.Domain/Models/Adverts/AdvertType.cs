@@ -2,12 +2,12 @@
 
 namespace MPPilot.Domain.Models.Adverts
 {
-    public enum AdvertType
-    {
-        [Description("Карточка товара")]
-        ProductPage = 5,
+	public enum AdvertType
+	{
+		[Description("Карточка товара")]
+		ProductPage = 5,
 
-        [Description("Поиск")]
-        Search = 6
-    }
+		[Description("Поиск")]
+		Search = 6
+	}
 }

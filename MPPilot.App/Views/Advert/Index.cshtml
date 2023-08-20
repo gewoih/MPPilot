@@ -180,13 +180,13 @@
 				return {
 					adverts: [],
 					isLoading: true,
-					oldAdvert: null,
 					bids: [],
 					selectedAdvert: {
 						name: '',
 						keyword: '',
 						isEnabled: false,
 						autobidder: {
+							id: 0,
 							mode: '0',
 							dailyBudget: 0,
 							isEnabled: false
@@ -196,67 +196,130 @@
 				};
 			},
 
-			mounted() {
-				this.fetchAdverts();
+			async mounted() {
+				await this.fetchAdverts();
 			},
 
 			methods: {
-				fetchAdverts() {
+				async fetchAdverts() {
 					this.isLoading = true;
 
-					fetch('/adverts/getAdverts')
-						.then(response => response.json())
-						.then(data => {
-							this.adverts = data;
-							this.isLoading = false;
-						})
-						.catch(error => {
-							console.error('Error fetching data:', error);
-						})
+					try {
+						const response = await axios.get('/advert/getAdverts');
+						this.adverts = response.data;
+					} catch (error) {
+						console.error('Error fetching data:', error);
+					} finally {
+						this.isLoading = false;
+					}
 				},
 
+				
 				openModal(advert) {
 					if (advert.autobidder === null) {
 						advert.autobidder = {
+							id: '00000000-0000-0000-0000-000000000000',
 							mode: '0',
 							dailyBudget: 0,
 							isEnabled: false
 						};
 					}
 
-					this.selectedAdvert = advert;
-					this.oldAdvert = { ...advert };
+					this.selectedAdvert = JSON.parse(JSON.stringify(advert));
+					this.oldAdvert = JSON.parse(JSON.stringify(advert));
 
+					this.showModal();
+				},
+
+				showModal() {
 					$("#settingsModal").modal('show');
+					$('.nav-tabs .nav-link:eq(0)').tab('show');
 				},
 
 				closeModal() {
 					$("#settingsModal").modal('hide');
 				},
 
-				saveSettings() {
-					const headers = {
-						'Content-Type': 'application/json'
-					};
-
-					const status = this.selectedAdvert.isEnabled ? 9 : 11;
-					this.selectedAdvert.status = status;
-
-					const advertsData = {
-						oldAdvert: this.oldAdvert,
-						newAdvert: this.selectedAdvert
-					};
-
-					axios.post('/adverts/edit', JSON.stringify(advertsData), { headers })
-						.then(() => {
-							return axios.post('/autobidder/edit', JSON.stringify(this.selectedAdvert.autobidder), { headers })
-								.then(() => {
-									return this.fetchAdverts();
-								});
-						});
+				async saveSettings() {
+					await this.saveAdvertSettings();
+					await this.saveAutobidderSettings();
 
 					alert('Настройки успешно сохранены!');
-					$("#settingsModal").modal('hide');
+					closeModal();
+
+					await this.fetchAdverts();
+				},
+
+				async saveAutobidderSettings() {
+					try {
+						const headers = {
+							'Content-Type': 'application/json'
+						};
+
+						const autobidderId = this.selectedAdvert.autobidder.id;
+
+						const oldAutobidder = this.oldAdvert.autobidder;
+						const newAutobidder = this.selectedAdvert.autobidder;
+
+						const shouldUpdate = (
+							newAutobidder.mode !== oldAutobidder.mode ||
+							newAutobidder.dailyBudget !== oldAutobidder.dailyBudget ||
+							newAutobidder.isEnabled !== oldAutobidder.isEnabled
+						);
+
+						if (!shouldUpdate) {
+							return;
+						}
+
+						const autobidderEditData = {
+							id: autobidderId,
+							advertId: this.selectedAdvert.advertId,
+							dailyBudget: newAutobidder.dailyBudget,
+							isEnabled: newAutobidder.isEnabled
+						};
+
+						const serializedAutobidderEditData = JSON.stringify(autobidderEditData);
+
+						await axios.post('/autobidder/edit', serializedAutobidderEditData, { headers });
+					} catch (error) {
+						console.error('Произошла ошибка при сохранении настроек автобиддера:', error);
+					}
+				},
+
+				async saveAdvertSettings() {
+					try {
+						const headers = {
+							'Content-Type': 'application/json'
+						};
+
+						const advertId = this.selectedAdvert.advertId;
+
+						const oldAdvert = this.oldAdvert;
+						const newAdvert = this.selectedAdvert;
+
+						const shouldUpdate = (
+							newAdvert.name !== oldAdvert.name ||
+							newAdvert.keyword !== oldAdvert.keyword ||
+							newAdvert.isEnabled !== oldAdvert.isEnabled
+						);
+
+						if (!shouldUpdate) {
+							return;
+						}
+
+						const advertEditData = {
+							advertId: advertId,
+							newName: newAdvert.name,
+							newKeyword: newAdvert.keyword,
+							isEnabled: newAdvert.isEnabled
+						};
+
+						const serializedAdvertEditData = JSON.stringify(advertEditData);
+
+						await axios.post('/advert/edit', serializedAdvertEditData, { headers });
+					} catch (error) {
+						console.error('Произошла ошибка при сохранении настроек РК:', error);
+					}
 				},
 
 				loadBids() {

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using MPPilot.Domain.Models.Adverts;
 using MPPilot.Domain.Models.Autobidders;
+using MPPilot.Domain.Services.Marketplaces;
 using System.Diagnostics;
 
 namespace MPPilot.Domain.Services.Autobidders
@@ -78,7 +78,7 @@ namespace MPPilot.Domain.Services.Autobidders
 				await _autobidderService.PauseBids(autobidder, DateTime.UtcNow.Date.AddDays(1));
 				_logger.LogInformation("Превышение по бюджету для РК '{AdvertId}'. Ставки по автобиддеру приостановлены до следующего дня.", advert.AdvertId);
 
-				await _wildberriesService.ChangeAdvertStatus(apiKey, advert.AdvertId, AdvertStatus.Stopped);
+				await _wildberriesService.StopAdvertAsync(apiKey, advert.AdvertId);
 				_logger.LogInformation("Рекламная кампания {AdvertId} приостановлена автобиддером.", advert.AdvertId);
 
 				return;
@@ -88,7 +88,7 @@ namespace MPPilot.Domain.Services.Autobidders
 				await _autobidderService.StartBids(autobidder);
 				_logger.LogInformation("Ставки по автобиддеру возобновлены для РК {AdvertId}.", advert.AdvertId);
 
-				await _wildberriesService.ChangeAdvertStatus(apiKey, advert.AdvertId, AdvertStatus.InProgress);
+				await _wildberriesService.StartAdvertAsync(apiKey, advert.AdvertId);
 				_logger.LogInformation("Рекламная кампания {AdvertId} возобновлена автобиддером.", advert.AdvertId);
 			}
 
@@ -100,7 +100,7 @@ namespace MPPilot.Domain.Services.Autobidders
 
 			//Если CPM понижается, то мы делаем это без дополнительных проверок
 			//Если CPM повышается, то мы должны убедиться, что мы УЖЕ не находимся в целевых границах
-			if ((advert.CPM < targetAdvert.CPM && currentPosition != targetAdvert.Position) || advert.CPM > targetAdvert.CPM)
+			if (advert.CPM < targetAdvert.CPM && currentPosition != targetAdvert.Position || advert.CPM > targetAdvert.CPM)
 			{
 				var isCpmChanged = await _wildberriesService.ChangeCPM(apiKey, advert, targetAdvert.CPM);
 				if (isCpmChanged)

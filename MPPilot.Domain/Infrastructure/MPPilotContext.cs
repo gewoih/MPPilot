@@ -5,7 +5,7 @@ using MPPilot.Domain.Models.Base;
 
 namespace MPPilot.Domain.Infrastructure
 {
-    public class MPPilotContext : DbContext
+	public class MPPilotContext : DbContext
     {
         public DbSet<Account> Accounts { get; set; }
         public DbSet<AccountSettings> AccountSettings { get; set; }

@@ -2,18 +2,18 @@
 
 namespace MPPilot.Domain.Models.Adverts
 {
-    public enum AdvertStatus
-    {
-        [Description("Готова к запуску")]
-        Ready = 4,
+	public enum AdvertStatus
+	{
+		[Description("Готова к запуску")]
+		Ready = 4,
 
-        [Description("Завершена")]
-        Finished = 7,
+		[Description("Завершена")]
+		Finished = 7,
 
-        [Description("Запущена")]
-        InProgress = 9,
+		[Description("Запущена")]
+		InProgress = 9,
 
-        [Description("Приостановлена")]
-        Stopped = 11
-    }
+		[Description("Приостановлена")]
+		Stopped = 11
+	}
 }

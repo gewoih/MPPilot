@@ -2,12 +2,12 @@
 using Microsoft.AspNetCore.Mvc;
 using MPPilot.Domain.Exceptions;
 using MPPilot.Domain.Models.Accounts;
-using MPPilot.Domain.Services;
+using MPPilot.Domain.Services.Accounts;
 using MPPilot.Domain.Services.Token;
 
 namespace MPPilot.App.Controllers
 {
-    public class AccountController : Controller
+	public class AccountController : Controller
     {
         private readonly AccountsService _accountService;
         private readonly ITokenService _tokenService;
