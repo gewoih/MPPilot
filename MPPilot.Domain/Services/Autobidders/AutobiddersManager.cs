@@ -95,7 +95,10 @@ namespace MPPilot.Domain.Services.Autobidders
 			var advertMarketStatistics = await _advertsMarketService.GetAdvertMarketStatistics(advert.Keyword, advert.AdvertId);
 			var averageCpm = (int)advertMarketStatistics.AverageCPM;
 
-			var targetAdvert = advertMarketStatistics.MarketAdverts.First(a => a.CPM < averageCpm);
+			var targetAdvert = advertMarketStatistics.MarketAdverts.FirstOrDefault(a => a.CPM < averageCpm);
+			if (targetAdvert is null)
+				return;
+
 			var currentPosition = advertMarketStatistics.AdvertPosition;
 
 			//Если CPM понижается, то мы делаем это без дополнительных проверок

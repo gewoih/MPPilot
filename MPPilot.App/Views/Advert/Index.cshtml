@@ -245,7 +245,7 @@
 					await this.saveAutobidderSettings();
 
 					alert('Настройки успешно сохранены!');
-					closeModal();
+					this.closeModal();
 
 					await this.fetchAdverts();
 				},
@@ -309,9 +309,9 @@
 
 						const advertEditData = {
 							advertId: advertId,
-							newName: newAdvert.name,
-							newKeyword: newAdvert.keyword,
-							isEnabled: newAdvert.isEnabled
+							newName: newAdvert.name !== oldAdvert.name ? newAdvert.name : null,
+							newKeyword: newAdvert.keyword !== oldAdvert.keyword ? newAdvert.keyword : null,
+							isEnabled: newAdvert.isEnabled !== oldAdvert.isEnabled ? newAdvert.isEnabled : null
 						};
 
 						const serializedAdvertEditData = JSON.stringify(advertEditData);

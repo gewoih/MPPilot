@@ -138,7 +138,7 @@ namespace MPPilot.Domain.Services.Marketplaces
 			if (withKeywords)
 				await LoadKeywords(adverts);
 			//if (withStatistics)
-			//	await FillUpAdvertsStatistics(adverts);
+			//	await LoadStatistics(adverts);
 
 			return adverts;
 		}
@@ -216,26 +216,26 @@ namespace MPPilot.Domain.Services.Marketplaces
 			{
 				if (jObject.ContainsKey("params"))
 				{
-					var findedCampaign = adverts.First(campaign => campaign.AdvertId == jObject["advertId"].Value<int>());
+					var foundAdvert = adverts.First(advert => advert.AdvertId == jObject["advertId"].Value<int>());
 					var jsonProducts = jObject["params"][0]["nms"];
 
-					findedCampaign.CPM = jObject["params"][0]["price"].Value<int>();
+					foundAdvert.CPM = jObject["params"][0]["price"].Value<int>();
 
 					var subjectId = jObject["params"][0].Value<int?>("subjectId");
 					var setId = jObject["params"][0].Value<int?>("setId");
 					var menuId = jObject["params"][0].Value<int?>("menuId");
 
 					if (subjectId is not null)
-						findedCampaign.CategoryId = subjectId.Value;
+						foundAdvert.CategoryId = subjectId.Value;
 					else if (setId is not null)
-						findedCampaign.CategoryId = setId.Value;
+						foundAdvert.CategoryId = setId.Value;
 					else if (menuId is not null)
-						findedCampaign.CategoryId = menuId.Value;
+						foundAdvert.CategoryId = menuId.Value;
 
-					findedCampaign.Type = (AdvertType)jObject["type"].Value<int>();
+					foundAdvert.Type = (AdvertType)jObject["type"].Value<int>();
 
 					if (jsonProducts.HasValues)
-						findedCampaign.ProductArticle = jsonProducts[0]["nm"].Value<string>();
+						foundAdvert.ProductArticle = jsonProducts[0]["nm"].Value<string>();
 				}
 			}
 		}
@@ -243,16 +243,15 @@ namespace MPPilot.Domain.Services.Marketplaces
 		private async Task<List<Advert>> LoadKeywords(List<Advert> adverts)
 		{
 			var jObjects = await GetJsonByAdverts(adverts, "v1/stat/words?id=");
-			for (int i = 0; i < jObjects.Count; i++)
+			foreach (var jObject in jObjects)
 			{
-				if (jObjects[i] is not null && jObjects[i]["words"].Value<JObject>().ContainsKey("pluse"))
+				if (jObject is not null && jObject["words"].Value<JObject>().ContainsKey("pluse"))
 				{
-					if (jObjects[i]["words"]["pluse"].HasValues)
+					if (jObject["words"]["pluse"].HasValues)
 					{
-						//Рассчет на то, что adverts будут в правильном порядке
-						//Сейчас работает корректно, но в теории возможны баги
-						var foundAdvert = adverts[i];
-						foundAdvert.Keyword = jObjects[i]["words"]["pluse"][0].Value<string>();
+						var advertId = jObject.Value<int>("advertId");
+						var foundAdvert = adverts.First(advert => advert.AdvertId == advertId);
+						foundAdvert.Keyword = jObject["words"]["pluse"][0].Value<string>();
 					}
 				}
 			}
@@ -260,21 +259,21 @@ namespace MPPilot.Domain.Services.Marketplaces
 			return adverts;
 		}
 
-		private async Task LoadStatistics(IEnumerable<Advert> campaigns)
+		private async Task LoadStatistics(IEnumerable<Advert> adverts)
 		{
-			var jObjects = await GetJsonByAdverts(campaigns, "v1/fullstat?id=");
+			var jObjects = await GetJsonByAdverts(adverts, "v1/fullstat?id=");
 			foreach (var jObject in jObjects)
 			{
 				if (jObject is not null)
 				{
-					var findedCampaign = campaigns.First(campaign => campaign.AdvertId == jObject["advertId"].Value<int>());
-					findedCampaign.TotalViews = jObject.Value<int>("views");
-					findedCampaign.Clicks = jObject.Value<int>("clicks");
-					findedCampaign.UniqueViews = jObject.Value<int>("unique_users");
-					findedCampaign.TotalSpent = jObject.Value<double>("sum");
-					findedCampaign.AddedToCart = jObject.Value<int>("atbs");
-					findedCampaign.Orders = jObject.Value<int>("orders");
-					findedCampaign.OrdersSum = jObject.Value<double>("sum_price");
+					var foundAdvert = adverts.First(campaign => campaign.AdvertId == jObject["advertId"].Value<int>());
+					foundAdvert.TotalViews = jObject.Value<int>("views");
+					foundAdvert.Clicks = jObject.Value<int>("clicks");
+					foundAdvert.UniqueViews = jObject.Value<int>("unique_users");
+					foundAdvert.TotalSpent = jObject.Value<double>("sum");
+					foundAdvert.AddedToCart = jObject.Value<int>("atbs");
+					foundAdvert.Orders = jObject.Value<int>("orders");
+					foundAdvert.OrdersSum = jObject.Value<double>("sum_price");
 				}
 			}
 		}
@@ -295,11 +294,12 @@ namespace MPPilot.Domain.Services.Marketplaces
 					if (response.IsSuccessStatusCode)
 					{
 						var stringResult = await response.Content.ReadAsStringAsync();
-						jObjects.Add(JsonConvert.DeserializeObject<JObject>(stringResult));
-					}
-					else
-					{
-						throw new Exception($"Request failed with status code {response.StatusCode}");
+						var jObject = JsonConvert.DeserializeObject<JObject>(stringResult);
+
+						if (jObject is not null)
+							jObject["advertId"] = advert.AdvertId;
+
+						jObjects.Add(jObject);
 					}
 				}
 				finally
