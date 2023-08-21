@@ -74,13 +74,12 @@ namespace MPPilot.App
 						ValidAudience = AuthOptions.Audience,
 						IssuerSigningKey = AuthOptions.GetSecurityKey()
 					};
-					options.SaveToken = true;
 
 					options.Events = new JwtBearerEvents
 					{
 						OnMessageReceived = context =>
 						{
-							context.Token = context.Request.Cookies["MPPilotAuth"];
+							context.Token = context.Request.Cookies[JwtBearerDefaults.AuthenticationScheme];
 							return Task.CompletedTask;
 						}
 					};

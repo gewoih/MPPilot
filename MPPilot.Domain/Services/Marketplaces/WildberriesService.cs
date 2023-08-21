@@ -137,8 +137,8 @@ namespace MPPilot.Domain.Services.Marketplaces
 				await LoadInfo(adverts);
 			if (withKeywords)
 				await LoadKeywords(adverts);
-			//if (withStatistics)
-			//	await LoadStatistics(adverts);
+			if (withStatistics)
+				await LoadStatistics(adverts);
 
 			return adverts;
 		}

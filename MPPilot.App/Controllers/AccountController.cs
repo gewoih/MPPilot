@@ -62,9 +62,15 @@ namespace MPPilot.App.Controllers
 			}
 		}
 
-        private void SaveTokenToCookie(string token)
-        {
-            Response.Cookies.Append(JwtBearerDefaults.AuthenticationScheme, token);
-        }
+		private void SaveTokenToCookie(string token)
+		{
+			var cookieOptions = new CookieOptions
+			{
+				Expires = DateTime.UtcNow.AddHours(2),
+				HttpOnly = true
+			};
+
+			Response.Cookies.Append(JwtBearerDefaults.AuthenticationScheme, token, cookieOptions);
+		}
 	}
 }
