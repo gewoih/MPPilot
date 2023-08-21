@@ -11,6 +11,7 @@ using MPPilot.Domain.Services.Autobidders;
 using MPPilot.Domain.Services.Marketplaces;
 using MPPilot.Domain.Services.Accounts;
 using MPPilot.Domain.BackgroundServices;
+using Serilog.Sinks.Elasticsearch;
 
 namespace MPPilot.App
 {
@@ -24,6 +25,7 @@ namespace MPPilot.App
 
 			builder.Host.UseSerilog((context, configuration) =>
 				configuration.ReadFrom.Configuration(context.Configuration)
+				.WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri("http://localhost:9200")))
 				.WriteTo.Console());
 
 			builder.Services.AddLogging(builder =>
