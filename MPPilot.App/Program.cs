@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using MPPilot.App.Middleware;
 using MPPilot.Domain.Infrastructure;
@@ -9,11 +7,9 @@ using MPPilot.Domain.Models.Auth;
 using MPPilot.Domain.Services.Token;
 using System.Text;
 using Serilog;
-using Serilog.Sinks.Elasticsearch;
 using MPPilot.Domain.Services.Autobidders;
 using MPPilot.Domain.Services.Marketplaces;
 using MPPilot.Domain.Services.Accounts;
-using System.Text.Json.Serialization;
 
 namespace MPPilot.App
 {
@@ -34,10 +30,7 @@ namespace MPPilot.App
 				builder.AddSerilog();
 			});
 
-			builder.Services.AddControllersWithViews().AddJsonOptions(options =>
-			{
-				options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
-			});
+			builder.Services.AddControllersWithViews();
 
 			var connectionString = builder.Configuration.GetConnectionString("Default");
 			builder.Services.AddDbContext<MPPilotContext>(options => options.UseNpgsql(connectionString));
