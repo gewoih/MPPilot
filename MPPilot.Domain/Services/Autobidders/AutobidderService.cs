@@ -46,8 +46,7 @@ namespace MPPilot.Domain.Services.Autobidders
 			try
 			{
 				var currentAccount = _accountService.GetCurrentAccount();
-				autobidder.Account = currentAccount;
-				await _context.Autobidders.AddAsync(autobidder);
+				currentAccount.Autobidders.Add(autobidder);
 				await _context.SaveChangesAsync();
 
 				_logger.LogInformation("Автобиддер {Id} успешно создан!", autobidder.Id);
@@ -66,6 +65,7 @@ namespace MPPilot.Domain.Services.Autobidders
 			var advertIds = adverts.Select(advert => advert.AdvertId);
 
 			var autobidders = await _context.Autobidders
+									.AsNoTracking()
 									.Where(autobidder => advertIds.Contains(autobidder.AdvertId))
 									.ToListAsync();
 

@@ -134,8 +134,8 @@ namespace MPPilot.Domain.Services.Accounts
 		private async Task<Account?> FindByIdAsync(Guid id)
 		{
 			return await _context.Accounts
-						.AsNoTracking()
 						.Include(account => account.Settings)
+						.Include(account => account.Autobidders)
 						.FirstOrDefaultAsync(account => account.Id.Equals(id));
 		}
 	}
