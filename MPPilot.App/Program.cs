@@ -13,6 +13,7 @@ using Serilog.Sinks.Elasticsearch;
 using MPPilot.Domain.Services.Autobidders;
 using MPPilot.Domain.Services.Marketplaces;
 using MPPilot.Domain.Services.Accounts;
+using System.Text.Json.Serialization;
 
 namespace MPPilot.App
 {
@@ -26,18 +27,17 @@ namespace MPPilot.App
 
 			builder.Host.UseSerilog((context, configuration) =>
 				configuration.ReadFrom.Configuration(context.Configuration)
-				.WriteTo.Console()
-				.WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri("http://localhost:9200"))
-				{
-					AutoRegisterTemplate = true,
-				}));
+				.WriteTo.Console());
 
 			builder.Services.AddLogging(builder =>
 			{
 				builder.AddSerilog();
 			});
 
-			builder.Services.AddControllersWithViews();
+			builder.Services.AddControllersWithViews().AddJsonOptions(options =>
+			{
+				options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+			});
 
 			var connectionString = builder.Configuration.GetConnectionString("Default");
 			builder.Services.AddDbContext<MPPilotContext>(options => options.UseNpgsql(connectionString));
@@ -52,7 +52,7 @@ namespace MPPilot.App
 			builder.Services.AddSingleton<AdvertsMarketService>();
 			builder.Services.AddSingleton<AutobiddersManager>();
 
-			builder.Services.AddScoped<JWTAuthenticationMiddleware>();
+			builder.Services.AddScoped<AuthenticationMiddleware>();
 			builder.Services.AddScoped<LongQueryMiddleware>();
 			builder.Services.AddScoped<ExceptionsHandlerMiddleware>();
 
@@ -74,6 +74,16 @@ namespace MPPilot.App
 						ValidAudience = AuthOptions.Audience,
 						IssuerSigningKey = AuthOptions.GetSecurityKey()
 					};
+					options.SaveToken = true;
+
+					options.Events = new JwtBearerEvents
+					{
+						OnMessageReceived = context =>
+						{
+							context.Token = context.Request.Cookies["MPPilotAuth"];
+							return Task.CompletedTask;
+						}
+					};
 				});
 
 			builder.Services.AddAuthorization();
@@ -92,9 +102,9 @@ namespace MPPilot.App
 
 			app.UseStaticFiles();
 
-			app.UseMiddleware<JWTAuthenticationMiddleware>();
-
 			app.UseAuthentication();
+			app.UseMiddleware<AuthenticationMiddleware>();
+			
 			app.UseAuthorization();
 			app.MapDefaultControllerRoute();
 

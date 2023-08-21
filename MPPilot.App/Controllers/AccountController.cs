@@ -8,72 +8,63 @@ using MPPilot.Domain.Services.Token;
 namespace MPPilot.App.Controllers
 {
 	public class AccountController : Controller
-    {
-        private readonly AccountsService _accountService;
-        private readonly ITokenService _tokenService;
+	{
+		private readonly AccountsService _accountService;
 
-        public AccountController(AccountsService accountService, ITokenService tokenService)
-        {
-            _accountService = accountService;
-            _tokenService = tokenService;
-        }
+		public AccountController(AccountsService accountService)
+		{
+			_accountService = accountService;
+		}
 
-        [HttpGet]
-        public IActionResult Register()
-        {
-            return View();
-        }
+		[HttpGet]
+		public IActionResult Register()
+		{
+			return View();
+		}
 
-        [HttpPost]
-        public async Task<IActionResult> Register(Account account)
-        {
-            try
-            {
-                await _accountService.RegisterAsync(account);
-                return RedirectToAction("Login");
-            }
-            catch (UserAlreadyExistsException ex)
-            {
-                ModelState.AddModelError(string.Empty, ex.Message);
-            }
+		[HttpPost]
+		public async Task<IActionResult> Register(Account account)
+		{
+			try
+			{
+				await _accountService.RegisterAsync(account);
+				return RedirectToAction("Login");
+			}
+			catch (UserAlreadyExistsException ex)
+			{
+				ModelState.AddModelError(string.Empty, ex.Message);
+			}
 
 			return View(account);
 		}
 
-        [HttpGet]
-        public IActionResult Login()
-        {
-            return View();
-        }
+		[HttpGet]
+		public IActionResult Login()
+		{
+			return View();
+		}
 
-        [HttpPost]
-        public async Task<IActionResult> Login(Account account)
-        {
-            try
-            {
-                var identity = await _accountService.LoginAsync(account.Email, account.Password);
-                var token = _tokenService.GenerateToken(identity);
+		[HttpPost]
+		public async Task<IActionResult> Login(Account account)
+		{
+			try
+			{
+				var token = await _accountService.LoginAsync(account.Email, account.Password);
                 SaveTokenToCookie(token);
 
-                return RedirectToAction("Index", "Home");
-            }
-            catch (ArgumentException ex)
-            {
-                ModelState.Clear();
-                ModelState.AddModelError(string.Empty, ex.Message);
-                return View(account);
-            }
-        }
+				return RedirectToAction("Index", "Home");
+			}
+			catch (ArgumentException ex)
+			{
+				ModelState.Clear();
+				ModelState.AddModelError(string.Empty, ex.Message);
+				return View(account);
+			}
+		}
 
         private void SaveTokenToCookie(string token)
         {
-            var cookieOptions = new CookieOptions
-            {
-                Expires = DateTime.UtcNow.AddHours(2),
-                HttpOnly = true
-            };
-
-            Response.Cookies.Append(JwtBearerDefaults.AuthenticationScheme, token, cookieOptions);
+            Response.Cookies.Append(JwtBearerDefaults.AuthenticationScheme, token);
         }
-    }
+	}
 }

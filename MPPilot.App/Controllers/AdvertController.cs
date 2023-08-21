@@ -29,7 +29,7 @@ namespace MPPilot.App.Controllers
 		[HttpGet]
 		public async Task<List<Advert>> GetAdverts()
 		{
-			var accountSettings = await _accountService.GetCurrentAccountSettings();
+			var accountSettings = _accountService.GetCurrentAccountSettings();
 
 			var adverts = await _wildberriesService.GetActiveAdvertsAsync(accountSettings.WildberriesApiKey, 
 								withInfo: true, 
@@ -49,7 +49,7 @@ namespace MPPilot.App.Controllers
 		[HttpPost]
 		public async Task<IActionResult> Edit([FromBody] AdvertEditModel advertEditModel)
 		{
-			var accountSettings = await _accountService.GetCurrentAccountSettings();
+			var accountSettings = _accountService.GetCurrentAccountSettings();
 			var apiKey = accountSettings.WildberriesApiKey;
 			var advertId = advertEditModel.AdvertId;
 

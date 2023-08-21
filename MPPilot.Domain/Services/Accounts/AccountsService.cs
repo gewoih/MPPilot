@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using MPPilot.Domain.Exceptions;
 using MPPilot.Domain.Infrastructure;
 using MPPilot.Domain.Models.Accounts;
+using MPPilot.Domain.Services.Token;
 using MPPilot.Domain.Utils;
 using System.Security.Claims;
 
@@ -15,11 +16,14 @@ namespace MPPilot.Domain.Services.Accounts
 		private readonly MPPilotContext _context;
 		private readonly IHttpContextAccessor _httpContextAccessor;
 		private readonly ILogger<AccountsService> _logger;
+		private readonly ITokenService _tokenService;
+		private Account _currentAccount;
 
-		public AccountsService(MPPilotContext context, IHttpContextAccessor httpContextAccessor, ILogger<AccountsService> logger)
+		public AccountsService(MPPilotContext context, IHttpContextAccessor httpContextAccessor, ITokenService tokenService, ILogger<AccountsService> logger)
 		{
 			_context = context;
 			_httpContextAccessor = httpContextAccessor;
+			_tokenService = tokenService;
 			_logger = logger;
 		}
 
@@ -42,7 +46,7 @@ namespace MPPilot.Domain.Services.Accounts
 			}
 		}
 
-		public async Task<ClaimsIdentity> LoginAsync(string email, string password)
+		public async Task<string> LoginAsync(string email, string password)
 		{
 			var account = await FindBycredentials(email, password);
 			if (account is null)
@@ -50,11 +54,9 @@ namespace MPPilot.Domain.Services.Accounts
 				_logger.LogInformation("Неудачная попытка входа в систему у пользователя {Email}", email);
 				throw new ArgumentException("Пользователь с такими данными не найден в системе");
 			}
-			else
-			{
-				await CreateLoginHistory(account);
-				_logger.LogInformation("Пользователь {Email} успешно вошел в систему.", email);
-			}
+
+			await CreateLoginHistory(account);
+			_logger.LogInformation("Пользователь {Email} успешно вошел в систему.", email);
 
 			var claims = new[]
 			{
@@ -64,7 +66,9 @@ namespace MPPilot.Domain.Services.Accounts
 			};
 
 			var identity = new ClaimsIdentity(claims, JwtBearerDefaults.AuthenticationScheme);
-			return identity;
+			var token = _tokenService.GenerateToken(identity);
+
+			return token;
 		}
 
 		private async Task CreateLoginHistory(Account account)
@@ -87,7 +91,7 @@ namespace MPPilot.Domain.Services.Accounts
 
 		public async Task SaveSettings(AccountSettings settings)
 		{
-			var currentAccount = await GetCurrentAccount() ?? throw new UnauthorizedAccessException("Пользователь не авторизован");
+			var currentAccount = GetCurrentAccount() ?? throw new UnauthorizedAccessException("Пользователь не авторизован");
 			currentAccount.Settings.WildberriesApiKey = settings.WildberriesApiKey;
 
 			_context.Accounts.Update(currentAccount);
@@ -104,32 +108,19 @@ namespace MPPilot.Domain.Services.Accounts
 			}
 		}
 
-		public async Task<AccountSettings> GetCurrentAccountSettings()
+		public AccountSettings GetCurrentAccountSettings()
 		{
-			var accountId = GetCurrentAccountId();
-			var settings = await _context.AccountSettings
-								.Where(settings => settings.Account.Id == accountId)
-								.FirstAsync();
-
-			return settings;
+			return _currentAccount.Settings;
 		}
 
-		public async Task<Account?> GetCurrentAccount()
+		public async Task SetCurrentAccount(Guid accountId)
 		{
-			var accountId = GetCurrentAccountId();
-			return await FindByIdAsync(accountId);
+			_currentAccount = await FindByIdAsync(accountId);
 		}
 
-		private Guid GetCurrentAccountId()
+		public Account GetCurrentAccount()
 		{
-			var currentUser = _httpContextAccessor?.HttpContext?.User;
-			if (currentUser is null)
-			{
-				_logger.LogWarning("Неудачная попытка получения текущего пользователя");
-				throw new UnauthorizedAccessException("Вы не авторизованы в системе. Пожалуйста, выполните повторный вход в аккаунт.");
-			}
-
-			return Guid.Parse(currentUser.Claims.First(claim => claim.Type.Equals(ClaimTypes.NameIdentifier, StringComparison.OrdinalIgnoreCase)).Value);
+			return _currentAccount;
 		}
 
 		private async Task<Account?> FindBycredentials(string email, string password)
