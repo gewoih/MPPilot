@@ -10,10 +10,11 @@ using Serilog;
 using MPPilot.Domain.Services.Autobidders;
 using MPPilot.Domain.Services.Marketplaces;
 using MPPilot.Domain.Services.Accounts;
+using MPPilot.Domain.BackgroundServices;
 
 namespace MPPilot.App
 {
-	public class Program
+    public class Program
 	{
 		public static void Main(string[] args)
 		{
@@ -43,11 +44,12 @@ namespace MPPilot.App
 			builder.Services.AddScoped<AutobidderService>();
 			builder.Services.AddScoped<WildberriesService>();
 			builder.Services.AddSingleton<AdvertsMarketService>();
-			builder.Services.AddSingleton<AutobiddersManager>();
 
 			builder.Services.AddScoped<AuthenticationMiddleware>();
 			builder.Services.AddScoped<LongQueryMiddleware>();
 			builder.Services.AddScoped<ExceptionsHandlerMiddleware>();
+
+			builder.Services.AddHostedService<AutobiddersManager>();
 
 			builder.Services.AddAuthentication(options =>
 			{
@@ -105,9 +107,6 @@ namespace MPPilot.App
 				var db = scope.ServiceProvider.GetRequiredService<MPPilotContext>();
 				db.Database.Migrate();
 			}
-
-			var autobiddersManager = app.Services.GetRequiredService<AutobiddersManager>();
-			autobiddersManager.StartManagement();
 
 			app.Run();
 		}
