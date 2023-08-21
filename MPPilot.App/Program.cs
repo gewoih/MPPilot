@@ -41,7 +41,7 @@ namespace MPPilot.App
 			builder.Services.AddSingleton<ITokenService, JWTTokenService>();
 			builder.Services.AddScoped<AccountsService>();
 			builder.Services.AddScoped<AutobidderService>();
-			builder.Services.AddSingleton<WildberriesService>();
+			builder.Services.AddScoped<WildberriesService>();
 			builder.Services.AddSingleton<AdvertsMarketService>();
 			builder.Services.AddSingleton<AutobiddersManager>();
 

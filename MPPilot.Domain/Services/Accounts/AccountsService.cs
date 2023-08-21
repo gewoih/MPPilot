@@ -108,9 +108,9 @@ namespace MPPilot.Domain.Services.Accounts
 			}
 		}
 
-		public AccountSettings GetCurrentAccountSettings()
+		public AccountSettings? GetCurrentAccountSettings()
 		{
-			return _currentAccount.Settings;
+			return _currentAccount?.Settings;
 		}
 
 		public async Task SetCurrentAccount(Guid accountId)

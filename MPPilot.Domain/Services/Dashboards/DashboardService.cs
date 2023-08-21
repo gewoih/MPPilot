@@ -12,9 +12,9 @@ namespace MPPilot.Domain.Services.Dashboards
 			_wildberriesService = wildberriesService;
 		}
 
-		public async Task<DashboardStatistics> GetStatistics(string apiKey)
+		public async Task<DashboardStatistics> GetStatistics()
 		{
-			var adverts = await _wildberriesService.GetActiveAdvertsAsync(apiKey, withStatistics: true);
+			var adverts = await _wildberriesService.GetActiveAdvertsAsync(withStatistics: true);
 
 			var statistics = new DashboardStatistics
 			{

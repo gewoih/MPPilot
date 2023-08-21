@@ -9,7 +9,7 @@ namespace MPPilot.Domain.Services.Autobidders
 	public class AutobiddersManager
 	{
 		private AutobidderService _autobidderService;
-		private readonly WildberriesService _wildberriesService;
+		private WildberriesService _wildberriesService;
 		private readonly AdvertsMarketService _advertsMarketService;
 		private readonly ILogger<AutobiddersManager> _logger;
 		private readonly IServiceProvider _serviceProvider;
@@ -17,11 +17,9 @@ namespace MPPilot.Domain.Services.Autobidders
 
 		public AutobiddersManager(AdvertsMarketService advertsMarketService,
 			ILogger<AutobiddersManager> logger,
-			WildberriesService wildberriesService,
 			IServiceProvider serviceProvider)
 		{
 			_advertsMarketService = advertsMarketService;
-			_wildberriesService = wildberriesService;
 			_serviceProvider = serviceProvider;
 			_logger = logger;
 			_stopwatch = new Stopwatch();
@@ -37,6 +35,7 @@ namespace MPPilot.Domain.Services.Autobidders
 
 					using var scope = _serviceProvider.CreateScope();
 
+					_wildberriesService = scope.ServiceProvider.GetRequiredService<WildberriesService>();
 					_autobidderService = scope.ServiceProvider.GetRequiredService<AutobidderService>();
 					var autobidders = await _autobidderService.GetActiveAutobidders();
 
@@ -64,9 +63,10 @@ namespace MPPilot.Domain.Services.Autobidders
 		private async Task HandleConservativeAutobidder(Autobidder autobidder)
 		{
 			var apiKey = autobidder.Account.Settings.WildberriesApiKey;
+			_wildberriesService.SetApiKey(apiKey);
 
-			var advertTask = _wildberriesService.GetAdvertWithKeywordAndCPM(apiKey, autobidder.AdvertId);
-			var advertTodayExpensesTask = _wildberriesService.GetExpensesForToday(apiKey, autobidder.AdvertId);
+			var advertTask = _wildberriesService.GetAdvertWithKeywordAndCPM(autobidder.AdvertId);
+			var advertTodayExpensesTask = _wildberriesService.GetExpensesForToday(autobidder.AdvertId);
 			await Task.WhenAll(advertTask, advertTodayExpensesTask);
 
 			var advert = advertTask.Result;
@@ -78,7 +78,7 @@ namespace MPPilot.Domain.Services.Autobidders
 				await _autobidderService.PauseBids(autobidder, DateTime.UtcNow.Date.AddDays(1));
 				_logger.LogInformation("Превышение по бюджету для РК '{AdvertId}'. Ставки по автобиддеру приостановлены до следующего дня.", advert.AdvertId);
 
-				await _wildberriesService.StopAdvertAsync(apiKey, advert.AdvertId);
+				await _wildberriesService.StopAdvertAsync(advert.AdvertId);
 				_logger.LogInformation("Рекламная кампания {AdvertId} приостановлена автобиддером.", advert.AdvertId);
 
 				return;
@@ -88,7 +88,7 @@ namespace MPPilot.Domain.Services.Autobidders
 				await _autobidderService.StartBids(autobidder);
 				_logger.LogInformation("Ставки по автобиддеру возобновлены для РК {AdvertId}.", advert.AdvertId);
 
-				await _wildberriesService.StartAdvertAsync(apiKey, advert.AdvertId);
+				await _wildberriesService.StartAdvertAsync(advert.AdvertId);
 				_logger.LogInformation("Рекламная кампания {AdvertId} возобновлена автобиддером.", advert.AdvertId);
 			}
 
@@ -105,7 +105,7 @@ namespace MPPilot.Domain.Services.Autobidders
 			//Если CPM повышается, то мы должны убедиться, что мы УЖЕ не находимся в целевых границах
 			if (advert.CPM < targetAdvert.CPM && currentPosition != targetAdvert.Position || advert.CPM > targetAdvert.CPM)
 			{
-				var isCpmChanged = await _wildberriesService.ChangeCPM(apiKey, advert, targetAdvert.CPM);
+				var isCpmChanged = await _wildberriesService.ChangeCPM(advert, targetAdvert.CPM);
 				if (isCpmChanged)
 				{
 					var newBid = new AdvertBid

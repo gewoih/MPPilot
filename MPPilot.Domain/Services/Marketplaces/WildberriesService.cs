@@ -1,4 +1,5 @@
 ﻿using MPPilot.Domain.Models.Adverts;
+using MPPilot.Domain.Services.Accounts;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Globalization;
@@ -13,16 +14,23 @@ namespace MPPilot.Domain.Services.Marketplaces
 		private const string _baseUrl = "https://advert-api.wb.ru/adv/";
 		private readonly HttpClient _httpClient;
 
-		public WildberriesService(IHttpClientFactory httpClientFactory)
+		public WildberriesService(IHttpClientFactory httpClientFactory, AccountsService accountsService)
 		{
 			_httpClient = httpClientFactory.CreateClient();
 			_httpClient.BaseAddress = new Uri(_baseUrl);
+
+			var currentAccountSettings = accountsService.GetCurrentAccountSettings();
+			if (currentAccountSettings is not null && currentAccountSettings.WildberriesApiKey is not null)
+				_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(currentAccountSettings.WildberriesApiKey);
 		}
 
-		public async Task<double> GetExpensesForToday(string apiKey, int advertId)
+		public void SetApiKey(string apiKey)
 		{
 			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
+		}
 
+		public async Task<double> GetExpensesForToday(int advertId)
+		{
 			var query = $"v1/fullstat?id={advertId}";
 			var result = await _httpClient.GetAsync(query);
 			var jsonResult = await result.Content.ReadAsStringAsync();
@@ -44,10 +52,8 @@ namespace MPPilot.Domain.Services.Marketplaces
 				return 0;
 		}
 
-		public async Task<bool> ChangeAdvertKeyword(string apiKey, int advertId, string newKeyword)
+		public async Task<bool> ChangeAdvertKeyword(int advertId, string newKeyword)
 		{
-			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
-
 			var data = new { pluse = Array.Empty<string>() };
 
 			if (!string.IsNullOrEmpty(newKeyword))
@@ -64,10 +70,8 @@ namespace MPPilot.Domain.Services.Marketplaces
 			return result.IsSuccessStatusCode;
 		}
 
-		public async Task<bool> RenameAdvert(string apiKey, int advertId, string name)
+		public async Task<bool> RenameAdvert(int advertId, string name)
 		{
-			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
-
 			if (string.IsNullOrEmpty(name))
 				throw new ArgumentNullException(nameof(name));
 
@@ -82,10 +86,8 @@ namespace MPPilot.Domain.Services.Marketplaces
 			return result.IsSuccessStatusCode;
 		}
 
-		public async Task<bool> StartAdvertAsync(string apiKey, int advertId)
+		public async Task<bool> StartAdvertAsync(int advertId)
 		{
-			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
-
 			var query = $"v0/start?id={advertId}";
 			var result = await _httpClient.GetAsync(query);
 
@@ -95,10 +97,8 @@ namespace MPPilot.Domain.Services.Marketplaces
 			return result.IsSuccessStatusCode;
 		}
 
-		public async Task<bool> StopAdvertAsync(string apiKey, int advertId)
+		public async Task<bool> StopAdvertAsync(int advertId)
 		{
-			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
-
 			var query = $"v0/pause?id={advertId}";
 			var result = await _httpClient.GetAsync(query);
 
@@ -108,10 +108,8 @@ namespace MPPilot.Domain.Services.Marketplaces
 			return result.IsSuccessStatusCode;
 		}
 
-		public async Task<Advert> GetAdvertWithKeywordAndCPM(string apiKey, int advertId)
+		public async Task<Advert> GetAdvertWithKeywordAndCPM(int advertId)
 		{
-			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
-
 			var adverts = new List<Advert> { new Advert { AdvertId = advertId } };
 			await LoadInfo(adverts);
 			await LoadKeywords(adverts);
@@ -119,10 +117,8 @@ namespace MPPilot.Domain.Services.Marketplaces
 			return adverts.First();
 		}
 
-		public async Task<List<Advert>> GetActiveAdvertsAsync(string apiKey, bool withInfo = false, bool withKeywords = false, bool withStatistics = false, int? count = null)
+		public async Task<List<Advert>> GetActiveAdvertsAsync(bool withInfo = false, bool withKeywords = false, bool withStatistics = false, int? count = null)
 		{
-			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
-
 			var productPageAdvertsQuery = GetAllAdvertsQuery(AdvertType.ProductPage, count);
 			var searchAdvertsQuery = GetAllAdvertsQuery(AdvertType.Search, count);
 
@@ -143,10 +139,8 @@ namespace MPPilot.Domain.Services.Marketplaces
 			return adverts;
 		}
 
-		public async Task<bool> ChangeCPM(string apiKey, Advert advert, int newCPM)
+		public async Task<bool> ChangeCPM(Advert advert, int newCPM)
 		{
-			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
-
 			if (newCPM < 50)
 				throw new ArgumentException("Новое значение CPM должно быть > 50");
 
@@ -301,6 +295,8 @@ namespace MPPilot.Domain.Services.Marketplaces
 
 						jObjects.Add(jObject);
 					}
+					else
+						throw new Exception(response.StatusCode.ToString());
 				}
 				finally
 				{

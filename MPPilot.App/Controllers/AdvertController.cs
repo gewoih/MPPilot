@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MPPilot.App.Models;
 using MPPilot.Domain.Models.Adverts;
-using MPPilot.Domain.Services.Accounts;
 using MPPilot.Domain.Services.Autobidders;
 using MPPilot.Domain.Services.Marketplaces;
 
@@ -10,13 +9,11 @@ namespace MPPilot.App.Controllers
 	public class AdvertController : Controller
 	{
 		private readonly WildberriesService _wildberriesService;
-		private readonly AccountsService _accountService;
 		private readonly AutobidderService _autobidderService;
 
-		public AdvertController(WildberriesService wildberriesService, AccountsService accountsService, AutobidderService autobidderService)
+		public AdvertController(WildberriesService wildberriesService, AutobidderService autobidderService)
 		{
 			_wildberriesService = wildberriesService;
-			_accountService = accountsService;
 			_autobidderService = autobidderService;
 		}
 
@@ -29,13 +26,7 @@ namespace MPPilot.App.Controllers
 		[HttpGet]
 		public async Task<List<Advert>> GetAdverts()
 		{
-			var accountSettings = _accountService.GetCurrentAccountSettings();
-
-			var adverts = await _wildberriesService.GetActiveAdvertsAsync(accountSettings.WildberriesApiKey, 
-								withInfo: true, 
-								withKeywords: true, 
-								withStatistics: true);
-
+			var adverts = await _wildberriesService.GetActiveAdvertsAsync(withInfo: true, withKeywords: true, withStatistics: true);
 			adverts = await _autobidderService.LoadAutobidders(adverts);
 
 			adverts = adverts
@@ -49,24 +40,22 @@ namespace MPPilot.App.Controllers
 		[HttpPost]
 		public async Task<IActionResult> Edit([FromBody] AdvertEditModel advertEditModel)
 		{
-			var accountSettings = _accountService.GetCurrentAccountSettings();
-			var apiKey = accountSettings.WildberriesApiKey;
 			var advertId = advertEditModel.AdvertId;
 
 			var changeSettingsTasks = new List<Task>();
 			if (advertEditModel.NewName is not null)
-				changeSettingsTasks.Add(_wildberriesService.RenameAdvert(apiKey, advertId, advertEditModel.NewName));
+				changeSettingsTasks.Add(_wildberriesService.RenameAdvert(advertId, advertEditModel.NewName));
 
 			if (advertEditModel.NewKeyword is not null)
-				changeSettingsTasks.Add(_wildberriesService.ChangeAdvertKeyword(apiKey, advertId, advertEditModel.NewKeyword));
+				changeSettingsTasks.Add(_wildberriesService.ChangeAdvertKeyword(advertId, advertEditModel.NewKeyword));
 
 			if (advertEditModel.IsEnabled.HasValue)
 			{
 				var isEnabled = advertEditModel.IsEnabled.Value;
 				if (isEnabled)
-					changeSettingsTasks.Add(_wildberriesService.StartAdvertAsync(apiKey, advertId));
+					changeSettingsTasks.Add(_wildberriesService.StartAdvertAsync(advertId));
 				else
-                    changeSettingsTasks.Add(_wildberriesService.StopAdvertAsync(apiKey, advertId));
+                    changeSettingsTasks.Add(_wildberriesService.StopAdvertAsync(advertId));
             }
 
 			await Task.WhenAll(changeSettingsTasks);

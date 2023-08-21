@@ -17,9 +17,6 @@ namespace MPPilot.App.Controllers
 
 		public async Task<IActionResult> Index()
 		{
-			var currentAccountSettings = _accountsService.GetCurrentAccountSettings();
-			var dashboardStatistics = await _dashboardService.GetStatistics(currentAccountSettings.WildberriesApiKey);
-
 			return View();
 		}
 	}
