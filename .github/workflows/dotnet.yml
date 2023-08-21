@@ -13,7 +13,10 @@ jobs:
   docker_compose:
     runs-on: self-hosted
     steps:
-    - name: docker-compose
-      run: docker-compose up
+    - uses: actions/checkout@v3
+    
+    - name: Build docker images
+      run: docker-compose build
 
-
+    - name: Run docker compose
+      run: docker-compose up -d
