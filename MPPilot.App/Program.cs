@@ -25,7 +25,7 @@ namespace MPPilot.App
 
 			builder.Host.UseSerilog((context, configuration) =>
 				configuration.ReadFrom.Configuration(context.Configuration)
-				.WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri("http://localhost:9200")))
+				.WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri("http://elastic:9200")))
 				.WriteTo.Console());
 
 			builder.Services.AddLogging(builder =>
