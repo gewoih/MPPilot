@@ -48,10 +48,17 @@ namespace MPPilot.Domain.BackgroundServices
                     _logger.LogInformation("Найдено {Count} активных автобиддеров. Начинаем обработку...", autobidders.Count);
                     foreach (var autobidder in autobidders)
                     {
-                        if (autobidder.Mode == AutobidderMode.Conservative)
-                            await HandleConservativeAutobidder(autobidder);
+                        try
+                        {
+                            if (autobidder.Mode == AutobidderMode.Conservative)
+                                await HandleConservativeAutobidder(autobidder);
 
-                        _logger.LogInformation("Завершена обработка автобиддера (тип = {Mode}, id = {Id}) для РК '{AdvertId}'", autobidder.Mode, autobidder.Id, autobidder.AdvertId);
+                            _logger.LogInformation("Завершена обработка автобиддера (тип = {Mode}, id = {Id}) для РК '{AdvertId}'", autobidder.Mode, autobidder.Id, autobidder.AdvertId);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Произошла ошибка при обработке автобиддера");
+                        }
                     }
                 }
                 else
