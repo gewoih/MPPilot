@@ -10,11 +10,11 @@ services:
         image: ${DOCKER_REGISTRY-}mppilotapp
         ports:
             - 5000:80
-        environment:
-            - ASPNETCORE_Kestrel__Certificates__Default__Path=/certs/mppilot.pfx
-            - ASPNETCORE_Kestrel__Certificates__Default__Password=24042001Nr
         volumes:
-            - ./certs:/certs
+            - /etc/ssl/mppilot:/certs
+        environment:
+            ASPNETCORE_Kestrel__Certificates__Default__Path: /certs/mppilot.pfx
+            ASPNETCORE_Kestrel__Certificates__Default__Password: 24042001Nr
         depends_on:
             - elasticsearch
             - postgres
