@@ -1,7 +1,7 @@
 version: '3.4'
 
 networks:
-    elastic-network:
+    mppilot-network:
         driver: bridge
 
 services:
@@ -10,9 +10,14 @@ services:
         image: ${DOCKER_REGISTRY-}mppilotapp
         ports:
             - 5000:80
+        depends_on:
+            - elasticsearch
+            - postgres
         build:
             context: .
             dockerfile: MPPilot.App/Dockerfile
+        networks:
+            - mppilot-network
 
     elasticsearch:
         container_name: elastic
@@ -28,7 +33,7 @@ services:
             - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
             - discovery.type=single-node
         networks:
-            - elastic-network
+            - mppilot-network
   
     kibana:
         container_name: kibana
@@ -40,7 +45,22 @@ services:
         environment:
             - ELASTICSEARCH_URL=http://localhost:9200
         networks:
-            - elastic-network
+            - mppilot-network
+            
+    postgres:
+        container_name: postgres
+        image: postgres:latest
+        environment:
+            POSTGRES_DB: mppilot_db
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: 24042001Nr
+        ports:
+            - 5432:5432
+        volumes:
+            - postgres:/var/lib/postgresql/data
+        networks:
+            - mppilot-network
 
 volumes:
     elasticsearch-data:
+    postgres:
