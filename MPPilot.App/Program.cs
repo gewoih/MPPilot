@@ -91,10 +91,10 @@ namespace MPPilot.App
 				app.UseMiddleware<ExceptionsHandlerMiddleware>();
 				app.UseMiddleware<LongQueryMiddleware>();
 
-				app.UseHsts();
+				//app.UseHsts();
 			}
 
-			app.UseHttpsRedirection();
+			//app.UseHttpsRedirection();
 
 			app.UseStaticFiles();
 
