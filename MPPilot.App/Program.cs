@@ -84,9 +84,6 @@ namespace MPPilot.App
 
 			builder.Services.AddAuthorization();
 
-			if (!builder.Environment.IsDevelopment())
-				builder.WebHost.UseUrls("http://marketpilot.ru", "https://marketpilot.ru");
-
 			var app = builder.Build();
 
 			if (!app.Environment.IsDevelopment())
