@@ -51,7 +51,7 @@ namespace MPPilot.App
 			builder.Services.AddScoped<LongQueryMiddleware>();
 			builder.Services.AddScoped<ExceptionsHandlerMiddleware>();
 
-			//builder.Services.AddHostedService<AutobiddersManager>();
+			builder.Services.AddHostedService<AutobiddersManager>();
 
 			builder.Services.AddAuthentication(options =>
 			{
