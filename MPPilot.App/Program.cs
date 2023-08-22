@@ -23,14 +23,6 @@ namespace MPPilot.App
 
 			var builder = WebApplication.CreateBuilder(args);
 
-			builder.Host.ConfigureServices((hostContext, services) =>
-			{
-				services.Configure<HostOptions>(hostOptions =>
-				{
-					hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
-				});
-			});
-
 			builder.Host.UseSerilog((context, configuration) =>
 				configuration.ReadFrom.Configuration(context.Configuration)
 				.WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri("http://elastic:9200")))
@@ -99,10 +91,10 @@ namespace MPPilot.App
 				app.UseMiddleware<ExceptionsHandlerMiddleware>();
 				app.UseMiddleware<LongQueryMiddleware>();
 
-				app.UseHsts();
+				//app.UseHsts();
 			}
 
-			app.UseHttpsRedirection();
+			//app.UseHttpsRedirection();
 
 			app.UseStaticFiles();
 
