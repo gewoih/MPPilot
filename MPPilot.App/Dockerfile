@@ -17,6 +17,8 @@ RUN dotnet build "MPPilot.App.csproj" -c Release -o /app/build
 FROM build AS publish
 RUN dotnet publish "MPPilot.App.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
+RUN dotnet dev-certs https -ep /root/.aspnet/https/aspnetapp.pfx -p 24042001Nr
+
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
