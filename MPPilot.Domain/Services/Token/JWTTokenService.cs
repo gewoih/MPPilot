@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Http;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 using MPPilot.Domain.Models.Auth;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -9,13 +7,6 @@ namespace MPPilot.Domain.Services.Token
 {
     public class JWTTokenService : ITokenService
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-
-        public JWTTokenService(IHttpContextAccessor httpContextAccessor)
-        {
-            _httpContextAccessor = httpContextAccessor;
-        }
-
         public string GenerateToken(ClaimsIdentity identity)
         {
             var securityKey = AuthOptions.GetSecurityKey();
@@ -34,18 +25,6 @@ namespace MPPilot.Domain.Services.Token
             var securityToken = tokenHandler.CreateToken(tokenDescriptor);
 
             return tokenHandler.WriteToken(securityToken);
-        }
-
-        public string GetToken()
-        {
-            var httpContext = _httpContextAccessor.HttpContext;
-            if (httpContext is not null)
-            {
-                var token = httpContext.Request.Cookies[JwtBearerDefaults.AuthenticationScheme];
-                return token;
-            }
-
-            return null;
         }
 
         public bool ValidateToken(string token)
