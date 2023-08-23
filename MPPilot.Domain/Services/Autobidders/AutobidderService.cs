@@ -11,9 +11,9 @@ namespace MPPilot.Domain.Services.Autobidders
 	{
 		private readonly ILogger<AutobidderService> _logger;
 		private readonly MPPilotContext _context;
-		private readonly AccountsService _accountService;
+		private readonly IAccountsService _accountService;
 
-		public AutobidderService(AccountsService accountService, MPPilotContext context, ILogger<AutobidderService> logger)
+		public AutobidderService(IAccountsService accountService, MPPilotContext context, ILogger<AutobidderService> logger)
 		{
 			_accountService = accountService;
 			_context = context;
@@ -45,7 +45,7 @@ namespace MPPilot.Domain.Services.Autobidders
 		{
 			try
 			{
-				var currentAccount = _accountService.GetCurrentAccount();
+				var currentAccount = await _accountService.GetCurrentAccountAsync();
 				currentAccount.Autobidders.Add(autobidder);
 				await _context.SaveChangesAsync();
 
