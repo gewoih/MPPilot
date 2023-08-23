@@ -84,6 +84,8 @@ namespace MPPilot.App
 
 			builder.Services.AddAuthorization();
 
+			builder.WebHost.UseUrls("http://0.0.0.0:80", "https://0.0.0.0:443");
+
 			var app = builder.Build();
 
 			if (!app.Environment.IsDevelopment())
