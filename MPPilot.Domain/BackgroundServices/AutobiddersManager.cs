@@ -10,7 +10,7 @@ namespace MPPilot.Domain.BackgroundServices
 {
     public class AutobiddersManager : BackgroundService
     {
-        private AutobidderService _autobidderService;
+        private IAutobiddersService _autobiddersService;
         private WildberriesService _wildberriesService;
         private readonly AdvertsMarketService _advertsMarketService;
         private readonly ILogger<AutobiddersManager> _logger;
@@ -40,8 +40,8 @@ namespace MPPilot.Domain.BackgroundServices
                 using var scope = _serviceProvider.CreateScope();
 
                 _wildberriesService = scope.ServiceProvider.GetRequiredService<WildberriesService>();
-                _autobidderService = scope.ServiceProvider.GetRequiredService<AutobidderService>();
-                var autobidders = await _autobidderService.GetActiveAutobidders();
+                _autobiddersService = scope.ServiceProvider.GetRequiredService<IAutobiddersService>();
+                var autobidders = await _autobiddersService.GetActiveAutobiddersAsync();
 
                 if (autobidders.Any())
                 {
@@ -85,7 +85,7 @@ namespace MPPilot.Domain.BackgroundServices
             //Если превышение по бюджету - ставим ставки на паузу и останавливаем РК
             if (advertTodayExpenses >= autobidder.DailyBudget)
             {
-                await _autobidderService.PauseBids(autobidder, DateTime.UtcNow.Date.AddDays(1));
+                await _autobiddersService.PauseBidsAsync(autobidder, DateTimeOffset.UtcNow.Date.AddDays(1));
                 _logger.LogInformation("Превышение по бюджету для РК '{AdvertId}'. Ставки по автобиддеру приостановлены до следующего дня.", advert.AdvertId);
 
                 await _wildberriesService.StopAdvertAsync(advert.AdvertId);
@@ -95,7 +95,7 @@ namespace MPPilot.Domain.BackgroundServices
             }
             else if (autobidder.BidsPausedTill is not null)
             {
-                await _autobidderService.StartBids(autobidder);
+                await _autobiddersService.StartBidsAsync(autobidder);
                 _logger.LogInformation("Ставки по автобиддеру возобновлены для РК {AdvertId}.", advert.AdvertId);
 
                 await _wildberriesService.StartAdvertAsync(advert.AdvertId);
@@ -130,7 +130,7 @@ namespace MPPilot.Domain.BackgroundServices
                         Reason = ChangeBidReason.NotAverageCpm
                     };
 
-                    await _autobidderService.AddBid(autobidder, newBid);
+                    await _autobiddersService.AddBidAsync(autobidder, newBid);
                 }
             }
         }

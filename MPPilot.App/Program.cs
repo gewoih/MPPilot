@@ -43,7 +43,7 @@ namespace MPPilot.App
 			AuthOptions.SetKey(builder.Configuration);
 			builder.Services.AddSingleton<ITokenService, JWTTokenService>();
 			builder.Services.AddScoped<IAccountsService, AccountsService>();
-			builder.Services.AddScoped<AutobidderService>();
+			builder.Services.AddScoped<IAutobiddersService, AutobiddersService>();
 			builder.Services.AddScoped<WildberriesService>();
 			builder.Services.AddSingleton<AdvertsMarketService>();
 

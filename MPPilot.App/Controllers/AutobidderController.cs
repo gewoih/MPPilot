@@ -7,11 +7,11 @@ namespace MPPilot.App.Controllers
 {
 	public class AutobidderController : Controller
 	{
-		private readonly AutobidderService _autobidderService;
+		private readonly IAutobiddersService _autobiddersService;
 
-		public AutobidderController(AutobidderService autobidderService) 
+		public AutobidderController(IAutobiddersService autobidderService) 
 		{
-			_autobidderService = autobidderService;
+			_autobiddersService = autobidderService;
 		}
 
 		[HttpPost]
@@ -29,9 +29,9 @@ namespace MPPilot.App.Controllers
 			};
 
 			if (autobidder.Id != Guid.Empty)
-				await _autobidderService.Update(autobidder);
+				await _autobiddersService.UpdateAsync(autobidder);
 			else
-				await _autobidderService.Create(autobidder);
+				await _autobiddersService.CreateAsync(autobidder);
 
 			return Ok();
 		}
@@ -39,7 +39,7 @@ namespace MPPilot.App.Controllers
 		[HttpGet]
 		public async Task<List<AdvertBid>> GetBids(Guid autobidderId)
 		{
-			return await _autobidderService.GetBids(autobidderId);
+			return await _autobiddersService.GetBidsAsync(autobidderId);
 		}
 	}
 }

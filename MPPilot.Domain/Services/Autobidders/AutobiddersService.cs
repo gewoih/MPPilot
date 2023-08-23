@@ -7,20 +7,37 @@ using MPPilot.Domain.Services.Accounts;
 
 namespace MPPilot.Domain.Services.Autobidders
 {
-	public class AutobidderService
+	public class AutobiddersService : IAutobiddersService
 	{
-		private readonly ILogger<AutobidderService> _logger;
+		private readonly ILogger<AutobiddersService> _logger;
 		private readonly MPPilotContext _context;
 		private readonly IAccountsService _accountService;
 
-		public AutobidderService(IAccountsService accountService, MPPilotContext context, ILogger<AutobidderService> logger)
+		public AutobiddersService(IAccountsService accountService, MPPilotContext context, ILogger<AutobiddersService> logger)
 		{
 			_accountService = accountService;
 			_context = context;
 			_logger = logger;
 		}
 
-		public async Task Update(Autobidder autobidder)
+		public async Task CreateAsync(Autobidder autobidder)
+		{
+			try
+			{
+				var currentAccount = await _accountService.GetCurrentAccountAsync();
+				currentAccount.Autobidders.Add(autobidder);
+				await _context.SaveChangesAsync();
+
+				_logger.LogInformation("Автобиддер {Id} успешно создан!", autobidder.Id);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Ошибка при создании автобиддера для РК {AdvertId}", autobidder.AdvertId);
+				throw;
+			}
+		}
+		
+		public async Task UpdateAsync(Autobidder autobidder)
 		{
 			try
 			{
@@ -41,26 +58,7 @@ namespace MPPilot.Domain.Services.Autobidders
 			}
 		}
 
-		public async Task<Autobidder> Create(Autobidder autobidder)
-		{
-			try
-			{
-				var currentAccount = await _accountService.GetCurrentAccountAsync();
-				currentAccount.Autobidders.Add(autobidder);
-				await _context.SaveChangesAsync();
-
-				_logger.LogInformation("Автобиддер {Id} успешно создан!", autobidder.Id);
-
-				return autobidder;
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Ошибка при создании автобиддера для РК {AdvertId}", autobidder.AdvertId);
-				throw;
-			}
-		}
-
-		public async Task<List<Advert>> LoadAutobidders(List<Advert> adverts)
+		public async Task LoadAutobiddersForAdverts(List<Advert> adverts)
 		{
 			var advertIds = adverts.Select(advert => advert.AdvertId);
 
@@ -73,11 +71,9 @@ namespace MPPilot.Domain.Services.Autobidders
 			{
 				advert.Autobidder = autobidders.FirstOrDefault(autobidder => autobidder.AdvertId == advert.AdvertId);
 			}
-
-			return adverts;
 		}
 
-		public async Task AddBid(Autobidder autobidder, AdvertBid bid)
+		public async Task AddBidAsync(Autobidder autobidder, AdvertBid bid)
 		{
 			try
 			{
@@ -91,7 +87,7 @@ namespace MPPilot.Domain.Services.Autobidders
 			}
 		}
 
-		public async Task<List<AdvertBid>> GetBids(Guid autobidderId)
+		public async Task<List<AdvertBid>> GetBidsAsync(Guid autobidderId)
 		{
 			try
 			{
@@ -108,21 +104,21 @@ namespace MPPilot.Domain.Services.Autobidders
 			}
 		}
 
-		public async Task StartBids(Autobidder autobidder)
+		public async Task StartBidsAsync(Autobidder autobidder)
 		{
 			autobidder.BidsPausedTill = null;
 			_context.Autobidders.Update(autobidder);
 			await _context.SaveChangesAsync();
 		}
 
-		public async Task PauseBids(Autobidder autobidder, DateTime tillDate)
+		public async Task PauseBidsAsync(Autobidder autobidder, DateTimeOffset tillDate)
 		{
 			autobidder.BidsPausedTill = tillDate;
 			_context.Autobidders.Update(autobidder);
 			await _context.SaveChangesAsync();
 		}
 
-		public async Task<List<Autobidder>> GetActiveAutobidders()
+		public async Task<List<Autobidder>> GetActiveAutobiddersAsync()
 		{
 			return await _context.Autobidders
 						.Include(autobidder => autobidder.Account)

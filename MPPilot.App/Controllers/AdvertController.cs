@@ -9,12 +9,12 @@ namespace MPPilot.App.Controllers
 	public class AdvertController : Controller
 	{
 		private readonly WildberriesService _wildberriesService;
-		private readonly AutobidderService _autobidderService;
+		private readonly IAutobiddersService _autobiddersService;
 
-		public AdvertController(WildberriesService wildberriesService, AutobidderService autobidderService)
+		public AdvertController(WildberriesService wildberriesService, IAutobiddersService autobidderService)
 		{
 			_wildberriesService = wildberriesService;
-			_autobidderService = autobidderService;
+			_autobiddersService = autobidderService;
 		}
 
 		[HttpGet]
@@ -27,7 +27,7 @@ namespace MPPilot.App.Controllers
 		public async Task<List<Advert>> GetAdverts()
 		{
 			var adverts = await _wildberriesService.GetActiveAdvertsAsync(withInfo: true, withKeywords: true, withStatistics: true);
-			adverts = await _autobidderService.LoadAutobidders(adverts);
+			await _autobiddersService.LoadAutobiddersForAdverts(adverts);
 
 			adverts = adverts
 						.OrderByDescending(advert => advert.IsAutobidderEnabled)
