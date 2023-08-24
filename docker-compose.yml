@@ -5,9 +5,9 @@ networks:
         driver: bridge
 
 services:
-    mppilot.app:
+    mppilot:
         container_name: mppilot
-        image: ${DOCKER_REGISTRY-}mppilotapp
+        image: ${DOCKER_REGISTRY-}mppilot
         ports:
             - 5000:80
             - 5001:443
