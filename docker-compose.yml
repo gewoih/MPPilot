@@ -5,7 +5,7 @@ networks:
         driver: bridge
 
 services:
-    mppilot-app:
+    mppilot.app:
         container_name: mppilot
         image: ${DOCKER_REGISTRY-}mppilotapp
         ports:
