@@ -9,6 +9,6 @@ scrape_configs:
   - job_name: 'mppilot-app'
     scrape_interval: 5s
     static_configs:
-      - targets: ['mppilot:5001']
+      - targets: ['mppilot:5000']
     tls_config:
       insecure_skip_verify: true
