@@ -23,6 +23,23 @@ namespace MPPilot.App
 			Console.OutputEncoding = Encoding.UTF8;
 
 			var builder = WebApplication.CreateBuilder(args);
+			builder.Services.AddOpenTelemetry()
+				.WithMetrics(builder =>
+				{
+					builder.AddPrometheusExporter();
+					builder.AddAspNetCoreInstrumentation();
+					builder.AddPrometheusHttpListener();
+
+					builder.AddMeter("Microsoft.AspNetCore.Hosting",
+									 "Microsoft.AspNetCore.Server.Kestrel");
+
+					builder.AddView("http-server-request-duration",
+						new ExplicitBucketHistogramConfiguration
+						{
+							Boundaries = new double[] { 0, 0.005, 0.01, 0.025, 0.05,
+								   0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10 }
+						});
+				});
 
 			builder.Host.UseSerilog((context, configuration) =>
 				configuration.ReadFrom.Configuration(context.Configuration)
@@ -36,24 +53,11 @@ namespace MPPilot.App
 
 			builder.Services.AddControllersWithViews();
 
-			builder.Services.AddOpenTelemetry()
-				.WithMetrics(builder =>
-				{
-					builder.AddPrometheusExporter();
-
-					builder.AddMeter("Microsoft.AspNetCore.Hosting", "Microsoft.AspNetCore.Server.Kestrel");
-
-					builder.AddView("http-server-request-duration",
-						new ExplicitBucketHistogramConfiguration
-						{
-							Boundaries = new double[] { 0, 0.005, 0.01, 0.025, 0.05,
-								   0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10 }
-						});
-				});
-
 			var connectionString = builder.Configuration.GetConnectionString("Default");
 			builder.Services.AddDbContext<MPPilotContext>(options => options.UseNpgsql(connectionString));
+			
 			builder.Services.AddHttpClient();
+
 			builder.Services.AddHttpContextAccessor();
 
 			AuthOptions.SetKey(builder.Configuration);
@@ -103,6 +107,7 @@ namespace MPPilot.App
 			builder.WebHost.UseUrls("http://0.0.0.0:80", "https://0.0.0.0:443");
 
 			var app = builder.Build();
+			app.MapPrometheusScrapingEndpoint();
 
 			if (!app.Environment.IsDevelopment())
 			{
@@ -112,9 +117,7 @@ namespace MPPilot.App
 				app.UseHsts();
 			}
 
-			app.MapPrometheusScrapingEndpoint();
-
-			//app.UseHttpsRedirection();
+			app.UseHttpsRedirection();
 
 			app.UseStaticFiles();
 

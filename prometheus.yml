@@ -10,6 +10,5 @@ scrape_configs:
     scrape_interval: 5s
     static_configs:
       - targets: ['host.docker.internal:5000']
-        labels:
-          job: 'mppilot'
-          instance: 'docker'
+    tls_config:
+      insecure_skip_verify: true
