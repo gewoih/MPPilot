@@ -12,6 +12,7 @@ using MPPilot.Domain.Services.Marketplaces;
 using MPPilot.Domain.Services.Accounts;
 using MPPilot.Domain.BackgroundServices;
 using Serilog.Sinks.Elasticsearch;
+using OpenTelemetry.Metrics;
 
 namespace MPPilot.App
 {
@@ -34,6 +35,21 @@ namespace MPPilot.App
 			});
 
 			builder.Services.AddControllersWithViews();
+
+			builder.Services.AddOpenTelemetry()
+				.WithMetrics(builder =>
+				{
+					builder.AddPrometheusExporter();
+
+					builder.AddMeter("Microsoft.AspNetCore.Hosting", "Microsoft.AspNetCore.Server.Kestrel");
+
+					builder.AddView("http-server-request-duration",
+						new ExplicitBucketHistogramConfiguration
+						{
+							Boundaries = new double[] { 0, 0.005, 0.01, 0.025, 0.05,
+								   0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10 }
+						});
+				});
 
 			var connectionString = builder.Configuration.GetConnectionString("Default");
 			builder.Services.AddDbContext<MPPilotContext>(options => options.UseNpgsql(connectionString));
@@ -96,7 +112,9 @@ namespace MPPilot.App
 				app.UseHsts();
 			}
 
-			app.UseHttpsRedirection();
+			app.MapPrometheusScrapingEndpoint();
+
+			//app.UseHttpsRedirection();
 
 			app.UseStaticFiles();
 

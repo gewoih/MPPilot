@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["host.docker.internal:9090"]
+
+  - job_name: 'mppilot-app'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['host.docker.internal:5000']
+        labels:
+          job: 'mppilot'
+          instance: 'docker'

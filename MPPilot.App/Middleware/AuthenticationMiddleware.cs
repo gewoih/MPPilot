@@ -18,7 +18,7 @@ namespace MPPilot.App.Middleware
 
 		public async Task InvokeAsync(HttpContext context, RequestDelegate next)
 		{
-			if (!context.Request.Path.StartsWithSegments("/Account", StringComparison.OrdinalIgnoreCase))
+			if (!context.Request.Path.StartsWithSegments("/Account", StringComparison.OrdinalIgnoreCase) && !context.Request.Path.StartsWithSegments("/metrics"))
 			{
 				var token = await context.GetTokenAsync("Bearer", "access_token");
 				var isValidToken = _tokenService.ValidateToken(token);

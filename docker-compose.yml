@@ -14,8 +14,8 @@ services:
         volumes:
             - /etc/ssl/mppilot:/certs
         environment:
-            ASPNETCORE_Kestrel__Certificates__Default__Path: /certs/mppilot.pfx
-            ASPNETCORE_Kestrel__Certificates__Default__Password: 24042001Nr
+            #ASPNETCORE_Kestrel__Certificates__Default__Path: /certs/mppilot.pfx
+            #ASPNETCORE_Kestrel__Certificates__Default__Password: 24042001Nr
             ASPNETCORE_URLS: http://+:80;https://+:443
         depends_on:
             - elasticsearch
@@ -26,6 +26,20 @@ services:
         networks:
             - mppilot-network
 
+    postgres:
+        container_name: postgres
+        image: postgres:latest
+        environment:
+            POSTGRES_DB: mppilot_db
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: 24042001Nr
+        ports:
+            - 5432:5432
+        volumes:
+            - postgres:/var/lib/postgresql/data
+        networks:
+            - mppilot-network
+    
     elasticsearch:
         container_name: elastic
         image: elasticsearch:8.8.1
@@ -53,21 +67,35 @@ services:
             - ELASTICSEARCH_URL=http://localhost:9200
         networks:
             - mppilot-network
-            
-    postgres:
-        container_name: postgres
-        image: postgres:latest
-        environment:
-            POSTGRES_DB: mppilot_db
-            POSTGRES_USER: postgres
-            POSTGRES_PASSWORD: 24042001Nr
-        ports:
-            - 5432:5432
+
+    prometheus:
+        container_name: prometheus
+        image: prom/prometheus
+        command:
+            - '--config.file=/etc/prometheus/prometheus.yml'
+            - '--storage.tsdb.path=/prometheus'
+            - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+            - '--web.console.templates=/usr/share/prometheus/consoles'
         volumes:
-            - postgres:/var/lib/postgresql/data
-        networks:
-            - mppilot-network
+            - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+            - prometheus_data:/prometheus
+        ports:
+            -  "9090:9090"
+
+    grafana:
+        container_name: grafana
+        image: grafana/grafana
+        environment:
+            GF_INSTALL_PLUGINS: 'grafana-clock-panel,grafana-simple-json-datasource'
+        ports:
+            - "3000:3000"
+        depends_on:
+            - prometheus
+        volumes:
+            - grafana_data:/var/lib/grafana
 
 volumes:
     elasticsearch-data:
     postgres:
+    prometheus_data:
+    grafana_data:
