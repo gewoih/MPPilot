@@ -81,6 +81,8 @@ services:
             - prometheus_data:/prometheus
         ports:
             -  "9090:9090"
+        networks:
+            - mppilot-network
 
     grafana:
         container_name: grafana
@@ -93,6 +95,8 @@ services:
             - prometheus
         volumes:
             - grafana_data:/var/lib/grafana
+        networks:
+            - mppilot-network
 
 volumes:
     elasticsearch-data:
