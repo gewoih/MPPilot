@@ -3,15 +3,14 @@ using Microsoft.AspNetCore.Mvc;
 using MPPilot.Domain.Exceptions;
 using MPPilot.Domain.Models.Accounts;
 using MPPilot.Domain.Services.Accounts;
-using MPPilot.Domain.Services.Token;
 
 namespace MPPilot.App.Controllers
 {
 	public class AccountController : Controller
 	{
-		private readonly AccountsService _accountService;
+		private readonly IAccountsService _accountService;
 
-		public AccountController(AccountsService accountService)
+		public AccountController(IAccountsService accountService)
 		{
 			_accountService = accountService;
 		}
@@ -27,7 +26,9 @@ namespace MPPilot.App.Controllers
 		{
 			try
 			{
-				await _accountService.RegisterAsync(account);
+				var credentials = new UserCredentials { Name = account.Name, Email = account.Email, Password = account.Password };
+
+				await _accountService.RegisterAsync(credentials);
 				return RedirectToAction("Login");
 			}
 			catch (UserAlreadyExistsException ex)
@@ -49,7 +50,8 @@ namespace MPPilot.App.Controllers
 		{
 			try
 			{
-				var token = await _accountService.LoginAsync(account.Email, account.Password);
+				var credentials = new UserCredentials { Email = account.Email, Password = account.Password };
+				var token = await _accountService.LoginAsync(credentials);
                 SaveTokenToCookie(token);
 
 				return RedirectToAction("Index", "Home");

@@ -9,9 +9,9 @@ namespace MPPilot.App.Controllers
 	[Authorize]
 	public class SettingsController : Controller
     {
-        private readonly AccountsService _accountsService;
+        private readonly IAccountsService _accountsService;
 
-        public SettingsController(AccountsService accountsService)
+        public SettingsController(IAccountsService accountsService)
         {
             _accountsService = accountsService;
         }
@@ -26,7 +26,7 @@ namespace MPPilot.App.Controllers
         {
             try
             {
-                await _accountsService.SaveSettings(settings);
+                await _accountsService.ChangeSettingsAsync(settings);
                 return RedirectToAction("Index", "Adverts");
             }
             catch (APIKeyAlreadyExistsException ex)

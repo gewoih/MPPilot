@@ -8,9 +8,9 @@ namespace MPPilot.App.Middleware
     public class AuthenticationMiddleware : IMiddleware
 	{
 		private readonly ITokenService _tokenService;
-		private readonly AccountsService _accountsService;
+		private readonly IAccountsService _accountsService;
 
-		public AuthenticationMiddleware(ITokenService tokenService, AccountsService accountsService)
+		public AuthenticationMiddleware(ITokenService tokenService, IAccountsService accountsService)
 		{
 			_tokenService = tokenService;
 			_accountsService = accountsService;
@@ -18,7 +18,7 @@ namespace MPPilot.App.Middleware
 
 		public async Task InvokeAsync(HttpContext context, RequestDelegate next)
 		{
-			if (!context.Request.Path.StartsWithSegments("/Account", StringComparison.OrdinalIgnoreCase))
+			if (!context.Request.Path.StartsWithSegments("/Account", StringComparison.OrdinalIgnoreCase) && !context.Request.Path.StartsWithSegments("/metrics"))
 			{
 				var token = await context.GetTokenAsync("Bearer", "access_token");
 				var isValidToken = _tokenService.ValidateToken(token);
@@ -28,14 +28,14 @@ namespace MPPilot.App.Middleware
 					context.Response.Redirect("/Account/Login");
 					return;
 				}
-				else if (_accountsService.GetCurrentAccount() is null)
+				else if (await _accountsService.GetCurrentAccountAsync() is null)
 				{
 					var currentUser = context.User;
 					var claimId = currentUser.Claims.FirstOrDefault(claim => claim.Type.Equals(ClaimTypes.NameIdentifier, StringComparison.OrdinalIgnoreCase));
 					if (claimId is not null)
 					{
 						var accountId = Guid.Parse(claimId.Value);
-						await _accountsService.SetCurrentAccount(accountId);
+						await _accountsService.SetCurrentAccountAsync(accountId);
 					}
 				}
 			}

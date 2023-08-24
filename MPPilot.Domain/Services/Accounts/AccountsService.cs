@@ -11,7 +11,7 @@ using System.Security.Claims;
 
 namespace MPPilot.Domain.Services.Accounts
 {
-	public class AccountsService
+	public class AccountsService : IAccountsService
 	{
 		private readonly MPPilotContext _context;
 		private readonly IHttpContextAccessor _httpContextAccessor;
@@ -27,36 +27,43 @@ namespace MPPilot.Domain.Services.Accounts
 			_logger = logger;
 		}
 
-		public async Task RegisterAsync(Account account)
+		public async Task RegisterAsync(UserCredentials credentials)
 		{
 			try
 			{
-				account.Password = PasswordHasherService.GetHashedString(account.Password, account.Email);
-				account.Settings = new();
+				var hashedPassword = PasswordHasherService.GetHashedString(credentials.Password, credentials.Email);
 
-				_context.Accounts.Add(account);
+				var newAccount = new Account
+				{
+					Name = credentials.Name,
+					Email = credentials.Email,
+					Password = hashedPassword,
+					Settings = new()
+				};
+				
+				_context.Accounts.Add(newAccount);
 				await _context.SaveChangesAsync();
 
-				_logger.LogInformation("Пользователь {Email} успешно зарегистрирован в системе.", account.Email);
+				_logger.LogInformation("Пользователь {Email} успешно зарегистрирован в системе.", credentials.Email);
 			}
 			catch (DbUpdateException)
 			{
-				_logger.LogInformation("Неудачная попытка регистрации. Пользователь {Email} уже существует.", account.Email);
+				_logger.LogInformation("Неудачная попытка регистрации. Пользователь {Email} уже существует.", credentials.Email);
 				throw new UserAlreadyExistsException($"Пользователь с таким Email уже существует.");
 			}
 		}
 
-		public async Task<string> LoginAsync(string email, string password)
+		public async Task<string> LoginAsync(UserCredentials credentials)
 		{
-			var account = await FindBycredentials(email, password);
+			var account = await FindBycredentials(credentials);
 			if (account is null)
 			{
-				_logger.LogInformation("Неудачная попытка входа в систему у пользователя {Email}", email);
+				_logger.LogInformation("Неудачная попытка входа в систему у пользователя {Email}", credentials.Email);
 				throw new ArgumentException("Пользователь с такими данными не найден в системе");
 			}
 
 			await CreateLoginHistory(account);
-			_logger.LogInformation("Пользователь {Email} успешно вошел в систему.", email);
+			_logger.LogInformation("Пользователь {Email} успешно вошел в систему.", credentials.Email);
 
 			var claims = new[]
 			{
@@ -69,6 +76,57 @@ namespace MPPilot.Domain.Services.Accounts
 			var token = _tokenService.GenerateToken(identity);
 
 			return token;
+		}
+
+
+		public async Task ChangeSettingsAsync(AccountSettings settings)
+		{
+			var currentAccount = await GetCurrentAccountAsync() ?? throw new UnauthorizedAccessException("Пользователь не авторизован");
+			currentAccount.Settings.WildberriesApiKey = settings.WildberriesApiKey;
+
+			_context.Accounts.Update(currentAccount);
+
+			try
+			{
+				await _context.SaveChangesAsync();
+				_logger.LogInformation("Настройки аккаунта {Email} успешно сохранены.", currentAccount.Email);
+			}
+			catch (DbUpdateException)
+			{
+				_logger.LogWarning("Пользователь {Email} попытался сохранить API-ключ Wildberries ({ApiKey}) другого пользователя!", currentAccount.Email, settings.WildberriesApiKey);
+				throw new APIKeyAlreadyExistsException("Данный API-ключ уже используется другим пользователем");
+			}
+		}
+
+		public async Task<AccountSettings> GetSettingsAsync()
+		{
+			return _currentAccount?.Settings;
+		}
+
+		public async Task SetCurrentAccountAsync(Guid accountId)
+		{
+			_currentAccount = await FindByIdAsync(accountId);
+		}
+
+		public async Task<Account> GetCurrentAccountAsync()
+		{
+			return _currentAccount;
+		}
+
+		private async Task<Account?> FindBycredentials(UserCredentials credentials)
+		{
+			var passwordHash = PasswordHasherService.GetHashedString(credentials.Password, credentials.Email);
+
+			var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Email == credentials.Email && a.Password == passwordHash);
+			return account;
+		}
+
+		private async Task<Account?> FindByIdAsync(Guid id)
+		{
+			return await _context.Accounts
+						.Include(account => account.Settings)
+						.Include(account => account.Autobidders)
+						.FirstOrDefaultAsync(account => account.Id.Equals(id));
 		}
 
 		private async Task CreateLoginHistory(Account account)
@@ -87,56 +145,6 @@ namespace MPPilot.Domain.Services.Accounts
 
 			_context.LoginsHistory.Add(loginHistory);
 			await _context.SaveChangesAsync();
-		}
-
-		public async Task SaveSettings(AccountSettings settings)
-		{
-			var currentAccount = GetCurrentAccount() ?? throw new UnauthorizedAccessException("Пользователь не авторизован");
-			currentAccount.Settings.WildberriesApiKey = settings.WildberriesApiKey;
-
-			_context.Accounts.Update(currentAccount);
-
-			try
-			{
-				await _context.SaveChangesAsync();
-				_logger.LogInformation("Настройки аккаунта {Email} успешно сохранены.", currentAccount.Email);
-			}
-			catch (DbUpdateException)
-			{
-				_logger.LogWarning("Пользователь {Email} попытался сохранить API-ключ Wildberries ({ApiKey}) другого пользователя!", currentAccount.Email, settings.WildberriesApiKey);
-				throw new APIKeyAlreadyExistsException("Данный API-ключ уже используется другим пользователем");
-			}
-		}
-
-		public AccountSettings? GetCurrentAccountSettings()
-		{
-			return _currentAccount?.Settings;
-		}
-
-		public async Task SetCurrentAccount(Guid accountId)
-		{
-			_currentAccount = await FindByIdAsync(accountId);
-		}
-
-		public Account GetCurrentAccount()
-		{
-			return _currentAccount;
-		}
-
-		private async Task<Account?> FindBycredentials(string email, string password)
-		{
-			var passwordHash = PasswordHasherService.GetHashedString(password, email);
-
-			var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Email == email && a.Password == passwordHash);
-			return account;
-		}
-
-		private async Task<Account?> FindByIdAsync(Guid id)
-		{
-			return await _context.Accounts
-						.Include(account => account.Settings)
-						.Include(account => account.Autobidders)
-						.FirstOrDefaultAsync(account => account.Id.Equals(id));
 		}
 	}
 }
