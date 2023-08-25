@@ -81,6 +81,8 @@ services:
             - prometheus_data:/prometheus
         ports:
             -  "9090:9090"
+        depends_on: 
+            - mppilot.app
         networks:
             - mppilot-network
 
