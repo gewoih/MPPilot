@@ -72,7 +72,7 @@ namespace MPPilot.Domain.BackgroundServices
 
         private async Task HandleConservativeAutobidder(Autobidder autobidder)
         {
-            var apiKey = autobidder.Account.Settings.WildberriesApiKey;
+            var apiKey = autobidder.User.Settings.WildberriesApiKey;
             _wildberriesService.SetApiKey(apiKey);
 
             var advertTask = _wildberriesService.GetAdvertWithKeywordAndCPM(autobidder.AdvertId);
@@ -81,6 +81,9 @@ namespace MPPilot.Domain.BackgroundServices
 
             var advert = advertTask.Result;
             var advertTodayExpenses = advertTodayExpensesTask.Result;
+
+            if (string.IsNullOrEmpty(advert.Keyword))
+                return;
 
             //Если превышение по бюджету - ставим ставки на паузу и останавливаем РК
             if (advertTodayExpenses >= autobidder.DailyBudget)

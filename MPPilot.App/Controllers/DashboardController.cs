@@ -7,9 +7,9 @@ namespace MPPilot.App.Controllers
 	public class DashboardController : Controller
 	{
 		private readonly DashboardService _dashboardService;
-		private readonly AccountsService _accountsService;
+		private readonly IUsersService _accountsService;
 
-		public DashboardController(DashboardService dashboardService, AccountsService accountsService)
+		public DashboardController(DashboardService dashboardService, IUsersService accountsService)
 		{
 			_dashboardService = dashboardService;
 			_accountsService = accountsService;

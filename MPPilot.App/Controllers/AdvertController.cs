@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MPPilot.App.Models;
 using MPPilot.Domain.Models.Adverts;
 using MPPilot.Domain.Services.Autobidders;
@@ -6,6 +7,7 @@ using MPPilot.Domain.Services.Marketplaces;
 
 namespace MPPilot.App.Controllers
 {
+	[Authorize]
 	public class AdvertController : Controller
 	{
 		private readonly WildberriesService _wildberriesService;

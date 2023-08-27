@@ -11,9 +11,9 @@ namespace MPPilot.Domain.Services.Autobidders
 	{
 		private readonly ILogger<AutobiddersService> _logger;
 		private readonly MPPilotContext _context;
-		private readonly IAccountsService _accountService;
+		private readonly IUsersService _accountService;
 
-		public AutobiddersService(IAccountsService accountService, MPPilotContext context, ILogger<AutobiddersService> logger)
+		public AutobiddersService(IUsersService accountService, MPPilotContext context, ILogger<AutobiddersService> logger)
 		{
 			_accountService = accountService;
 			_context = context;
@@ -24,7 +24,7 @@ namespace MPPilot.Domain.Services.Autobidders
 		{
 			try
 			{
-				var currentAccount = await _accountService.GetCurrentAccountAsync();
+				var currentAccount = await _accountService.GetCurrentUserAsync();
 				currentAccount.Autobidders.Add(autobidder);
 				await _context.SaveChangesAsync();
 
@@ -61,10 +61,8 @@ namespace MPPilot.Domain.Services.Autobidders
 		public async Task LoadAutobiddersForAdverts(List<Advert> adverts)
 		{
 			var advertIds = adverts.Select(advert => advert.AdvertId);
-
 			var autobidders = await _context.Autobidders
 									.AsNoTracking()
-									.Where(autobidder => advertIds.Contains(autobidder.AdvertId))
 									.ToListAsync();
 
 			foreach (var advert in adverts)
@@ -121,10 +119,10 @@ namespace MPPilot.Domain.Services.Autobidders
 		public async Task<List<Autobidder>> GetActiveAutobiddersAsync()
 		{
 			return await _context.Autobidders
-						.Include(autobidder => autobidder.Account)
+						.Include(autobidder => autobidder.User)
 							.ThenInclude(account => account.Settings)
 						.Where(autobidder => autobidder.IsEnabled)
-						.Where(autobidder => !string.IsNullOrEmpty(autobidder.Account.Settings.WildberriesApiKey))
+						.Where(autobidder => !string.IsNullOrEmpty(autobidder.User.Settings.WildberriesApiKey))
 						.Where(autobidder => autobidder.BidsPausedTill == null || DateTime.UtcNow > autobidder.BidsPausedTill)
 						.ToListAsync();
 		}

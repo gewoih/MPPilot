@@ -1,6 +1,6 @@
 ﻿using MPPilot.Domain.Models.Base;
 
-namespace MPPilot.Domain.Models.Accounts
+namespace MPPilot.Domain.Models.Users
 {
 	public class LoginHistory : Entity
 	{

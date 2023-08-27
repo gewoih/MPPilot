@@ -3,6 +3,7 @@ using System;
 using MPPilot.Domain.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MPPilot.Domain.Migrations
 {
     [DbContext(typeof(MPPilotContext))]
-    partial class MPPilotContextModelSnapshot : ModelSnapshot
+    [Migration("20230827081601_IdentityAdded")]
+    partial class IdentityAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,106 +25,7 @@ namespace MPPilot.Domain.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("MPPilot.Domain.Models.Autobidders.AdvertBid", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("AdvertKeyword")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("AdvertPosition")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("AutobidderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("AutobidderMode")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset?>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("CurrentCPM")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset?>("DeletedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("LastCPM")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Reason")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TargetPositionLeftBound")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TargetPositionRightBound")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AutobidderId");
-
-                    b.ToTable("AdvertBids");
-                });
-
-            modelBuilder.Entity("MPPilot.Domain.Models.Autobidders.Autobidder", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("AdvertId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset?>("BidsPausedTill")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset?>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<double>("DailyBudget")
-                        .HasColumnType("double precision");
-
-                    b.Property<DateTimeOffset?>("DeletedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("Mode")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AdvertId")
-                        .IsUnique();
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Autobidders");
-                });
-
-            modelBuilder.Entity("MPPilot.Domain.Models.Users.LoginHistory", b =>
+            modelBuilder.Entity("MPPilot.Domain.Models.Accounts.LoginHistory", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -171,34 +75,7 @@ namespace MPPilot.Domain.Migrations
                     b.ToTable("LoginsHistory");
                 });
 
-            modelBuilder.Entity("MPPilot.Domain.Models.Users.Role", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("NormalizedName")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedName")
-                        .IsUnique()
-                        .HasDatabaseName("RoleNameIndex");
-
-                    b.ToTable("AspNetRoles", (string)null);
-                });
-
-            modelBuilder.Entity("MPPilot.Domain.Models.Users.User", b =>
+            modelBuilder.Entity("MPPilot.Domain.Models.Accounts.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -271,7 +148,7 @@ namespace MPPilot.Domain.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("MPPilot.Domain.Models.Users.UserSettings", b =>
+            modelBuilder.Entity("MPPilot.Domain.Models.Accounts.UserSettings", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -298,6 +175,132 @@ namespace MPPilot.Domain.Migrations
                         .IsUnique();
 
                     b.ToTable("AccountSettings");
+                });
+
+            modelBuilder.Entity("MPPilot.Domain.Models.Autobidders.AdvertBid", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AdvertKeyword")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("AdvertPosition")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("AutobidderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AutobidderMode")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("CurrentCPM")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("DeletedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("LastCPM")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Reason")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TargetPositionLeftBound")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TargetPositionRightBound")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("UpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AutobidderId");
+
+                    b.ToTable("AdvertBids");
+                });
+
+            modelBuilder.Entity("MPPilot.Domain.Models.Autobidders.Autobidder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AdvertId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("BidsPausedTill")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<double>("DailyBudget")
+                        .HasColumnType("double precision");
+
+                    b.Property<DateTimeOffset?>("DeletedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Mode")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("UpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("AdvertId")
+                        .IsUnique();
+
+                    b.ToTable("Autobidders");
+                });
+
+            modelBuilder.Entity("MPPilot.Domain.Models.Users.Role", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex");
+
+                    b.ToTable("AspNetRoles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -403,6 +406,22 @@ namespace MPPilot.Domain.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("MPPilot.Domain.Models.Accounts.LoginHistory", b =>
+                {
+                    b.HasOne("MPPilot.Domain.Models.Accounts.User", null)
+                        .WithMany("LoginsHistory")
+                        .HasForeignKey("UserId");
+                });
+
+            modelBuilder.Entity("MPPilot.Domain.Models.Accounts.User", b =>
+                {
+                    b.HasOne("MPPilot.Domain.Models.Accounts.UserSettings", "Settings")
+                        .WithMany()
+                        .HasForeignKey("UserSettingsId");
+
+                    b.Navigation("Settings");
+                });
+
             modelBuilder.Entity("MPPilot.Domain.Models.Autobidders.AdvertBid", b =>
                 {
                     b.HasOne("MPPilot.Domain.Models.Autobidders.Autobidder", null)
@@ -414,29 +433,13 @@ namespace MPPilot.Domain.Migrations
 
             modelBuilder.Entity("MPPilot.Domain.Models.Autobidders.Autobidder", b =>
                 {
-                    b.HasOne("MPPilot.Domain.Models.Users.User", "User")
+                    b.HasOne("MPPilot.Domain.Models.Accounts.User", "Account")
                         .WithMany("Autobidders")
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("MPPilot.Domain.Models.Users.LoginHistory", b =>
-                {
-                    b.HasOne("MPPilot.Domain.Models.Users.User", null)
-                        .WithMany("LoginsHistory")
-                        .HasForeignKey("UserId");
-                });
-
-            modelBuilder.Entity("MPPilot.Domain.Models.Users.User", b =>
-                {
-                    b.HasOne("MPPilot.Domain.Models.Users.UserSettings", "Settings")
-                        .WithMany()
-                        .HasForeignKey("UserSettingsId");
-
-                    b.Navigation("Settings");
+                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -450,7 +453,7 @@ namespace MPPilot.Domain.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
-                    b.HasOne("MPPilot.Domain.Models.Users.User", null)
+                    b.HasOne("MPPilot.Domain.Models.Accounts.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -459,7 +462,7 @@ namespace MPPilot.Domain.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
-                    b.HasOne("MPPilot.Domain.Models.Users.User", null)
+                    b.HasOne("MPPilot.Domain.Models.Accounts.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -474,7 +477,7 @@ namespace MPPilot.Domain.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MPPilot.Domain.Models.Users.User", null)
+                    b.HasOne("MPPilot.Domain.Models.Accounts.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -483,23 +486,23 @@ namespace MPPilot.Domain.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
-                    b.HasOne("MPPilot.Domain.Models.Users.User", null)
+                    b.HasOne("MPPilot.Domain.Models.Accounts.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("MPPilot.Domain.Models.Autobidders.Autobidder", b =>
-                {
-                    b.Navigation("Bids");
-                });
-
-            modelBuilder.Entity("MPPilot.Domain.Models.Users.User", b =>
+            modelBuilder.Entity("MPPilot.Domain.Models.Accounts.User", b =>
                 {
                     b.Navigation("Autobidders");
 
                     b.Navigation("LoginsHistory");
+                });
+
+            modelBuilder.Entity("MPPilot.Domain.Models.Autobidders.Autobidder", b =>
+                {
+                    b.Navigation("Bids");
                 });
 #pragma warning restore 612, 618
         }

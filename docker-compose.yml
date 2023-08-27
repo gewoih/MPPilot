@@ -14,8 +14,8 @@ services:
         volumes:
             - /etc/ssl/mppilot:/certs
         environment:
-            ASPNETCORE_Kestrel__Certificates__Default__Path: /certs/mppilot.pfx
-            ASPNETCORE_Kestrel__Certificates__Default__Password: 24042001Nr
+            #ASPNETCORE_Kestrel__Certificates__Default__Path: /certs/mppilot.pfx
+            #ASPNETCORE_Kestrel__Certificates__Default__Password: 24042001Nr
             ASPNETCORE_URLS: http://+:80;https://+:443
         depends_on:
             - elasticsearch

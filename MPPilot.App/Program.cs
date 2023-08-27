@@ -1,10 +1,6 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.EntityFrameworkCore;
 using MPPilot.App.Middleware;
 using MPPilot.Domain.Infrastructure;
-using MPPilot.Domain.Models.Auth;
-using MPPilot.Domain.Services.Token;
 using System.Text;
 using Serilog;
 using MPPilot.Domain.Services.Autobidders;
@@ -13,10 +9,13 @@ using MPPilot.Domain.Services.Accounts;
 using MPPilot.Domain.BackgroundServices;
 using Serilog.Sinks.Elasticsearch;
 using OpenTelemetry.Metrics;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using MPPilot.Domain.Models.Users;
 
 namespace MPPilot.App
 {
-    public class Program
+	public class Program
 	{
 		public static void Main(string[] args)
 		{
@@ -51,18 +50,40 @@ namespace MPPilot.App
 				builder.AddSerilog();
 			});
 
-			builder.Services.AddControllersWithViews();
-
 			var connectionString = builder.Configuration.GetConnectionString("Default");
 			builder.Services.AddDbContext<MPPilotContext>(options => options.UseNpgsql(connectionString));
+
+			builder.Services.AddAuthentication("Identity.Application")
+				.AddBearerToken(IdentityConstants.BearerScheme)
+				.AddCookie("Identity.Application", options =>
+				{
+					options.AccessDeniedPath = "/Account/AccessDenied";
+					options.Cookie.Name = "MPPilot";
+					options.Cookie.HttpOnly = true;
+					options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+					options.LoginPath = "/Account/Login";
+					options.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
+					options.SlidingExpiration = true;
+				});
 			
+			builder.Services.AddAuthorizationBuilder();
+			builder.Services.AddIdentityCore<User>(options =>
+			{
+				options.Password.RequireNonAlphanumeric = false;
+				options.Password.RequiredLength = 4;
+				options.Password.RequireUppercase = false;
+				options.Password.RequireLowercase = false;
+				options.Password.RequireDigit = false;
+			})
+				.AddEntityFrameworkStores<MPPilotContext>()
+				.AddApiEndpoints();
+
+			builder.Services.AddControllersWithViews();
 			builder.Services.AddHttpClient();
 
 			builder.Services.AddHttpContextAccessor();
 
-			AuthOptions.SetKey(builder.Configuration);
-			builder.Services.AddSingleton<ITokenService, JWTTokenService>();
-			builder.Services.AddScoped<IAccountsService, AccountsService>();
+			builder.Services.AddScoped<IUsersService, UsersService>();
 			builder.Services.AddScoped<IAutobiddersService, AutobiddersService>();
 			builder.Services.AddScoped<WildberriesService>();
 			builder.Services.AddSingleton<AdvertsMarketService>();
@@ -73,41 +94,13 @@ namespace MPPilot.App
 
 			builder.Services.AddHostedService<AutobiddersManager>();
 
-			builder.Services.AddAuthentication(options =>
-			{
-				options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-				options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-				options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-			})
-				.AddJwtBearer(options =>
-				{
-					options.TokenValidationParameters = new TokenValidationParameters
-					{
-						ValidateIssuer = true,
-						ValidateAudience = true,
-						ValidateLifetime = true,
-						ValidateIssuerSigningKey = true,
-						ValidIssuer = AuthOptions.Issuer,
-						ValidAudience = AuthOptions.Audience,
-						IssuerSigningKey = AuthOptions.GetSecurityKey()
-					};
-
-					options.Events = new JwtBearerEvents
-					{
-						OnMessageReceived = context =>
-						{
-							context.Token = context.Request.Cookies[JwtBearerDefaults.AuthenticationScheme];
-							return Task.CompletedTask;
-						}
-					};
-				});
-
 			builder.Services.AddAuthorization();
 
 			builder.WebHost.UseUrls("http://0.0.0.0:80", "https://0.0.0.0:443");
 
 			var app = builder.Build();
 			app.MapPrometheusScrapingEndpoint();
+
 
 			if (!app.Environment.IsDevelopment())
 			{
@@ -122,9 +115,10 @@ namespace MPPilot.App
 			app.UseStaticFiles();
 
 			app.UseAuthentication();
-			app.UseMiddleware<AuthenticationMiddleware>();
-			
 			app.UseAuthorization();
+			
+			app.UseMiddleware<AuthenticationMiddleware>();
+
 			app.MapDefaultControllerRoute();
 
 			using (var scope = app.Services.CreateScope())
