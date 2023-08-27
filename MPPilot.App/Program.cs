@@ -26,11 +26,10 @@ namespace MPPilot.App
 				.WithMetrics(builder =>
 				{
 					builder.AddPrometheusExporter();
-					builder.AddAspNetCoreInstrumentation();
-					builder.AddPrometheusHttpListener();
 
 					builder.AddMeter("Microsoft.AspNetCore.Hosting",
-									 "Microsoft.AspNetCore.Server.Kestrel");
+									 "Microsoft.AspNetCore.Server.Kestrel",
+									 "MPPilot");
 
 					builder.AddView("http-server-request-duration",
 						new ExplicitBucketHistogramConfiguration
@@ -60,12 +59,12 @@ namespace MPPilot.App
 					options.AccessDeniedPath = "/Account/AccessDenied";
 					options.Cookie.Name = "MPPilot";
 					options.Cookie.HttpOnly = true;
-					options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+					options.ExpireTimeSpan = TimeSpan.FromDays(7);
 					options.LoginPath = "/Account/Login";
 					options.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
 					options.SlidingExpiration = true;
 				});
-			
+
 			builder.Services.AddAuthorizationBuilder();
 			builder.Services.AddIdentityCore<User>(options =>
 			{
@@ -91,6 +90,7 @@ namespace MPPilot.App
 			builder.Services.AddScoped<AuthenticationMiddleware>();
 			builder.Services.AddScoped<LongQueryMiddleware>();
 			builder.Services.AddScoped<ExceptionsHandlerMiddleware>();
+			builder.Services.AddScoped<MetricsMiddleware>();
 
 			builder.Services.AddHostedService<AutobiddersManager>();
 
@@ -99,8 +99,7 @@ namespace MPPilot.App
 			builder.WebHost.UseUrls("http://0.0.0.0:5000", "https://0.0.0.0:5001");
 
 			var app = builder.Build();
-			app.MapPrometheusScrapingEndpoint();
-
+			app.UseMiddleware<MetricsMiddleware>();
 
 			if (!app.Environment.IsDevelopment())
 			{
@@ -116,10 +115,11 @@ namespace MPPilot.App
 
 			app.UseAuthentication();
 			app.UseAuthorization();
-			
+
 			app.UseMiddleware<AuthenticationMiddleware>();
 
 			app.MapDefaultControllerRoute();
+			app.MapPrometheusScrapingEndpoint();
 
 			using (var scope = app.Services.CreateScope())
 			{

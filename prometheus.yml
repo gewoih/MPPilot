@@ -9,7 +9,7 @@ scrape_configs:
   - job_name: 'mppilot-app'
     scrape_interval: 5s
     static_configs:
-      - targets: ["host.docker.internal:5001"]
+      - targets: ["mppilot.app:5001"]
     scheme: https 
     tls_config:
         insecure_skip_verify: true 
