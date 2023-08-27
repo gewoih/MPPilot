@@ -9,14 +9,14 @@ services:
         container_name: mppilot
         image: ${DOCKER_REGISTRY-}mppilotapp
         ports:
-            - 5000:80
-            - 5001:443
+            - 5000:5000
+            - 5001:5001
         volumes:
             - ./certs:/etc/ssl/mppilot:ro
         environment:
             ASPNETCORE_Kestrel__Certificates__Default__Path: /etc/ssl/mppilot/mppilot.pfx
             ASPNETCORE_Kestrel__Certificates__Default__Password: 24042001Nr
-            ASPNETCORE_URLS: http://+:80;https://+:443
+            ASPNETCORE_URLS: http://+:5000;https://+:5001
         depends_on:
             - elasticsearch
             - postgres

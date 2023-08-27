@@ -3,8 +3,16 @@
     "Docker Compose": {
       "commandName": "DockerCompose",
       "commandVersion": "1.0",
+      "composeLaunchAction": "None",
+      "composeLaunchServiceName": "mppilot.app",
       "serviceActions": {
-        "mppilot.app": "StartDebugging"
+        "mppilot.app": "StartDebugging",
+        "elasticsearch": "StartWithoutDebugging",
+        "grafana": "StartWithoutDebugging",
+        "kibana": "StartWithoutDebugging",
+        "nginx": "StartWithoutDebugging",
+        "postgres": "StartWithoutDebugging",
+        "prometheus": "StartWithoutDebugging"
       }
     }
   }
