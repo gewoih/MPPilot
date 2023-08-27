@@ -9,13 +9,16 @@
     <DockerServiceName>mppilot.app</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="nginx\**" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="docker-compose.override.yml">
       <DependentUpon>docker-compose.yml</DependentUpon>
     </None>
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
-    <None Include="nginx\nginx.conf" />
-    <None Include="nginx\sites\marketpilot.conf" />
+    <None Include="marketpilot.conf" />
+    <None Include="nginx.conf" />
     <None Include="prometheus.yml" />
   </ItemGroup>
 </Project>
