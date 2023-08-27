@@ -36,6 +36,8 @@ services:
         volumes:
             - ./certs:/etc/ssl/mppilot:ro
             - ./nginx.conf:/etc/nginx/nginx.conf:ro
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
         depends_on:
             - mppilot.app
         networks:
@@ -98,6 +100,8 @@ services:
         volumes:
             - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
             - prometheus_data:/prometheus
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
         ports:
             -  "9090:9090"
         depends_on: 
