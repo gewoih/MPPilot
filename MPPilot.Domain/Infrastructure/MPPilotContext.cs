@@ -1,31 +1,31 @@
-﻿using Microsoft.EntityFrameworkCore;
-using MPPilot.Domain.Models.Accounts;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MPPilot.Domain.Models.Autobidders;
 using MPPilot.Domain.Models.Base;
+using MPPilot.Domain.Models.Users;
 
 namespace MPPilot.Domain.Infrastructure
 {
-	public class MPPilotContext : DbContext
+	public class MPPilotContext : IdentityDbContext<User, Role, Guid>
     {
-        public DbSet<Account> Accounts { get; set; }
-        public DbSet<AccountSettings> AccountSettings { get; set; }
+        public DbSet<UserSettings> AccountSettings { get; set; }
         public DbSet<Autobidder> Autobidders { get; set; }
         public DbSet<AdvertBid> AdvertBids { get; set; }
 		public DbSet<LoginHistory> LoginsHistory { get; set; }
 
-        public MPPilotContext(DbContextOptions options) : base(options)
+        public MPPilotContext(DbContextOptions<MPPilotContext> options) : base(options)
         {
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //Account
-            modelBuilder.Entity<Account>()
+            modelBuilder.Entity<User>()
                 .HasIndex(a => a.Email)
                 .IsUnique();
 
             //AccountSettings
-            modelBuilder.Entity<AccountSettings>()
+            modelBuilder.Entity<UserSettings>()
                 .HasIndex(a => a.WildberriesApiKey)
                 .IsUnique();
 

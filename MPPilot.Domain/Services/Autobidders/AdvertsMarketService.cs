@@ -41,6 +41,9 @@ namespace MPPilot.Domain.Services.Autobidders
 		private async Task<List<AdvertMarketInfo>> GetMarketAdverts(string keyword)
 		{
 			var result = await _httpClient.GetAsync(_url + keyword);
+
+			result.EnsureSuccessStatusCode();
+
 			var jsonResult = await result.Content.ReadAsStringAsync();
 			var jObject = JsonConvert.DeserializeObject<JObject>(jsonResult);
 

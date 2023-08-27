@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MPPilot.Domain.Exceptions;
-using MPPilot.Domain.Models.Accounts;
+using MPPilot.Domain.Models.Users;
 using MPPilot.Domain.Services.Accounts;
 
 namespace MPPilot.App.Controllers
@@ -9,9 +9,9 @@ namespace MPPilot.App.Controllers
 	[Authorize]
 	public class SettingsController : Controller
     {
-        private readonly IAccountsService _accountsService;
+        private readonly IUsersService _accountsService;
 
-        public SettingsController(IAccountsService accountsService)
+        public SettingsController(IUsersService accountsService)
         {
             _accountsService = accountsService;
         }
@@ -22,12 +22,12 @@ namespace MPPilot.App.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Save(AccountSettings settings)
+        public async Task<IActionResult> Save(UserSettings settings)
         {
             try
             {
                 await _accountsService.ChangeSettingsAsync(settings);
-                return RedirectToAction("Index", "Adverts");
+                return RedirectToAction("Index", "Advert");
             }
             catch (APIKeyAlreadyExistsException ex)
             {

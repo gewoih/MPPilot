@@ -1,5 +1,5 @@
-﻿@using MPPilot.Domain.Models.Accounts;
-@model Account
+﻿@using MPPilot.App.Controllers.Account.Requests;
+@model RegisterRequest;
 
 @if (!ViewData.ModelState.IsValid)
 {
@@ -17,10 +17,6 @@
 	<div class="centered-container">
 		<h3>Регистрация аккаунта</h3>
 		<form style="justify-content: center" asp-controller="Account" asp-action="Register" method="post">
-			<div class="form-group mb-3">
-				<label>Имя:</label>
-				<input asp-for="Name" type="text" class="form-control" placeholder="Никита" required="true">
-			</div>
 			<div class="form-group mb-3">
 				<label>Email:</label>
 				<input asp-for="Email" type="email" class="form-control" placeholder="nikita@mail.ru" required="true">

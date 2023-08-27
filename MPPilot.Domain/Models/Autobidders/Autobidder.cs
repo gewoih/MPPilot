@@ -1,5 +1,5 @@
-﻿using MPPilot.Domain.Models.Accounts;
-using MPPilot.Domain.Models.Base;
+﻿using MPPilot.Domain.Models.Base;
+using MPPilot.Domain.Models.Users;
 
 namespace MPPilot.Domain.Models.Autobidders
 {
@@ -10,7 +10,7 @@ namespace MPPilot.Domain.Models.Autobidders
 		public AutobidderMode Mode { get; set; }
 		public double DailyBudget { get; set; }
 		public DateTimeOffset? BidsPausedTill { get; set; }
-		public Account Account { get; set; }
+		public User User { get; set; }
 		public List<AdvertBid> Bids { get; set; }
 	}
 }

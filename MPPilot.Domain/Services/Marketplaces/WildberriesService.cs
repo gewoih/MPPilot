@@ -14,14 +14,18 @@ namespace MPPilot.Domain.Services.Marketplaces
 		private const string _baseUrl = "https://advert-api.wb.ru/adv/";
 		private readonly HttpClient _httpClient;
 
-		public WildberriesService(IHttpClientFactory httpClientFactory, IAccountsService accountsService)
+		public WildberriesService(IHttpClientFactory httpClientFactory, IUsersService accountsService)
 		{
 			_httpClient = httpClientFactory.CreateClient();
 			_httpClient.BaseAddress = new Uri(_baseUrl);
 
-			var currentAccountSettings = accountsService.GetSettingsAsync().Result;
-			if (currentAccountSettings is not null && currentAccountSettings.WildberriesApiKey is not null)
-				_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(currentAccountSettings.WildberriesApiKey);
+			var currentUser = accountsService.GetCurrentUserAsync().Result;
+			if (currentUser is not null && currentUser.Settings is not null)
+			{
+				var currentSettings = currentUser.Settings;
+				if (currentSettings.WildberriesApiKey is not null)
+					_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(currentSettings.WildberriesApiKey);
+			}
 		}
 
 		public void SetApiKey(string apiKey)
