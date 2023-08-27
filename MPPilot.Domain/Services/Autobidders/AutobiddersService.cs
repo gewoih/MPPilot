@@ -25,6 +25,8 @@ namespace MPPilot.Domain.Services.Autobidders
 			try
 			{
 				var currentAccount = await _accountService.GetCurrentUserAsync();
+				currentAccount.Autobidders ??= new List<Autobidder>();
+
 				currentAccount.Autobidders.Add(autobidder);
 				await _context.SaveChangesAsync();
 
