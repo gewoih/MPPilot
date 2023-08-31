@@ -1,11 +1,11 @@
 ﻿using MPPilot.Domain.Models.Adverts;
-using MPPilot.Domain.Services.Accounts;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
+using MPPilot.Domain.Services.Users;
 
 namespace MPPilot.Domain.Services.Marketplaces
 {
@@ -20,17 +20,31 @@ namespace MPPilot.Domain.Services.Marketplaces
 			_httpClient.BaseAddress = new Uri(_baseUrl);
 
 			var currentUser = accountsService.GetCurrentUserAsync().Result;
-			if (currentUser is not null && currentUser.Settings is not null)
-			{
-				var currentSettings = currentUser.Settings;
-				if (currentSettings.WildberriesApiKey is not null)
-					_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(currentSettings.WildberriesApiKey);
-			}
+			var currentSettings = currentUser?.Settings;
+			if (currentSettings?.WildberriesApiKey != null)
+				_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(currentSettings.WildberriesApiKey);
 		}
 
 		public void SetApiKey(string apiKey)
 		{
 			_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(apiKey);
+		}
+
+		public async Task<WildberriesBalance> GetBalance()
+		{
+			var query = "v1/balance";
+			var result = await _httpClient.GetAsync(query);
+			var jsonResult = await result.Content.ReadAsStringAsync();
+			var jObject = JObject.Parse(jsonResult);
+
+			var balance = new WildberriesBalance
+			{
+				Balance = jObject.Value<double>("balance"),
+				Net = jObject.Value<double>("net"),
+				Bonus = jObject.Value<double>("bonus")
+			};
+
+			return balance;
 		}
 
 		public async Task<double> GetExpensesForToday(int advertId)
@@ -39,21 +53,22 @@ namespace MPPilot.Domain.Services.Marketplaces
 			var result = await _httpClient.GetAsync(query);
 			var jsonResult = await result.Content.ReadAsStringAsync();
 
-			if (string.IsNullOrEmpty(jsonResult))
-				return 0;
+			var expenses = 0d;
+			if (!string.IsNullOrEmpty(jsonResult))
+			{
+				var jObject = JObject.Parse(jsonResult);
 
-			var jObject = JObject.Parse(jsonResult);
+				if (jObject["days"] is not null)
+				{
+					var lastDay = jObject["days"].Last;
+					var date = lastDay.Value<DateTime>("date");
 
-			if (jObject["days"] is null)
-				return 0;
+					if (date.Date == DateTimeOffset.Now.Date)
+						expenses = lastDay.Value<double>("sum");
+				}
+			}
 
-			var lastDay = jObject["days"].Last;
-			var date = lastDay.Value<DateTime>("date");
-
-			if (date.Date == DateTimeOffset.Now.Date)
-				return lastDay.Value<double>("sum");
-			else
-				return 0;
+			return expenses;
 		}
 
 		public async Task<bool> ChangeAdvertKeyword(int advertId, string newKeyword)
@@ -112,7 +127,7 @@ namespace MPPilot.Domain.Services.Marketplaces
 			return result.IsSuccessStatusCode;
 		}
 
-		public async Task<Advert> GetAdvertWithKeywordAndCPM(int advertId)
+		public async Task<Advert> GetAdvertWithKeywordAndCpm(int advertId)
 		{
 			var adverts = new List<Advert> { new Advert { AdvertId = advertId } };
 			await LoadInfo(adverts);
@@ -121,7 +136,7 @@ namespace MPPilot.Domain.Services.Marketplaces
 			return adverts.First();
 		}
 
-		public async Task<List<Advert>> GetActiveAdvertsAsync(bool withInfo = false, bool withKeywords = false, bool withStatistics = false, int? count = null)
+		public async Task<List<Advert>> GetActiveAdvertsAsync(bool withInfo = false, bool withKeywords = false, bool withStatistics = false, bool withBudget = false, int? count = null)
 		{
 			var productPageAdvertsQuery = GetAllAdvertsQuery(AdvertType.ProductPage, count);
 			var searchAdvertsQuery = GetAllAdvertsQuery(AdvertType.Search, count);
@@ -139,14 +154,17 @@ namespace MPPilot.Domain.Services.Marketplaces
 				await LoadKeywords(adverts);
 			if (withStatistics)
 				await LoadStatistics(adverts);
+			if (withBudget)
+				await LoadBudget(adverts);
 
 			return adverts;
 		}
 
-		public async Task<bool> ChangeCPM(Advert advert, int newCPM)
+
+		public async Task<bool> ChangeCpm(Advert advert, int newCPM)
 		{
 			if (newCPM < 50)
-				throw new ArgumentException("Новое значение CPM должно быть > 50");
+				throw new ArgumentException("Новое значение Cpm должно быть > 50");
 
 			var jsonData = JsonConvert.SerializeObject(new
 			{
@@ -160,7 +178,7 @@ namespace MPPilot.Domain.Services.Marketplaces
 			var response = await _httpClient.PostAsync("v0/cpm", content);
 
 			if (response.StatusCode == HttpStatusCode.BadRequest)
-				throw new ArgumentException("Некорректно переданы параметры для изменения CPM");
+				throw new ArgumentException("Некорректно переданы параметры для изменения Cpm");
 
 			return response.IsSuccessStatusCode;
 		}
@@ -207,34 +225,44 @@ namespace MPPilot.Domain.Services.Marketplaces
 			return advertCampaigns;
 		}
 
+		private async Task LoadBudget(List<Advert> adverts)
+		{
+			var jObjects = await GetJsonByAdverts(adverts, "v1/budget?id=");
+			foreach (var jObject in jObjects)
+			{
+				var foundAdvert = adverts.First(advert => advert.AdvertId == jObject["advertId"].Value<int>());
+				foundAdvert.Balance = jObject.Value<double>("total");
+			}
+		}
+		
 		private async Task LoadInfo(List<Advert> adverts)
 		{
 			var jObjects = await GetJsonByAdverts(adverts, "v0/advert?id=");
 			foreach (var jObject in jObjects)
 			{
-				if (jObject.ContainsKey("params"))
-				{
-					var foundAdvert = adverts.First(advert => advert.AdvertId == jObject["advertId"].Value<int>());
-					var jsonProducts = jObject["params"][0]["nms"];
+				if (jObject is null || !jObject.ContainsKey("params"))
+					continue;
 
-					foundAdvert.CPM = jObject["params"][0]["price"].Value<int>();
+				var foundAdvert = adverts.First(advert => advert.AdvertId == jObject["advertId"].Value<int>());
+				var jsonProducts = jObject["params"][0]["nms"];
 
-					var subjectId = jObject["params"][0].Value<int?>("subjectId");
-					var setId = jObject["params"][0].Value<int?>("setId");
-					var menuId = jObject["params"][0].Value<int?>("menuId");
+				foundAdvert.Cpm = jObject["params"][0]["price"].Value<int>();
 
-					if (subjectId is not null)
-						foundAdvert.CategoryId = subjectId.Value;
-					else if (setId is not null)
-						foundAdvert.CategoryId = setId.Value;
-					else if (menuId is not null)
-						foundAdvert.CategoryId = menuId.Value;
+				var subjectId = jObject["params"][0].Value<int?>("subjectId");
+				var setId = jObject["params"][0].Value<int?>("setId");
+				var menuId = jObject["params"][0].Value<int?>("menuId");
 
-					foundAdvert.Type = (AdvertType)jObject["type"].Value<int>();
+				if (subjectId is not null)
+					foundAdvert.CategoryId = subjectId.Value;
+				else if (setId is not null)
+					foundAdvert.CategoryId = setId.Value;
+				else if (menuId is not null)
+					foundAdvert.CategoryId = menuId.Value;
 
-					if (jsonProducts.HasValues)
-						foundAdvert.ProductArticle = jsonProducts[0]["nm"].Value<string>();
-				}
+				foundAdvert.Type = (AdvertType)jObject["type"].Value<int>();
+
+				if (jsonProducts.HasValues)
+					foundAdvert.ProductArticle = jsonProducts[0]["nm"].Value<string>();
 			}
 		}
 
@@ -243,15 +271,15 @@ namespace MPPilot.Domain.Services.Marketplaces
 			var jObjects = await GetJsonByAdverts(adverts, "v1/stat/words?id=");
 			foreach (var jObject in jObjects)
 			{
-				if (jObject is not null && jObject["words"].Value<JObject>().ContainsKey("pluse"))
-				{
-					if (jObject["words"]["pluse"].HasValues)
-					{
-						var advertId = jObject.Value<int>("advertId");
-						var foundAdvert = adverts.First(advert => advert.AdvertId == advertId);
-						foundAdvert.Keyword = jObject["words"]["pluse"][0].Value<string>();
-					}
-				}
+				if (jObject is null || !jObject["words"].Value<JObject>().ContainsKey("pluse"))
+					continue;
+
+				if (!jObject["words"]["pluse"].HasValues)
+					continue;
+
+				var advertId = jObject.Value<int>("advertId");
+				var foundAdvert = adverts.First(advert => advert.AdvertId == advertId);
+				foundAdvert.Keyword = jObject["words"]["pluse"][0].Value<string>();
 			}
 
 			return adverts;
@@ -262,17 +290,17 @@ namespace MPPilot.Domain.Services.Marketplaces
 			var jObjects = await GetJsonByAdverts(adverts, "v1/fullstat?id=");
 			foreach (var jObject in jObjects)
 			{
-				if (jObject is not null)
-				{
-					var foundAdvert = adverts.First(campaign => campaign.AdvertId == jObject["advertId"].Value<int>());
-					foundAdvert.TotalViews = jObject.Value<int>("views");
-					foundAdvert.Clicks = jObject.Value<int>("clicks");
-					foundAdvert.UniqueViews = jObject.Value<int>("unique_users");
-					foundAdvert.TotalSpent = jObject.Value<double>("sum");
-					foundAdvert.AddedToCart = jObject.Value<int>("atbs");
-					foundAdvert.Orders = jObject.Value<int>("orders");
-					foundAdvert.OrdersSum = jObject.Value<double>("sum_price");
-				}
+				if (jObject is null)
+					continue;
+
+				var foundAdvert = adverts.First(campaign => campaign.AdvertId == jObject["advertId"].Value<int>());
+				foundAdvert.TotalViews = jObject.Value<int>("views");
+				foundAdvert.Clicks = jObject.Value<int>("clicks");
+				foundAdvert.UniqueViews = jObject.Value<int>("unique_users");
+				foundAdvert.TotalSpent = jObject.Value<double>("sum");
+				foundAdvert.AddedToCart = jObject.Value<int>("atbs");
+				foundAdvert.Orders = jObject.Value<int>("orders");
+				foundAdvert.OrdersSum = jObject.Value<double>("sum_price");
 			}
 		}
 

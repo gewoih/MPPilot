@@ -75,7 +75,7 @@ namespace MPPilot.Domain.BackgroundServices
             var apiKey = autobidder.User.Settings.WildberriesApiKey;
             _wildberriesService.SetApiKey(apiKey);
 
-            var advertTask = _wildberriesService.GetAdvertWithKeywordAndCPM(autobidder.AdvertId);
+            var advertTask = _wildberriesService.GetAdvertWithKeywordAndCpm(autobidder.AdvertId);
             var advertTodayExpensesTask = _wildberriesService.GetExpensesForToday(autobidder.AdvertId);
             await Task.WhenAll(advertTask, advertTodayExpensesTask);
 
@@ -114,11 +114,11 @@ namespace MPPilot.Domain.BackgroundServices
 
             var currentPosition = advertMarketStatistics.AdvertPosition;
 
-            //Если CPM понижается, то мы делаем это без дополнительных проверок
-            //Если CPM повышается, то мы должны убедиться, что мы УЖЕ не находимся в целевых границах
-            if (advert.CPM < targetAdvert.CPM && currentPosition != targetAdvert.Position || advert.CPM > targetAdvert.CPM)
+            //Если Cpm понижается, то мы делаем это без дополнительных проверок
+            //Если Cpm повышается, то мы должны убедиться, что мы УЖЕ не находимся в целевых границах
+            if (advert.Cpm < targetAdvert.CPM && currentPosition != targetAdvert.Position || advert.Cpm > targetAdvert.CPM)
             {
-                var isCpmChanged = await _wildberriesService.ChangeCPM(advert, targetAdvert.CPM);
+                var isCpmChanged = await _wildberriesService.ChangeCpm(advert, targetAdvert.CPM);
                 if (isCpmChanged)
                 {
                     var newBid = new AdvertBid
@@ -126,7 +126,7 @@ namespace MPPilot.Domain.BackgroundServices
                         AdvertKeyword = advert.Keyword,
                         AdvertPosition = currentPosition,
                         AutobidderMode = AutobidderMode.Conservative,
-                        LastCPM = advert.CPM,
+                        LastCPM = advert.Cpm,
                         CurrentCPM = targetAdvert.CPM,
                         TargetPositionLeftBound = targetAdvert.Position,
                         TargetPositionRightBound = targetAdvert.Position,
@@ -137,6 +137,5 @@ namespace MPPilot.Domain.BackgroundServices
                 }
             }
         }
-
 	}
 }

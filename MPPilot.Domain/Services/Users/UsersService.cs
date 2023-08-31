@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using MPPilot.Domain.Exceptions;
 using MPPilot.Domain.Infrastructure;
 using MPPilot.Domain.Models.Users;
+using MPPilot.Domain.Services.Users;
 using MPPilot.Domain.Utils;
 
 namespace MPPilot.Domain.Services.Accounts

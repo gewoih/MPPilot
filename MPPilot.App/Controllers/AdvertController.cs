@@ -29,7 +29,7 @@ namespace MPPilot.App.Controllers
 		public async Task<List<Advert>> GetAdverts()
 		{
 			var adverts = await _wildberriesService.GetActiveAdvertsAsync(withInfo: true, withKeywords: true, withStatistics: true);
-			await _autobiddersService.LoadAutobiddersForAdverts(adverts);
+			await _autobiddersService.LoadAutobiddersForAdvertsAsync(adverts);
 
 			adverts = adverts
 						.OrderByDescending(advert => advert.IsAutobidderEnabled)

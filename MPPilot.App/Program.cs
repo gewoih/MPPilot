@@ -11,7 +11,10 @@ using Serilog.Sinks.Elasticsearch;
 using OpenTelemetry.Metrics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using MPPilot.App.Controllers;
 using MPPilot.Domain.Models.Users;
+using MPPilot.Domain.Services.Dashboards;
+using MPPilot.Domain.Services.Users;
 
 namespace MPPilot.App
 {
@@ -85,6 +88,7 @@ namespace MPPilot.App
 			builder.Services.AddScoped<IUsersService, UsersService>();
 			builder.Services.AddScoped<IAutobiddersService, AutobiddersService>();
 			builder.Services.AddScoped<WildberriesService>();
+			builder.Services.AddScoped<DashboardService>();
 			builder.Services.AddSingleton<AdvertsMarketService>();
 
 			builder.Services.AddScoped<AuthenticationMiddleware>();

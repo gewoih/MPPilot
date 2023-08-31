@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MPPilot.Domain.Exceptions;
 using MPPilot.Domain.Models.Users;
-using MPPilot.Domain.Services.Accounts;
+using MPPilot.Domain.Services.Users;
 
 namespace MPPilot.App.Controllers
 {

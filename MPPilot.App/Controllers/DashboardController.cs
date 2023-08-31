@@ -1,23 +1,23 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using MPPilot.Domain.Services.Accounts;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MPPilot.Domain.Services.Dashboards;
 
 namespace MPPilot.App.Controllers
 {
+	[Authorize]
 	public class DashboardController : Controller
 	{
 		private readonly DashboardService _dashboardService;
-		private readonly IUsersService _accountsService;
 
-		public DashboardController(DashboardService dashboardService, IUsersService accountsService)
+		public DashboardController(DashboardService dashboardService)
 		{
 			_dashboardService = dashboardService;
-			_accountsService = accountsService;
 		}
 
 		public async Task<IActionResult> Index()
 		{
-			return View();
+			var statistics = await _dashboardService.GetStatistics();
+			return View(statistics);
 		}
 	}
 }

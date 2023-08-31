@@ -1,6 +1,6 @@
 ﻿using MPPilot.Domain.Models.Users;
 
-namespace MPPilot.Domain.Services.Accounts
+namespace MPPilot.Domain.Services.Users
 {
 	public interface IUsersService
 	{

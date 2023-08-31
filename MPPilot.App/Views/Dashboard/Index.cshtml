@@ -1,14 +1,66 @@
 ﻿@using MPPilot.Domain.Models.Dashboards;
-@model DashboardStatistics;
+@model WildberriesAdvertsStatistics;
 
-<div>
+<div id="app">
 	<div>
-		<label>Под управлением автобиддеров:</label>
-		<label>@Model.TotalInAutobiddersManagement</label>
+		<label>Автобиддеры:</label>
+		<p>@Model.TotalBudgetInAutobidders руб. под управлением @Model.ActiveAutobiddersCount автобиддеров</p>
 	</div>
 
 	<div>
-		<label>Баланс всех РК:</label>
-		<label>@Model.TotalInAdverts</label>
+		<label>Рекламные кампании:</label>
+		<p>@Model.TotalBudgetInAdverts руб. на балансе @Model.ActiveAdvertsCount рекламных кампаний</p>
+	</div>
+
+	<div>
+		<label>Баланс рекламного кабинета:</label>
+		<p>Общий баланс - @Model.WildberriesBalance.Balance руб., Чистый баланс - @Model.WildberriesBalance.Net руб., Бонусы - @Model.WildberriesBalance.Bonus руб.</p>
+	</div>
+
+	<div>
+		<canvas id="chart" height="400" width="400"></canvas>
 	</div>
 </div>
+
+@section Scripts {
+	<script>
+		const app = Vue.createApp({
+			data() {
+				return {
+					expenses: [100, 200, 300, 500, 200]
+				};
+			},
+
+			mounted() {
+				this.renderChart();
+			},
+
+			methods: {
+				renderChart() {
+					new Chart(document.getElementById('chart'), {
+						type: 'bar',
+						data: {
+							labels: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн'],
+							datasets: [{
+								label: 'Затраты на рекламу',
+								data: this.expenses,
+								backgroundColor: '#3e95cd',
+							}]
+						},
+						options: {
+							responsive: true,
+							maintainAspectRatio: false,
+							legend: { display: false },
+							title: {
+								display: true,
+								text: 'Затраты на рекламу за последние 7 дней'
+							}
+						}
+					});
+				}
+			}
+		});
+
+		app.mount("#app");
+	</script>
+}

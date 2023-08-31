@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MPPilot.Domain.Models.Users;
-using MPPilot.Domain.Services.Accounts;
+using MPPilot.Domain.Services.Users;
 
 namespace MPPilot.App.Middleware
 {

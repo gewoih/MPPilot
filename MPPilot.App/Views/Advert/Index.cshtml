@@ -1,8 +1,4 @@
-﻿@using MPPilot.Domain.Models.Adverts;
-@using MPPilot.Domain.Utils;
-@using Newtonsoft.Json;
-
-<div id="app" v-cloak>
+﻿<div id="app" v-cloak>
 	<div class="loading-container" v-if="isLoading">
 		<div class="loading-spinner"></div>
 		<p class="loading-message">Загрузка данных...</p>
@@ -26,7 +22,7 @@
 					<th>Стоимость заказа (р.)</th>
 					<th>Расход (р.)</th>
 
-					<th>CPM</th>
+					<th>Cpm</th>
 					<th>CTR</th>
 					<th>CPC</th>
 				</tr>
@@ -149,7 +145,7 @@
 									<tr v-for="bid in bids" :class="getRowStyle(bid)">
 										<td>{{ moment(bid.createdDate).format('DD.MM.YYYY HH:mm:ss') }}</td>
 										<td>{{ bid.advertPosition }} → {{ bid.targetPositionLeftBound }}</td>
-										<td>{{ bid.lastCPM }} → {{ bid.currentCPM }} ({{ bid.changeCPM }})</td>
+										<td>{{ bid.lastCpm }} → {{ bid.currentCpm }} ({{ bid.changeCpm }})</td>
 										<td>{{ bid.reasonString }}</td>
 									</tr>
 								</tbody>
@@ -339,7 +335,7 @@
 				},
 
 				getRowStyle(bid) {
-					return bid.changeCPM > 0 ? 'table-danger' : 'table-success';
+					return bid.changeCpm > 0 ? 'table-danger' : 'table-success';
 				}
 			}
 		});

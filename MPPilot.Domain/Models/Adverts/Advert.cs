@@ -23,8 +23,8 @@ namespace MPPilot.Domain.Models.Adverts
 
 		public string ProductArticle { get; set; }
 		public int CategoryId { get; set; }
-		public int BudgetSize { get; set; }
-		public int CPM { get; set; }
+		public double Balance { get; set; }
+		public int Cpm { get; set; }
 		public int TotalViews { get; set; }
 		public int Clicks { get; set; }
 		public int UniqueViews { get; set; }

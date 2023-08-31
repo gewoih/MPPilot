@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using MPPilot.Domain.Infrastructure;
 using MPPilot.Domain.Models.Adverts;
 using MPPilot.Domain.Models.Autobidders;
-using MPPilot.Domain.Services.Accounts;
+using MPPilot.Domain.Services.Users;
 
 namespace MPPilot.Domain.Services.Autobidders
 {
@@ -38,7 +38,7 @@ namespace MPPilot.Domain.Services.Autobidders
 				throw;
 			}
 		}
-		
+
 		public async Task UpdateAsync(Autobidder autobidder)
 		{
 			try
@@ -60,12 +60,12 @@ namespace MPPilot.Domain.Services.Autobidders
 			}
 		}
 
-		public async Task LoadAutobiddersForAdverts(List<Advert> adverts)
+		public async Task LoadAutobiddersForAdvertsAsync(List<Advert> adverts)
 		{
-			var advertIds = adverts.Select(advert => advert.AdvertId);
+			//var advertIds = adverts.Select(advert => advert.AdvertId);
 			var autobidders = await _context.Autobidders
-									.AsNoTracking()
-									.ToListAsync();
+												.AsNoTracking()
+												.ToListAsync();
 
 			foreach (var advert in adverts)
 			{
@@ -89,19 +89,12 @@ namespace MPPilot.Domain.Services.Autobidders
 
 		public async Task<List<AdvertBid>> GetBidsAsync(Guid autobidderId)
 		{
-			try
-			{
-				var bids = await _context.AdvertBids
-								.Where(bid => bid.AutobidderId.Equals(autobidderId))
-								.OrderByDescending(bid => bid.CreatedDate)
-								.ToListAsync();
+			var bids = await _context.AdvertBids
+				.Where(bid => bid.AutobidderId.Equals(autobidderId))
+				.OrderByDescending(bid => bid.CreatedDate)
+				.ToListAsync();
 
-				return bids;
-			}
-			catch (Exception ex)
-			{
-				throw;
-			}
+			return bids;
 		}
 
 		public async Task StartBidsAsync(Autobidder autobidder)
