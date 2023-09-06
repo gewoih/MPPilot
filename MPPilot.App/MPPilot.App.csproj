@@ -11,6 +11,9 @@
 
   <ItemGroup>
     <PackageReference Include="Elasticsearch.Net" Version="7.17.5" />
+    <PackageReference Include="JavaScriptEngineSwitcher.Extensions.MsDependencyInjection" Version="3.21.0" />
+    <PackageReference Include="JavaScriptEngineSwitcher.V8" Version="3.21.5" />
+    <PackageReference Include="JavaScriptEngineSwitcher.V8.Native.win-x64" Version="3.21.5" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0-preview.7.23375.9" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.0-preview.7.23375.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0-preview.7.23375.4">
@@ -33,6 +36,7 @@
 	<PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.5.1-beta.1" />
 	<PackageReference Include="prometheus-net.AspNetCore" Version="8.0.1" />
 	<PackageReference Include="prometheus-net.AspNetCore.HealthChecks" Version="8.0.1" />
+	<PackageReference Include="React.AspNet" Version="5.2.12" />
 	<PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
 	<PackageReference Include="Serilog.Sinks.Console" Version="4.2.0-dev-00918" />
 	<PackageReference Include="Serilog.Sinks.Elasticsearch" Version="9.0.3" />

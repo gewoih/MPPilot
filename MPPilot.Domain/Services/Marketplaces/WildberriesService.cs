@@ -11,13 +11,13 @@ namespace MPPilot.Domain.Services.Marketplaces
 {
 	public class WildberriesService
 	{
-		private const string _baseUrl = "https://advert-api.wb.ru/adv/";
+		private const string BaseUrl = "https://advert-api.wb.ru/adv/";
 		private readonly HttpClient _httpClient;
 
 		public WildberriesService(IHttpClientFactory httpClientFactory, IUsersService accountsService)
 		{
 			_httpClient = httpClientFactory.CreateClient();
-			_httpClient.BaseAddress = new Uri(_baseUrl);
+			_httpClient.BaseAddress = new Uri(BaseUrl);
 
 			var currentUser = accountsService.GetCurrentUserAsync().Result;
 			var currentSettings = currentUser?.Settings;
@@ -160,7 +160,6 @@ namespace MPPilot.Domain.Services.Marketplaces
 			return adverts;
 		}
 
-
 		public async Task<bool> ChangeCpm(Advert advert, int newCPM)
 		{
 			if (newCPM < 50)
@@ -234,7 +233,7 @@ namespace MPPilot.Domain.Services.Marketplaces
 				foundAdvert.Balance = jObject.Value<double>("total");
 			}
 		}
-		
+
 		private async Task LoadInfo(List<Advert> adverts)
 		{
 			var jObjects = await GetJsonByAdverts(adverts, "v0/advert?id=");
@@ -266,7 +265,7 @@ namespace MPPilot.Domain.Services.Marketplaces
 			}
 		}
 
-		private async Task<List<Advert>> LoadKeywords(List<Advert> adverts)
+		private async Task LoadKeywords(List<Advert> adverts)
 		{
 			var jObjects = await GetJsonByAdverts(adverts, "v1/stat/words?id=");
 			foreach (var jObject in jObjects)
@@ -281,8 +280,6 @@ namespace MPPilot.Domain.Services.Marketplaces
 				var foundAdvert = adverts.First(advert => advert.AdvertId == advertId);
 				foundAdvert.Keyword = jObject["words"]["pluse"][0].Value<string>();
 			}
-
-			return adverts;
 		}
 
 		private async Task LoadStatistics(IEnumerable<Advert> adverts)
@@ -309,34 +306,41 @@ namespace MPPilot.Domain.Services.Marketplaces
 			var jObjects = new List<JObject>();
 			var semaphore = new SemaphoreSlim(50);
 
-			var httpTasks = adverts.Select(async advert =>
+			try
 			{
-				await semaphore.WaitAsync();
-				try
+				var httpTasks = adverts.Select(async advert =>
 				{
-					var query = url + advert.AdvertId;
-					var response = await _httpClient.GetAsync(query);
-
-					if (response.IsSuccessStatusCode)
+					await semaphore.WaitAsync();
+					try
 					{
-						var stringResult = await response.Content.ReadAsStringAsync();
-						var jObject = JsonConvert.DeserializeObject<JObject>(stringResult);
+						var query = url + advert.AdvertId;
+						var response = await _httpClient.GetAsync(query);
 
-						if (jObject is not null)
-							jObject["advertId"] = advert.AdvertId;
+						if (response.IsSuccessStatusCode)
+						{
+							var stringResult = await response.Content.ReadAsStringAsync();
+							var jObject = JsonConvert.DeserializeObject<JObject>(stringResult);
 
-						jObjects.Add(jObject);
+							if (jObject is not null)
+								jObject["advertId"] = advert.AdvertId;
+
+							jObjects.Add(jObject);
+						}
+						else
+							throw new Exception(response.StatusCode.ToString());
 					}
-					else
-						throw new Exception(response.StatusCode.ToString());
-				}
-				finally
-				{
-					semaphore.Release();
-				}
-			});
+					finally
+					{
+						semaphore.Release();
+					}
+				});
 
-			await Task.WhenAll(httpTasks);
+				await Task.WhenAll(httpTasks);
+			}
+			catch (Exception ex)
+			{
+				return new List<JObject>();
+			}
 
 			return jObjects;
 		}

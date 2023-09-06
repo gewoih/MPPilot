@@ -2,6 +2,8 @@
 using MPPilot.App.Middleware;
 using MPPilot.Domain.Infrastructure;
 using System.Text;
+using JavaScriptEngineSwitcher.Extensions.MsDependencyInjection;
+using JavaScriptEngineSwitcher.V8;
 using Serilog;
 using MPPilot.Domain.Services.Autobidders;
 using MPPilot.Domain.Services.Marketplaces;
@@ -11,10 +13,10 @@ using Serilog.Sinks.Elasticsearch;
 using OpenTelemetry.Metrics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using MPPilot.App.Controllers;
 using MPPilot.Domain.Models.Users;
 using MPPilot.Domain.Services.Dashboards;
 using MPPilot.Domain.Services.Users;
+using React.AspNet;
 
 namespace MPPilot.App
 {
@@ -26,18 +28,18 @@ namespace MPPilot.App
 
 			var builder = WebApplication.CreateBuilder(args);
 			builder.Services.AddOpenTelemetry()
-				.WithMetrics(builder =>
+				.WithMetrics(providerBuilder =>
 				{
-					builder.AddPrometheusExporter();
+					providerBuilder.AddPrometheusExporter();
 
-					builder.AddMeter("Microsoft.AspNetCore.Hosting",
+					providerBuilder.AddMeter("Microsoft.AspNetCore.Hosting",
 									 "Microsoft.AspNetCore.Server.Kestrel",
 									 "MPPilot");
 
-					builder.AddView("http-server-request-duration",
+					providerBuilder.AddView("http-server-request-duration",
 						new ExplicitBucketHistogramConfiguration
 						{
-							Boundaries = new double[] { 0, 0.005, 0.01, 0.025, 0.05,
+							Boundaries = new[] { 0, 0.005, 0.01, 0.025, 0.05,
 								   0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10 }
 						});
 				});
@@ -51,6 +53,9 @@ namespace MPPilot.App
 			{
 				builder.AddSerilog();
 			});
+
+			builder.Services.AddJsEngineSwitcher(options => options.DefaultEngineName = V8JsEngine.EngineName).AddV8();
+			builder.Services.AddReact();
 
 			var connectionString = builder.Configuration.GetConnectionString("Default");
 			builder.Services.AddDbContext<MPPilotContext>(options => options.UseNpgsql(connectionString));
@@ -103,12 +108,15 @@ namespace MPPilot.App
 			builder.WebHost.UseUrls("http://0.0.0.0:5000", "https://0.0.0.0:5001");
 
 			var app = builder.Build();
-			app.UseMiddleware<MetricsMiddleware>();
+			app.UseReact(_ => {});
 
 			if (!app.Environment.IsDevelopment())
 			{
 				app.UseMiddleware<ExceptionsHandlerMiddleware>();
 				app.UseMiddleware<LongQueryMiddleware>();
+				app.UseMiddleware<MetricsMiddleware>();
+				
+				app.MapPrometheusScrapingEndpoint();
 
 				app.UseHsts();
 			}
@@ -123,7 +131,6 @@ namespace MPPilot.App
 			app.UseMiddleware<AuthenticationMiddleware>();
 
 			app.MapDefaultControllerRoute();
-			app.MapPrometheusScrapingEndpoint();
 
 			using (var scope = app.Services.CreateScope())
 			{
